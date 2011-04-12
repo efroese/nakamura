@@ -27,31 +27,30 @@ import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
-import org.apache.jackrabbit.api.security.user.Authorizable;
-import org.apache.jackrabbit.api.security.user.User;
-import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.sling.auth.core.spi.AuthenticationFeedbackHandler;
 import org.apache.sling.auth.core.spi.AuthenticationInfo;
 import org.apache.sling.commons.osgi.OsgiUtil;
-import org.apache.sling.jcr.api.SlingRepository;
-import org.apache.sling.jcr.base.util.AccessControlUtil;
 import org.apache.sling.servlets.post.ModificationType;
 import org.sakaiproject.nakamura.api.ldap.LdapConnectionManager;
 import org.sakaiproject.nakamura.api.ldap.LdapUtil;
-import org.sakaiproject.nakamura.api.user.AuthorizablePostProcessService;
+import org.sakaiproject.nakamura.api.lite.Repository;
+import org.sakaiproject.nakamura.api.lite.Session;
+import org.sakaiproject.nakamura.api.lite.StorageClientException;
+import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
+import org.sakaiproject.nakamura.api.lite.authorizable.Authorizable;
+import org.sakaiproject.nakamura.api.lite.authorizable.AuthorizableManager;
+import org.sakaiproject.nakamura.api.lite.authorizable.User;
+import org.sakaiproject.nakamura.api.user.LiteAuthorizablePostProcessService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.ValueFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Authentication feedback handler for provisioning a JCR system user after successful
+ * Authentication feedback handler for provisioning a p system user after successful
  * authentication processing. Attempt to create user is only tried if no
  * {@link Authorizable} is found for the provided username.
  */
@@ -62,10 +61,10 @@ public class LdapAuthenticationFeedbackHandler implements AuthenticationFeedback
       .getLogger(LdapAuthenticationFeedbackHandler.class);
 
   @Reference
-  private AuthorizablePostProcessService authorizablePostProcessService;;
+  private LiteAuthorizablePostProcessService authorizablePostProcessService;;
 
   @Reference
-  private SlingRepository slingRepository;
+  private Repository repository;
 
   @Reference
   private LdapConnectionManager connMgr;
@@ -136,22 +135,23 @@ public class LdapAuthenticationFeedbackHandler implements AuthenticationFeedback
   public boolean authenticationSucceeded(HttpServletRequest req,
       HttpServletResponse resp, AuthenticationInfo authInfo) {
     try {
-      Session session = slingRepository.loginAdministrative(null);
-
-      UserManager um = AccessControlUtil.getUserManager(session);
-      Authorizable auth = um.getAuthorizable(authInfo.getUser());
+      Session session = repository.loginAdministrative();
+      AuthorizableManager am = session.getAuthorizableManager();
+      Authorizable auth = am.findAuthorizable(authInfo.getUser());
 
       if (auth == null) {
         String password = RandomStringUtils.random(8);
-        User user = um.createUser(authInfo.getUser(), password);
-
-        if (decorateUser) {
-          decorateUser(session, user);
+        boolean created = am.createUser(authInfo.getUser(), authInfo.getUser(), password, null);
+        
+        if (created){
+          User user = (User) am.findAuthorizable(authInfo.getUser());
+          if (decorateUser) {
+        	decorateUser(session, user);
+          }
+          // TODO To properly set up personal profiles, non-persisted data from
+          // LDAP may need to be forwarded to post-processing.
+          authorizablePostProcessService.process(user, session, ModificationType.CREATE, null);
         }
-
-        // TODO To properly set up personal profiles, non-persisted data from
-        // LDAP may need to be forwarded to post-processing.
-        authorizablePostProcessService.process(user, session, ModificationType.CREATE);
       }
     } catch (Exception e) {
       logger.warn(e.getMessage(), e);
@@ -169,7 +169,7 @@ public class LdapAuthenticationFeedbackHandler implements AuthenticationFeedback
     try {
       // fix up the user dn to search
       String userDn = LdapUtil.escapeLDAPSearchFilter(userFilter.replace("{}",
-          user.getID()));
+          user.getId()));
 
       // get a connection to LDAP
       LDAPConnection conn = connMgr.getBoundConnection(null, null);
@@ -177,20 +177,19 @@ public class LdapAuthenticationFeedbackHandler implements AuthenticationFeedback
           new String[] { firstNameProp, lastNameProp, emailProp }, true);
       if (results.hasMore()) {
         LDAPEntry entry = results.next();
-        ValueFactory vf = session.getValueFactory();
-        user.setProperty("firstName",
-            vf.createValue(entry.getAttribute(firstNameProp).toString()));
-        user.setProperty("lastName",
-            vf.createValue(entry.getAttribute(lastNameProp).toString()));
-        user.setProperty("email",
-            vf.createValue(entry.getAttribute(emailProp).toString()));
+        user.setProperty("firstName", entry.getAttribute(firstNameProp).toString());
+        user.setProperty("lastName", entry.getAttribute(lastNameProp).toString());
+        user.setProperty("email", entry.getAttribute(emailProp).toString());
+        session.getAuthorizableManager().updateAuthorizable(user);
       } else {
         logger.warn("Can't find user [" + userDn + "]");
       }
     } catch (LDAPException e) {
       logger.warn(e.getMessage(), e);
-    } catch (RepositoryException e) {
-      logger.warn(e.getMessage(), e);
-    }
+    } catch (AccessDeniedException e) {
+    	logger.warn(e.getMessage(), e);
+	} catch (StorageClientException e) {
+		logger.warn(e.getMessage(), e);
+	}
   }
 }
