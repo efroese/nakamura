@@ -60,9 +60,9 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
 import org.sakaiproject.nakamura.api.search.SearchResultProcessor;
+import org.sakaiproject.nakamura.api.search.SearchUtil;
 import org.sakaiproject.nakamura.api.search.solr.MissingParameterException;
 import org.sakaiproject.nakamura.api.search.solr.Query;
-import org.sakaiproject.nakamura.api.search.solr.Query.Type;
 import org.sakaiproject.nakamura.api.search.solr.Result;
 import org.sakaiproject.nakamura.api.search.solr.SolrSearchBatchResultProcessor;
 import org.sakaiproject.nakamura.api.search.solr.SolrSearchException;
@@ -85,13 +85,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
+import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -154,8 +153,6 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
 
   @Reference
   private transient TemplateService templateService;
-
-  private Pattern homePathPattern = Pattern.compile("^(.*)(~([\\w-]*?))/");
 
   @Override
   protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
@@ -273,6 +270,22 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
           }
         }
         write.endArray();
+        
+        if (page > 0 || rs.getSize() == nitems) {
+          // the result set may have been truncated by paging, so lets get a fuller count
+          query.getOptions().put(PARAMS_ITEMS_PER_PAGE, Long.toString(maximumResults));
+          query.getOptions().put(PARAMS_PAGE, Long.toString(0));
+          try {
+            if (useBatch) {
+              rs = searchBatchProcessor.getSearchResultSet(request, query);
+            } else {
+              rs = searchProcessor.getSearchResultSet(request, query);
+            }
+          } catch (SolrSearchException e) {
+            response.sendError(e.getCode(), e.getMessage());
+            return;
+          }
+        }
 
         // write the total out after processing the list to give the underlying iterator
         // a chance to walk the results then report how many there were.
@@ -290,29 +303,6 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
     }
   }
 
-  private String addUserPrincipals(SlingHttpServletRequest request, String queryString) {
-    // TODO Auto-generated method stub
-    return queryString;
-  }
-
-  private String expandHomeDirectory(String queryString) {
-    Matcher homePathMatcher = homePathPattern.matcher(queryString);
-    if (homePathMatcher.find()) {
-      String username = homePathMatcher.group(3);
-      String homePrefix = homePathMatcher.group(1);
-      String userHome = LitePersonalUtils.getHomePath(username);
-      userHome = ClientUtils.escapeQueryChars(userHome);
-      String homePath = homePrefix + userHome + "/";
-      String prefix = "";
-      if (homePathMatcher.start() > 0) {
-        prefix = queryString.substring(0, homePathMatcher.start());
-      }
-      String suffix = queryString.substring(homePathMatcher.end());
-      queryString = prefix + homePath + suffix;
-    }
-    return queryString;
-  }
-
   /**
    * Processes a velocity template so that variable references are replaced by the same
    * properties in the property provider and request.
@@ -327,12 +317,33 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
    */
   protected Query processQuery(SlingHttpServletRequest request, Node queryNode)
       throws RepositoryException, MissingParameterException, JSONException {
-    String propertyProviderName = null;
-    if (queryNode.hasProperty(SAKAI_PROPERTY_PROVIDER)) {
-      propertyProviderName = queryNode.getProperty(SAKAI_PROPERTY_PROVIDER).getString();
+    // check the resource type and set the query type appropriately
+    // default to using solr for queries
+    javax.jcr.Property resourceType = queryNode.getProperty("sling:resourceType");
+    String queryType = null;
+    if ("sakai/sparse-search".equals(resourceType.getString())) {
+      queryType = Query.SPARSE;
+    } else {
+      queryType = Query.SOLR;
     }
-    Map<String, String> propertiesMap = loadProperties(request, propertyProviderName,
-        queryNode);
+
+    String[] propertyProviderNames = null;
+    if (queryNode.hasProperty(SAKAI_PROPERTY_PROVIDER)) {
+      javax.jcr.Property propProv = queryNode.getProperty(SAKAI_PROPERTY_PROVIDER);
+      if (propProv.isMultiple()) {
+        Value[] propProvVals = propProv.getValues();
+        propertyProviderNames = new String[propProvVals.length];
+
+        for (int i = 0; i < propProvVals.length; i++) {
+          propertyProviderNames[i] = propProvVals[i].getString();
+        }
+      } else {
+        propertyProviderNames = new String[1];
+        propertyProviderNames[0] = propProv.getString();
+      }
+    }
+    Map<String, String> propertiesMap = loadProperties(request,
+        propertyProviderNames, queryNode.getProperties(), queryType);
 
     String queryTemplate = queryNode.getProperty(SAKAI_QUERY_TEMPLATE).getString();
 
@@ -341,14 +352,10 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
     String queryString = templateService.evaluateTemplate(propertiesMap, queryTemplate);
 
     // expand home directory references to full path; eg. ~user => a:user
-    queryString = expandHomeDirectory(queryString);
-
-    // append the user principals to the query string
-    queryString = addUserPrincipals(request, queryString);
+    queryString = SearchUtil.expandHomeDirectory(queryString);
 
     // check for any missing terms & process the query template
-    Collection<String> missingTerms = templateService.missingTerms(propertiesMap,
-        queryTemplate);
+    Collection<String> missingTerms = templateService.missingTerms(queryString);
     if (!missingTerms.isEmpty()) {
       throw new MissingParameterException(
           "Your request is missing parameters for the template: "
@@ -359,17 +366,9 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
     JSONObject queryOptions = accumulateQueryOptions(queryNode);
 
     // process the options as templates and check for missing params
-    Map<String, String> options = processOptions(propertiesMap, queryOptions);
+    Map<String, String> options = processOptions(propertiesMap, queryOptions, queryType);
 
-    // check the resource type and set the query type appropriately
-    // default to using solr for queries
-    javax.jcr.Property resourceType = queryNode.getProperty("sling:resourceType");
-    Query query = null;
-    if ("sakai/sparse-search".equals(resourceType.getString())) {
-      query = new Query(Type.SPARSE, queryString, options);
-    } else {
-      query = new Query(Type.SOLR, queryString, options);
-    }
+    Query query = new Query(queryType, queryString, options);
     return query;
   }
 
@@ -381,7 +380,7 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
    * @throws MissingParameterException
    */
   private Map<String, String> processOptions(Map<String, String> propertiesMap,
-      JSONObject queryOptions) throws JSONException, MissingParameterException {
+      JSONObject queryOptions, String queryType) throws JSONException, MissingParameterException {
     Collection<String> missingTerms;
     Map<String, String> options = Maps.newHashMap();
     if (queryOptions != null) {
@@ -397,6 +396,7 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
         }
 
         String processedVal = templateService.evaluateTemplate(propertiesMap, val);
+        processedVal = SearchUtil.escapeString(processedVal, queryType);
         options.put(key, processedVal);
       }
     }
@@ -412,8 +412,9 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
    * @throws PathNotFoundException
    * @throws JSONException
    */
-  private JSONObject accumulateQueryOptions(Node queryNode) throws RepositoryException,
-      ValueFormatException, PathNotFoundException, JSONException {
+  private JSONObject accumulateQueryOptions(Node queryNode)
+      throws RepositoryException, ValueFormatException, PathNotFoundException,
+      JSONException {
     JSONObject queryOptions = null;
     if (queryNode.hasProperty(SAKAI_QUERY_TEMPLATE_OPTIONS)) {
       // process the options as JSON string
@@ -427,8 +428,10 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
         PropertyIterator props = optionsNode.getProperties();
         while (props.hasNext()) {
           javax.jcr.Property prop = props.nextProperty();
-          if (!prop.getName().startsWith("jcr:")) {
-            queryOptions.put(prop.getName(), prop.getString());
+          String key = prop.getName();
+          String val = prop.getString();
+          if (!key.startsWith("jcr:")) {
+            queryOptions.put(key, val);
           }
         }
       }
@@ -450,7 +453,7 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
    * @throws RepositoryException
    */
   private Map<String, String> loadProperties(SlingHttpServletRequest request,
-      String propertyProviderName, Node node) throws RepositoryException {
+      String[] propertyProviderNames, PropertyIterator defaultProps, String queryType) throws RepositoryException {
     Map<String, String> propertiesMap = new HashMap<String, String>();
 
     // 0. load authorizable (user) information
@@ -461,18 +464,20 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
     propertiesMap.put("_userId", ClientUtils.escapeQueryChars(userId));
 
     // 1. load in properties from the query template node so defaults can be set
-    PropertyIterator props = node.getProperties();
-    while (props.hasNext()) {
-      javax.jcr.Property prop = props.nextProperty();
-      if (!propertiesMap.containsKey(prop.getName()) && !prop.isMultiple()) {
-        propertiesMap.put(prop.getName(), prop.getString());
+    if (defaultProps != null) {
+      while (defaultProps.hasNext()) {
+        javax.jcr.Property prop = defaultProps.nextProperty();
+        String key = prop.getName();
+        if (!propertiesMap.containsKey(key) && !prop.isMultiple()) {
+          String val = prop.getString();
+          propertiesMap.put(key, val);
+        }
       }
     }
 
     // 2. load in properties from the request
     RequestParameterMap params = request.getRequestParameterMap();
     for (Entry<String, RequestParameter[]> entry : params.entrySet()) {
-      String key = entry.getKey();
       RequestParameter[] vals = entry.getValue();
       String requestValue = vals[0].getString();
 
@@ -481,27 +486,24 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
         continue;
       }
 
-      // KERN-1601 Wildcard searches have to be manually lowercased for case insensitive
-      // matching as Solr bypasses the analyzer when dealing with a wildcard or fuzzy
-      // search.
-      if (StringUtils.contains(requestValue, '*')
-          || StringUtils.contains(requestValue, '~')) {
-        requestValue = requestValue.toLowerCase();
-      }
-      // KERN-1703 Escape just :
-      requestValue = StringUtils.replace(requestValue, ":", "\\:");
-      propertiesMap.put(entry.getKey(), requestValue);
+      // we're selective with what we escape to make sure we don't hinder
+      // search functionality
+      String key = entry.getKey();
+      String val = SearchUtil.escapeString(requestValue, queryType);
+      propertiesMap.put(key, val);
     }
 
     // 3. load properties from a property provider
-    if (propertyProviderName != null) {
-      LOGGER.debug("Trying Provider Name {} ", propertyProviderName);
-      SolrSearchPropertyProvider provider = propertyProvider.get(propertyProviderName);
-      if (provider != null) {
-        LOGGER.debug("Trying Provider {} ", provider);
-        provider.loadUserProperties(request, propertiesMap);
-      } else {
-        LOGGER.warn("No properties provider found for {} ", propertyProviderName);
+    if (propertyProviderNames != null) {
+      for (String propertyProviderName : propertyProviderNames) {
+        LOGGER.debug("Trying Provider Name {} ", propertyProviderName);
+        SolrSearchPropertyProvider provider = propertyProvider.get(propertyProviderName);
+        if (provider != null) {
+          LOGGER.debug("Trying Provider {} ", provider);
+          provider.loadUserProperties(request, propertiesMap);
+        } else {
+          LOGGER.warn("No properties provider found for {} ", propertyProviderName);
+        }
       }
     } else {
       LOGGER.debug("No Provider ");
@@ -628,6 +630,11 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
   private void addProcessor(ServiceReference serviceReference) {
     SolrSearchResultProcessor processor = (SolrSearchResultProcessor) osgiComponentContext
         .locateService(SEARCH_RESULT_PROCESSOR, serviceReference);
+    if (processor == null) {
+      LOGGER.warn("Retrieved null processor [{}]", serviceReference);
+      return;
+    }
+
     Long serviceId = (Long) serviceReference.getProperty(Constants.SERVICE_ID);
 
     processorsById.put(serviceId, processor);
@@ -682,6 +689,10 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
   private void addBatchProcessor(ServiceReference serviceReference) {
     SolrSearchBatchResultProcessor processor = (SolrSearchBatchResultProcessor) osgiComponentContext
         .locateService(SEARCH_BATCH_RESULT_PROCESSOR, serviceReference);
+    if (processor == null) {
+      LOGGER.warn("Retrieved null processor [{}]", serviceReference);
+      return;
+    }
     Long serviceId = (Long) serviceReference.getProperty(Constants.SERVICE_ID);
 
     batchProcessorsById.put(serviceId, processor);
@@ -728,6 +739,10 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
   private void addProvider(ServiceReference serviceReference) {
     SolrSearchPropertyProvider provider = (SolrSearchPropertyProvider) osgiComponentContext
         .locateService(SEARCH_PROPERTY_PROVIDER, serviceReference);
+    if (provider == null) {
+      LOGGER.warn("Retrieved null provider [{}]", serviceReference);
+      return;
+    }
     Long serviceId = (Long) serviceReference.getProperty(Constants.SERVICE_ID);
 
     propertyProviderById.put(serviceId, provider);
@@ -778,5 +793,4 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
     }
     return false;
   }
-
 }

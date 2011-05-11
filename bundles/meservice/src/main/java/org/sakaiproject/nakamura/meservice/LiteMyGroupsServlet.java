@@ -49,7 +49,6 @@ import java.util.TreeMap;
           "{" +
           "  \"items\": 10," +
           "  \"results\": [{" +
-          "      \"sakai:managers-group\": \"test-managers\"," +
           "      \"jcr:path\": \"/~test/public/authprofile\"," +
           "      \"sakai:group-title\": \"test\"," +
           "      \"sakai:group-joinable\": \"no\"," +
@@ -105,7 +104,8 @@ import java.util.TreeMap;
       parameters= {
       @ServiceParameter(name = "items", description = { "The number of items per page in the result set." }),
       @ServiceParameter(name = "page", description = { "The page number to start listing the results on." }),
-      @ServiceParameter(name = "q", description = { "The Query to filter on." }) 
+      @ServiceParameter(name = "q", description = { "The Query to filter on." }),
+      @ServiceParameter(name = "uid", description = {"The Optional userid to bind to, if not present the current user."})
       }
     )
   }

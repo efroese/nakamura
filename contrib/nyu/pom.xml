@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.sakaiproject.nakamura</groupId>
     <artifactId>base</artifactId>
-    <version>0.10-SNAPSHOT</version>
+    <version>0.11-SNAPSHOT</version>
   </parent>
 
   <groupId>edu.nyu</groupId>
@@ -12,7 +12,7 @@
   <name>NYU Launchpad</name>
   <version>1.0-SNAPSHOT</version>
   <properties>
-    <nakamura.version>0.10-SNAPSHOT</nakamura.version>
+    <nakamura.version>0.11-SNAPSHOT</nakamura.version>
     <ux.version>0.6.0-SNAPSHOT</ux.version>
   </properties>
   <packaging>jar</packaging>
@@ -65,24 +65,6 @@
                 <bundle>
                   <groupId>org.sakaiproject.nakamura</groupId>
                   <artifactId>org.sakaiproject.nakamura.auth.ldap</artifactId>
-                  <version>${nakamura.version}</version>
-                  <startLevel>30</startLevel>
-                </bundle>
-                <bundle>
-                  <groupId>org.sakaiproject.nakamura</groupId>
-                  <artifactId>org.sakaiproject.nakamura.auth.opensso</artifactId>
-                  <version>${nakamura.version}</version>
-                  <startLevel>30</startLevel>
-                </bundle>
-                <bundle>
-                  <groupId>org.sakaiproject.nakamura</groupId>
-                  <artifactId>org.sakaiproject.nakamura.remotefiles</artifactId>
-                  <version>${nakamura.version}</version>
-                  <startLevel>30</startLevel>
-                </bundle>
-                <bundle>
-                  <groupId>org.sakaiproject.nakamura</groupId>
-                  <artifactId>org.sakaiproject.nakamura.site.join</artifactId>
                   <version>${nakamura.version}</version>
                   <startLevel>30</startLevel>
                 </bundle>
