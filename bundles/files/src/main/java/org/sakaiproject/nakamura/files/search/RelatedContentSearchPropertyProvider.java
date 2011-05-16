@@ -157,8 +157,8 @@ public class RelatedContentSearchPropertyProvider extends
       try {
         final ContentManager contentManager = session.getContentManager();
         final Iterator<Result> i = rs.getResultSetIterator();
-        final Set<String> allFileNames = new HashSet<String>();
-        final Set<String> allTagUuids = new HashSet<String>();
+        Set<String> allFileNames = new HashSet<String>();
+        Set<String> allTagUuids = new HashSet<String>();
         int count = 0;
         while (i.hasNext() && count < MAX_SOURCE_LIMIT) {
           final Result result = i.next();
@@ -205,16 +205,46 @@ public class RelatedContentSearchPropertyProvider extends
         }
         managers.remove(user); // do not display my own content
         viewers.remove(user); // do not display my own content
+        if (managers.isEmpty()) { // to prevent solr parse errors
+          managers.add(AVOID_FALSE_POSITIVE_MATCHES);
+        }
         propertiesMap.put("managers", Join.join(" OR ", managers));
+        if (viewers.isEmpty()) { // to prevent solr parse errors
+          viewers.add(AVOID_FALSE_POSITIVE_MATCHES);
+        }
         propertiesMap.put("viewers", Join.join(" OR ", viewers));
 
         if (allFileNames.isEmpty()) { // to prevent solr parse errors
           allFileNames.add(AVOID_FALSE_POSITIVE_MATCHES);
         }
+        if (allFileNames.size() > 1024) {
+          /*
+           * solr allows a maximum of 1024. Performance will likely be an issue by this
+           * point.
+           */
+          LOG.warn(
+              "Exceeded maximum number of solr binary operations: {}. Reduced size to 1024.",
+              allFileNames.size());
+          final String[] tooLarge = (String[]) allFileNames.toArray();
+          final String[] justRight = Arrays.copyOf(tooLarge, 1024);
+          allFileNames = new HashSet<String>(Arrays.asList(justRight));
+        }
         propertiesMap.put("fileNames", Join.join(" OR ", allFileNames));
 
         if (allTagUuids.isEmpty()) { // to prevent solr parse errors
           allTagUuids.add(AVOID_FALSE_POSITIVE_MATCHES);
+        }
+        if (allTagUuids.size() > 1024) {
+          /*
+           * solr allows a maximum of 1024. Performance will likely be an issue by this
+           * point.
+           */
+          LOG.warn(
+              "Exceeded maximum number of solr binary operations: {}. Reduced size to 1024.",
+              allTagUuids.size());
+          final String[] tooLarge = (String[]) allTagUuids.toArray();
+          final String[] justRight = Arrays.copyOf(tooLarge, 1024);
+          allTagUuids = new HashSet<String>(Arrays.asList(justRight));
         }
         propertiesMap.put("tagUuids", Join.join(" OR ", allTagUuids));
 
