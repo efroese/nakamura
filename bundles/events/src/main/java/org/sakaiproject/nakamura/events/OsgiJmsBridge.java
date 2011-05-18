@@ -228,21 +228,16 @@ public class OsgiJmsBridge implements EventHandler {
       MessageProducer producer = clientSession.createProducer(destination);
       msg.setJMSType(event.getTopic());
 
+      // WARNING - cleanPropertyValue will DROP the property if it doesn't know how
+      // to convert it for the JMS Message. This is not that terrible considering 
+      // the JMS provider would probably fail to marshall the property value anyway.
       for (String name : event.getPropertyNames()) {
-        Object obj = event.getProperty(name);
-        // "Only objectified primitive objects, String, Map and List types are
-        // allowed" as stated by an exception when putting something into the
-        // message that was not of one of these types.
-        if (obj instanceof Byte || obj instanceof Boolean || obj instanceof Character
-            || obj instanceof Number || obj instanceof Map || obj instanceof String
-            || obj instanceof List || obj instanceof Object[]) {
-          msg.setObjectProperty(name, cleanProperty(obj));
+        Object obj = cleanPropertyValue(event.getProperty(name));
+        if (obj != null) {
+          msg.setObjectProperty(name, obj);
         }
       }
-
       msg.setStringProperty("clusterServerId", serverId);
-
-      // add the current user
 
       LOGGER.debug("Sending Message {} to {}  ",msg, destination);
       producer.send(msg);
@@ -282,7 +277,7 @@ public class OsgiJmsBridge implements EventHandler {
    * The values in Maps are inspected and converted using cleanProperty(obj)
    */
   @SuppressWarnings("unchecked")
-  protected static Object cleanProperty(Object obj){
+  protected static Object cleanPropertyValue(Object obj){
     if (obj instanceof Byte || obj instanceof Boolean || obj instanceof Character
 	     || obj instanceof Number || obj instanceof String
 	     || obj instanceof List) {
@@ -295,7 +290,7 @@ public class OsgiJmsBridge implements EventHandler {
 	  Map<String,Object> oldMap = (Map<String,Object>)obj;
 	  Map<String,Object> newMap = new HashMap<String,Object>();
 	  for (String key: ((Map<String,Object>)obj).keySet()){
-        newMap.put(key, cleanProperty(oldMap.get(key)));
+        newMap.put(key, cleanPropertyValue(oldMap.get(key)));
 	  }
 	  return newMap;
 	}

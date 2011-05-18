@@ -229,24 +229,24 @@ public class OsgiJmsBridgeTest {
   @Test
   public void testCleanProperties(){
 	  // Unsupported types
-	  assertEquals(null, OsgiJmsBridge.cleanProperty(null));
-	  assertEquals(null, OsgiJmsBridge.cleanProperty(new ActiveMQMessage()));
+	  assertEquals(null, OsgiJmsBridge.cleanPropertyValue(null));
+	  assertEquals(null, OsgiJmsBridge.cleanPropertyValue(new ActiveMQMessage()));
 
 	  // Supported Primitives
-	  assertEquals(1, OsgiJmsBridge.cleanProperty(1));
-	  assertEquals((byte)1, OsgiJmsBridge.cleanProperty((byte)1));
-	  assertEquals(true, OsgiJmsBridge.cleanProperty(true));
-	  assertEquals("str", OsgiJmsBridge.cleanProperty("str"));
+	  assertEquals(1, OsgiJmsBridge.cleanPropertyValue(1));
+	  assertEquals((byte)1, OsgiJmsBridge.cleanPropertyValue((byte)1));
+	  assertEquals(true, OsgiJmsBridge.cleanPropertyValue(true));
+	  assertEquals("str", OsgiJmsBridge.cleanPropertyValue("str"));
 
 	  // Lists are supported
 	  List<String> l = new ArrayList<String>();
 	  l.add("one");
 	  l.add("two");
-	  assertEquals(l, OsgiJmsBridge.cleanProperty(l));
+	  assertEquals(l, OsgiJmsBridge.cleanPropertyValue(l));
 
 	  // Arrays are converted to Lists
 	  String[] sa = new String[]{"one", "two"};
-	  List<String> l2 = (List<String>)OsgiJmsBridge.cleanProperty(sa);
+	  List<String> l2 = (List<String>)OsgiJmsBridge.cleanPropertyValue(sa);
 	  assertEquals(2, l2.size());
 	  assertEquals("one", l2.get(0));
 
@@ -262,7 +262,7 @@ public class OsgiJmsBridgeTest {
 	  m.put("hash", hashProp);
 
 	  // Properties of the nested map
-	  Map<String,Object> m1 = (Map<String,Object>)OsgiJmsBridge.cleanProperty(m);
+	  Map<String,Object> m1 = (Map<String,Object>)OsgiJmsBridge.cleanPropertyValue(m);
 	  assertEquals(new Integer(1), (Integer)m1.get("one"));
 	  assertEquals(2, ((List<String>)m1.get("array")).size());
 
