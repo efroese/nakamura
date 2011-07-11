@@ -92,11 +92,12 @@ public class ContentUUIDMigrator {
 		            if (oldUUID != null){
 		            	content.setProperty(InternalContent.UUID_FIELD, oldUUID);
 		            	content.removeProperty(OLD_UUID_FIELD);
-		            	cm.update(content);
+		                cm.update(content);
 		            }
+                            log.debug("Processed {}", id);
 		        }
 		        start += resultDocs.size();
-		        log.debug("Processed {} of {}.", resultDocs.size(), totalResults);
+		        log.debug("Processed {} of {}.", start, totalResults);
 		    }
 			session.logout();
 
