@@ -25,7 +25,6 @@ import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
-import org.apache.felix.scr.annotations.Services;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.apache.sling.commons.json.io.JSONWriter;
@@ -57,8 +56,7 @@ import java.io.IOException;
  * Handler for chat messages.
  */
 @Component(label = "LiteChatMessageHandler", description = "Handler for internally delivered chat messages.", immediate = true)
-@Services(value = { @Service(value = LiteMessageTransport.class),
-    @Service(value = LiteMessageProfileWriter.class) })
+@Service({ LiteMessageTransport.class, LiteMessageProfileWriter.class })
 @Properties(value = {
     @Property(name = "service.vendor", value = "The Sakai Foundation"),
     @Property(name = "service.description", value = "Handler for internally delivered chat messages") })
@@ -163,11 +161,11 @@ public class LiteChatMessageHandler implements LiteMessageTransport,
    * @see org.sakaiproject.nakamura.api.message.LiteMessageProfileWriter#writeProfileInformation(Session,
    *      String, org.apache.sling.commons.json.io.JSONWriter)
    */
-  public void writeProfileInformation(Session session, String recipient, JSONWriter write, javax.jcr.Session jcrSession) {
+  public void writeProfileInformation(Session session, String recipient, JSONWriter write) {
     try {
       Authorizable au = session.getAuthorizableManager().findAuthorizable(recipient);
       ValueMap map = new ValueMapDecorator(basicUserInfoService.getProperties(au));
-      ((ExtendedJSONWriter) write).valueMap(map);
+      ExtendedJSONWriter.writeValueMapInternals(write, map);
     } catch (Exception e) {
       LOG.error("Failed to write profile information for " + recipient, e);
     }

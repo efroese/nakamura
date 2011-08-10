@@ -17,6 +17,10 @@
  */
 package org.sakaiproject.nakamura.message;
 
+import com.google.common.collect.ImmutableMap;
+
+import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.PARAMS_ITEMS_PER_PAGE;
+
 import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
@@ -27,6 +31,7 @@ import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.io.JSONWriter;
 import org.apache.solr.client.solrj.util.ClientUtils;
+import org.apache.solr.common.params.CommonParams;
 import org.sakaiproject.nakamura.api.doc.BindingType;
 import org.sakaiproject.nakamura.api.doc.ServiceBinding;
 import org.sakaiproject.nakamura.api.doc.ServiceDocumentation;
@@ -57,13 +62,12 @@ import javax.servlet.http.HttpServletResponse;
  * Will count all the messages under the user his message store. The user can
  * specify what messages should be counted by specifying parameters in comma
  * separated values. ex:
- * messages.count.json?filters=sakai:messagebox,read,to&values
- * =inbox,true,user1&groupedby=sakai:messagebox The following are optional: -
- * filters: only nodes with the properties in filters and the values in values
- * get travers - groupedby: group the results by the values of this parameter.
- * 
- * count.json?filters=sakai:read,sakai:messagebox&values=true,inbox&groupby=sakai:category
- * 
+ * messages.count.json?filters=sakai:messagebox,read,to&values=inbox,true,user1&groupedby=sakai:messagebox
+ *
+ * The following are optional:
+ *  - filters: only nodes with the properties in filters and the values in values
+ *    get traversed
+ *  - groupedby: group the results by the values of this parameter.
  */
 @SlingServlet(methods = {"GET"}, resourceTypes = {"sakai/messagestore"}, selectors = {"count"}, generateComponent = true, generateService = true)
 @Properties(value = {
@@ -97,6 +101,8 @@ public class LiteCountServlet extends SlingSafeMethodsServlet {
    */
   private static final long serialVersionUID = -5714446506015596037L;
   private static final Logger LOGGER = LoggerFactory.getLogger(LiteCountServlet.class);
+
+  private static long MAX_RESULTS_COUNTED = 500;
 
   @Reference
   protected transient LiteMessagingService messagingService;
@@ -139,9 +145,23 @@ public class LiteCountServlet extends SlingSafeMethodsServlet {
         }
       }
 
-      queryString.append(")&start=0&sort=_created desc");
+      queryString.append(")");
 
-      Query query = new Query(queryString.toString());
+      // The "groupedby" clause forces us to inspect every message. If not
+      // specified, all we need is the count.
+      final long itemCount;
+      if (request.getRequestParameter("groupedby") == null) {
+        itemCount = 0;
+      } else {
+        itemCount = MAX_RESULTS_COUNTED;
+      }
+      Map<String, String> queryOptions = ImmutableMap.of(
+          PARAMS_ITEMS_PER_PAGE, Long.toString(itemCount),
+          CommonParams.START, "0",
+          CommonParams.SORT, "_created desc"
+      );
+
+      Query query = new Query(queryString.toString(), queryOptions);
       LOGGER.info("Submitting Query {} ", query);
       SolrSearchResultSet resultSet = searchServiceFactory.getSearchResultSet(
           request, query, false);
@@ -155,8 +175,6 @@ public class LiteCountServlet extends SlingSafeMethodsServlet {
       if (request.getRequestParameter("groupedby") == null) {
         write.object();
         write.key("count");
-        // TODO: getSize iterates over all the nodes, add a JackRabbit service
-        // to fetch this number.
         write.value(resultSet.getSize());
         write.endObject();
       } else {
@@ -167,9 +185,16 @@ public class LiteCountServlet extends SlingSafeMethodsServlet {
         if (groupedby.startsWith("sakai:")) {
           groupedby = groupedby.substring(6);
         }
+
+        long count = 0;
         Map<String, Integer> mapCount = new HashMap<String, Integer>();
         while (resultIterator.hasNext()) {
           Result n = resultIterator.next();
+
+          if (count >= MAX_RESULTS_COUNTED) {
+            break;
+          }
+          count++;
 
           if (n.getProperties().containsKey(groupedby)) {
             String key = (String) n.getFirstValue(groupedby);
@@ -200,8 +225,10 @@ public class LiteCountServlet extends SlingSafeMethodsServlet {
       }
 
     } catch (JSONException e) {
+      LOGGER.error("JSON issue from query " + request.getQueryString(), e);
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
     } catch (Exception e) {
+      LOGGER.error("Unexpected exception for query " + request.getQueryString(), e);
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
     }
 

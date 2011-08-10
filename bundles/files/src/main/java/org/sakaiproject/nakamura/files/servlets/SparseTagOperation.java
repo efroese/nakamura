@@ -165,7 +165,7 @@ public class SparseTagOperation extends AbstractSparsePostOperation {
       }
       if (tagResource instanceof SparseContentResource) {
         Content contentTag = tagResource.adaptTo(Content.class);
-        tagUuid = (String) contentTag.getProperty(Content.UUID_FIELD);
+        tagUuid = (String) contentTag.getProperty(Content.getUuidField());
         tagName = tagContentWithContentTag(contentManager, content, contentTag);
       } else {
         Node nodeTag = tagResource.adaptTo(Node.class);
@@ -176,7 +176,9 @@ public class SparseTagOperation extends AbstractSparsePostOperation {
           adminSession = slingRepository.loginAdministrative(null);
           Node adminTagNode = adminSession.getNode(nodeTag.getPath());
           String[] tagNames = StorageClientUtils.nonNullStringArray((String[]) content.getProperty(SAKAI_TAGS));
-          incrementTagCounts(adminTagNode, tagNames, false);
+          if (!isProfile) {
+            incrementTagCounts(adminTagNode, tagNames, false);
+          }
           if (adminSession.hasPendingChanges()) {
             adminSession.save();
           }

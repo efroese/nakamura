@@ -25,7 +25,6 @@ import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
-import org.apache.felix.scr.annotations.Services;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.apache.sling.commons.json.JSONException;
@@ -56,6 +55,7 @@ import org.sakaiproject.nakamura.api.presence.PresenceService;
 import org.sakaiproject.nakamura.api.presence.PresenceUtils;
 import org.sakaiproject.nakamura.api.user.BasicUserInfoService;
 import org.sakaiproject.nakamura.util.ExtendedJSONWriter;
+import org.sakaiproject.nakamura.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,8 +68,7 @@ import java.util.List;
  * started immediately to make sure it registers with JCR as soon as possible.
  */
 @Component(immediate = true, label = "LiteInternalMessageHandler", description = "Handler for internally delivered messages.")
-@Services(value = { @Service(value = LiteMessageTransport.class),
-    @Service(value = LiteMessageProfileWriter.class) })
+@Service({ LiteMessageTransport.class, LiteMessageProfileWriter.class })
 @Properties(value = {
     @Property(name = "service.vendor", value = "The Sakai Foundation"),
     @Property(name = "service.description", value = "Handler for internally delivered messages.") })
@@ -150,6 +149,7 @@ public class LiteInternalMessageHandler implements LiteMessageTransport,
       Authorizable au = authManager.findAuthorizable(recipient);
       if (au != null && au instanceof Group) {
         Group group = (Group) au;
+        recipients.add(recipient); // prevent infinite recursion in cyclic group references
         // user must be in the group directly to send a message:
         for (String memberName : group.getMembers()) {
           if (!recipients.contains(memberName)) {
@@ -157,14 +157,19 @@ public class LiteInternalMessageHandler implements LiteMessageTransport,
             // extensions
             sendHelper(recipients, memberName, originalMessage, session, messageId,
                 authManager);
-            recipients.add(memberName);
           }
         }
       } else {
         // only send a message to a user who hasn't already received one:
         if (!recipients.contains(recipient)) {
 
-          if ( messagingService.checkDeliveryAccessOk(recipient, originalMessage, session ) ) {
+          String messageStorePath = messagingService.getFullPathToStore(recipient, session);
+          if (messageStorePath.endsWith("/")) {
+            messageStorePath = messageStorePath.substring(0, messageStorePath.length() - 1);
+          }
+          boolean forPublicOrEveryone = hasEveryoneOrPublicPermission(messageStorePath, contentManager);
+
+          if ( forPublicOrEveryone || messagingService.checkDeliveryAccessOk(recipient, originalMessage, session ) ) {
             String toPath = messagingService.getFullPathToMessage(recipient, messageId,
                 session);
             
@@ -208,6 +213,27 @@ public class LiteInternalMessageHandler implements LiteMessageTransport,
     }
   }
 
+  private boolean hasEveryoneOrPublicPermission(String path, ContentManager contentManager) throws StorageClientException, AccessDeniedException {
+    if ("/".equals(path)) {
+      return false;
+    }
+    Content content = contentManager.get(path);
+    if (content == null) {
+      return false;
+    }
+    if (content.hasProperty("sakai:permissions")) {
+      if ("public".equals(content.getProperty("sakai:permissions")) || "everyone".equals(content.getProperty("sakai:permissions"))) {
+        return true;
+      } else {
+        return false;
+      }
+
+    }
+    String parentPath = PathUtils.getParentReference(path);
+    return hasEveryoneOrPublicPermission(parentPath, contentManager);
+
+  }
+
   /**
    * Determines what type of messages this handler will process. {@inheritDoc}
    * 
@@ -223,20 +249,18 @@ public class LiteInternalMessageHandler implements LiteMessageTransport,
    * @see org.sakaiproject.nakamura.api.message.MessageProfileWriter#writeProfileInformation(javax.jcr.Session,
    *      java.lang.String, org.apache.sling.commons.json.io.JSONWriter)
    */
-  public void writeProfileInformation(Session session, String recipient, JSONWriter write, javax.jcr.Session jcrSession) {
+  public void writeProfileInformation(Session session, String recipient, JSONWriter write) {
     try {
       // Look up the recipient and check if it is an authorizable.
       AuthorizableManager authorizableManager = session.getAuthorizableManager();
       Authorizable au = authorizableManager.findAuthorizable(recipient);
       if (au != null) {
-        write.object();
         ValueMap map = new ValueMapDecorator(basicUserInfoService.getProperties(au));
         ExtendedJSONWriter.writeValueMapInternals(write, map);
         if (au instanceof User) {
           // Pass in the presence.
           PresenceUtils.makePresenceJSON(write, au.getId(), presenceService, true);
         }
-        write.endObject();
       } else {
         // No idea what this recipient is.
         // Just output it.

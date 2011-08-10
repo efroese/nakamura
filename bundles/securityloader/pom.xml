@@ -38,7 +38,6 @@
         <configuration>
           <instructions>
             <Bundle-Category> sakai-nakamura </Bundle-Category>
-            <Export-Package> org.sakaiproject.nakamura.api.securityloader </Export-Package>
             <Private-Package> org.sakaiproject.nakamura.securityloader </Private-Package>
           </instructions>
         </configuration>
@@ -49,12 +48,6 @@
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.utils</artifactId>
-      <version>0.11-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.sakaiproject.nakamura</groupId>
-      <artifactId>org.sakaiproject.nakamura.configuration</artifactId>
       <version>0.11-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>

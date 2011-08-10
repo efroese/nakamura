@@ -43,7 +43,7 @@ public class ContentUUIDMigrator {
 	private String originalField;
 	private String destinationField;
 	private boolean dryrun;
-	
+
 	private final int PAGE_SIZE = 25;
 
 	@Reference
@@ -61,7 +61,6 @@ public class ContentUUIDMigrator {
 	}
 
 	/**
-	 * 
 	 * This migration iterates over all of the sakai content items and renames the a property to another property.
 	 */
 	public void migrateUUIDs(){
@@ -74,7 +73,7 @@ public class ContentUUIDMigrator {
 		try {
 			session = repository.loginAdministrative();
 			ContentManager cm = session.getContentManager();
-
+			cm.setMaintanenceMode(true);
 			int start = 0;
 
 			// Search for all content and page through it.
@@ -87,7 +86,7 @@ public class ContentUUIDMigrator {
 			QueryResponse response = server.query(query);
 		    long totalResults = response.getResults().getNumFound();
 		    log.info("Attempting to migrate {} content items.", totalResults);
-		    
+
 		    while (start < totalResults){
 		        query.setStart(start);
 		        SolrDocumentList resultDocs = response.getResults();

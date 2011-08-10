@@ -68,7 +68,7 @@ public class LiteFileSearchBatchResultProcessor implements SolrSearchBatchResult
       .getLogger(LiteFileSearchBatchResultProcessor.class);
 
   @Reference
-  private SolrSearchServiceFactory searchServiceFactory;
+  protected SolrSearchServiceFactory searchServiceFactory;
 
   @Reference
   private ProfileService profileService;
@@ -141,7 +141,11 @@ public class LiteFileSearchBatchResultProcessor implements SolrSearchBatchResult
           } else {
             String contentPath = result.getPath();
             final Content content = session.getContentManager().get(contentPath);
-            handleContent(content, session, write, depth);
+            if (content != null) {
+              handleContent(content, session, write, depth);
+            } else {
+              LOGGER.debug("Found null content item while writing results [{}]", contentPath);
+            }
           }
         } catch (AccessDeniedException e) {
           // do nothing

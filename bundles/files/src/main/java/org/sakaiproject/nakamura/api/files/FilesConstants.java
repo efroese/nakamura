@@ -117,10 +117,12 @@ public interface FilesConstants {
    * The name of the property that holds the filename.
    */
   public static final String POOLED_CONTENT_FILENAME = "sakai:pooled-content-file-name";
+
   /**
-   * The name of the property that holds the custom mimetype.
+   * The name of the property that holds the mimetype
    */
-  public static final String POOLED_CONTENT_CUSTOM_MIMETYPE = "sakai:custom-mimetype";
+  public static final String POOLED_CONTENT_MIMETYPE = "_mimeType";
+
   /**
    * The name of the property that holds the comment.
    */
@@ -130,6 +132,12 @@ public interface FilesConstants {
    * Property on the file node indicating who the content was created for.
    */
   public static final String POOLED_CONTENT_CREATED_FOR = "sakai:pool-content-created-for";
+
+  /**
+   * Property showing that a content item has a preview generated and stored.
+   * Expected to be populated by the preview processor script.
+   */
+  public static final String POOLED_CONTENT_HAS_PREVIEW = "sakai:hasPreview";
 
   /**
    * Selector for feed of related content which is accessible by any logged-in user.
@@ -174,7 +182,7 @@ public interface FilesConstants {
   public static final String STRUCTURE_FIELD_STEM = "structure";
 
   /**
-   * Resource ID referneces in structures.
+   * Resource ID references in structures.
    */
   public static final String RESOURCE_REFERENCE_FIELD = "_ref";
   
