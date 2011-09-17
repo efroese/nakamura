@@ -38,3 +38,6 @@ video/vnd.vivo
 video/x-m4v
 video/x-msvideo
 video/x-sgi-movie
+
+# ignore audio
+audio/mpeg

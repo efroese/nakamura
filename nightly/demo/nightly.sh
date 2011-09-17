@@ -63,7 +63,7 @@ echo "Building sparsemapcontent@HEAD..."
 cd $BUILD_DIR
 mkdir sparsemapcontent
 cd sparsemapcontent
-git clone -q git://github.com/ieb/sparsemapcontent.git
+git clone -q git://github.com/sakaiproject/sparsemapcontent.git
 cd sparsemapcontent
 git checkout -b "build-HEAD" HEAD
 mvn -B -e clean install
@@ -73,7 +73,7 @@ echo "Building solr@HEAD..."
 cd $BUILD_DIR
 mkdir solr
 cd solr
-git clone -q git://github.com/ieb/solr.git
+git clone -q git://github.com/sakaiproject/solr.git
 cd solr
 git checkout -b "build-HEAD" HEAD
 mvn -B -e clean install
@@ -91,7 +91,7 @@ mvn -B -e clean install
 cd contrib/mysql-jdbc
 mvn -B -e clean install
 cd ../../app/
-perl -pwi -e 's/<startLevel level="1">/<startLevel level="1"><bundle><groupId>org\.sakaiproject\.nakamura<\/groupId><artifactId>org\.sakaiproject\.nakamura\.mysqljdbc<\/artifactId><version>0.11-SNAPSHOT<\/version><\/bundle>/gi' src/main/bundles/list.xml
+perl -pwi -e 's/<startLevel level="1">/<startLevel level="1"><bundle><groupId>org\.sakaiproject\.nakamura<\/groupId><artifactId>org\.sakaiproject\.nakamura\.mysqljdbc<\/artifactId><version>1.0<\/version><\/bundle>/gi' src/main/bundles/list.xml
 mvn -B -e clean install
 cd ..
 

@@ -4,15 +4,15 @@
   <parent>
     <groupId>org.sakaiproject.nakamura</groupId>
     <artifactId>base</artifactId>
-    <version>0.11-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
   </parent>
 
   <groupId>edu.nyu</groupId>
   <artifactId>edu.nyu.launchpad</artifactId>
   <name>NYU Launchpad</name>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.1-SNAPSHOT</version>
   <properties>
-    <nakamura.version>0.11-SNAPSHOT</nakamura.version>
+    <nakamura.version>1.0</nakamura.version>
     <ux.version>0.6.0-SNAPSHOT</ux.version>
   </properties>
   <packaging>jar</packaging>

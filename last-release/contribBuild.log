@@ -1,7 +1,7 @@
 [INFO] Scanning for projects...
 [WARNING] 
-[WARNING] Some problems were encountered while building the effective model for org.sakaiproject.nakamura:org.sakaiproject.nakamura.persondirectory:bundle:0.10
-[WARNING] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.sakaiproject.nakamura:org.sakaiproject.nakamura.profile:jar -> duplicate declaration of version 0.10 @ line 104, column 17
+[WARNING] Some problems were encountered while building the effective model for org.sakaiproject.nakamura:org.sakaiproject.nakamura.persondirectory:bundle:1.0.0
+[WARNING] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.sakaiproject.nakamura:org.sakaiproject.nakamura.profile:jar -> duplicate declaration of version 1.0.0 @ line 104, column 17
 [WARNING] 
 [WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
 [WARNING] 
@@ -13,18 +13,16 @@
 [INFO] Sakai Nakamura Project
 [INFO] Sakai Nakamura :: Sakai Import Bundle
 [INFO] Sakai Nakamura :: Filters Bundle
-[INFO] Sakai Nakamura :: Mailman Support
 [INFO] Sakai Nakamura :: LDAP Connection Bundle
 [INFO] Sakai Nakamura :: Person Directory Bundle
 [INFO] Sakai Nakamura :: CAS Authentication Bundle
 [INFO] Sakai Nakamura :: LDAP Authentication Bundle
 [INFO] Sakai Nakamura :: OpenSSO Authentication Bundle
-[INFO] Sakai Nakamura :: Foreign Principal Provider
 [INFO] Sakai Nakamura :: Root Node Configuration
 [INFO] Sakai Nakamura :: robots.txt
 [INFO]                                                                         
 [INFO] ------------------------------------------------------------------------
-[INFO] Building Sakai Nakamura Project 0.10
+[INFO] Building Sakai Nakamura Project 1.0.0
 [INFO] ------------------------------------------------------------------------
 [INFO] 
 [INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ base ---
@@ -38,11 +36,12 @@
 [INFO] --- ianal-maven-plugin:1.0-alpha-1:verify-legal-files (default) @ base ---
 [INFO] 
 [INFO] --- maven-install-plugin:2.3:install (default-install) @ base ---
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/base/0.10/base-0.10.pom
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/base/1.0.0/base-1.0.0.pom
 [INFO]                                                                         
 [INFO] ------------------------------------------------------------------------
-[INFO] Building Sakai Nakamura :: Sakai Import Bundle 0.10
+[INFO] Building Sakai Nakamura :: Sakai Import Bundle 1.0.0
 [INFO] ------------------------------------------------------------------------
+[WARNING] The POM for org.apache.sling:org.apache.sling.api:jar:2.0.9-20100524 is missing, no dependency information available
 [WARNING] The POM for opensymphony:quartz:jar:1.6.3 is missing, no dependency information available
 [INFO] 
 [INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ org.sakaiproject.nakamura.import ---
@@ -55,7 +54,7 @@
 [INFO] --- maven-compiler-plugin:2.0.2:compile (default-compile) @ org.sakaiproject.nakamura.import ---
 [INFO] Compiling 1 source file to /Users/zach/dev/zathomas-open-experiments/contrib/import/target/classes
 [INFO] 
-[INFO] --- maven-scr-plugin:1.4.4:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.import ---
+[INFO] --- maven-scr-plugin:1.7.0:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.import ---
 [INFO] Generating 2 MetaType Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/import/target/scr-plugin-generated/OSGI-INF/metatype/metatype.xml
 [INFO] Writing abstract service descriptor /Users/zach/dev/zathomas-open-experiments/contrib/import/target/scr-plugin-generated/OSGI-INF/scr-plugin/scrinfo.xml with 1 entries.
 [INFO] Generating 1 Service Component Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/import/target/scr-plugin-generated/OSGI-INF/serviceComponents.xml
@@ -74,7 +73,7 @@
  T E S T S
 -------------------------------------------------------
 Running org.sakaiproject.nakamura.importer.ImportSiteArchiveServletTest
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.38 sec
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.467 sec
 
 Results :
 
@@ -82,36 +81,36 @@ Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
 
 [INFO] 
 [INFO] --- maven-bundle-plugin:2.0.1:bundle (default-bundle) @ org.sakaiproject.nakamura.import ---
-[WARNING] Warning building bundle org.sakaiproject.nakamura:org.sakaiproject.nakamura.import:bundle:0.10 : Instructions in Export-Package that are never used: org\.sakaiproject\.nakamura\.api\.importer
-[WARNING] Warning building bundle org.sakaiproject.nakamura:org.sakaiproject.nakamura.import:bundle:0.10 : Superfluous export-package instructions: [org.sakaiproject.nakamura.api.importer]
-[WARNING] Warning building bundle org.sakaiproject.nakamura:org.sakaiproject.nakamura.import:bundle:0.10 : Did not find matching referal for org.codehaus.stax2.*
-[WARNING] Warning building bundle org.sakaiproject.nakamura:org.sakaiproject.nakamura.import:bundle:0.10 : Did not find matching referal for org.relaxng.datatype.*
+[WARNING] Warning building bundle org.sakaiproject.nakamura:org.sakaiproject.nakamura.import:bundle:1.0.0 : Instructions in Export-Package that are never used: org\.sakaiproject\.nakamura\.api\.importer
+[WARNING] Warning building bundle org.sakaiproject.nakamura:org.sakaiproject.nakamura.import:bundle:1.0.0 : Superfluous export-package instructions: [org.sakaiproject.nakamura.api.importer]
+[WARNING] Warning building bundle org.sakaiproject.nakamura:org.sakaiproject.nakamura.import:bundle:1.0.0 : Did not find matching referal for org.codehaus.stax2.*
+[WARNING] Warning building bundle org.sakaiproject.nakamura:org.sakaiproject.nakamura.import:bundle:1.0.0 : Did not find matching referal for org.relaxng.datatype.*
 [INFO] 
 [INFO] >>> maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.import >>>
 [INFO] 
 [INFO] <<< maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.import <<<
 [INFO] 
 [INFO] --- maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.import ---
-[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/import/target/org.sakaiproject.nakamura.import-0.10-sources.jar
+[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/import/target/org.sakaiproject.nakamura.import-1.0.0-sources.jar
 [INFO] 
 [INFO] --- ianal-maven-plugin:1.0-alpha-1:verify-legal-files (default) @ org.sakaiproject.nakamura.import ---
-[INFO] Checking legal files in: org.sakaiproject.nakamura.import-0.10.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.import-0.10.jar
-[INFO] Checking legal files in: org.sakaiproject.nakamura.import-0.10-sources.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.import-0.10-sources.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.import-1.0.0.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.import-1.0.0.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.import-1.0.0-sources.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.import-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-install-plugin:2.3:install (default-install) @ org.sakaiproject.nakamura.import ---
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/import/target/org.sakaiproject.nakamura.import-0.10.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.import/0.10/org.sakaiproject.nakamura.import-0.10.jar
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/import/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.import/0.10/org.sakaiproject.nakamura.import-0.10.pom
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/import/target/org.sakaiproject.nakamura.import-0.10-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.import/0.10/org.sakaiproject.nakamura.import-0.10-sources.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/import/target/org.sakaiproject.nakamura.import-1.0.0.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.import/1.0.0/org.sakaiproject.nakamura.import-1.0.0.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/import/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.import/1.0.0/org.sakaiproject.nakamura.import-1.0.0.pom
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/import/target/org.sakaiproject.nakamura.import-1.0.0-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.import/1.0.0/org.sakaiproject.nakamura.import-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-bundle-plugin:2.0.1:install (default-install) @ org.sakaiproject.nakamura.import ---
 [INFO] Parsing file:/Users/zach/.m2/repository/repository.xml
-[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.import/0.10/org.sakaiproject.nakamura.import-0.10.jar
+[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.import/1.0.0/org.sakaiproject.nakamura.import-1.0.0.jar
 [INFO] Writing OBR metadata
 [INFO]                                                                         
 [INFO] ------------------------------------------------------------------------
-[INFO] Building Sakai Nakamura :: Filters Bundle 0.10
+[INFO] Building Sakai Nakamura :: Filters Bundle 1.0.0
 [INFO] ------------------------------------------------------------------------
 [INFO] 
 [INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ org.sakaiproject.nakamura.filters ---
@@ -124,7 +123,7 @@ Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
 [INFO] --- maven-compiler-plugin:2.0.2:compile (default-compile) @ org.sakaiproject.nakamura.filters ---
 [INFO] Compiling 3 source files to /Users/zach/dev/zathomas-open-experiments/contrib/filters/target/classes
 [INFO] 
-[INFO] --- maven-scr-plugin:1.4.4:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.filters ---
+[INFO] --- maven-scr-plugin:1.7.0:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.filters ---
 [INFO] Generating 2 MetaType Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/filters/target/scr-plugin-generated/OSGI-INF/metatype/metatype.xml
 [INFO] Writing abstract service descriptor /Users/zach/dev/zathomas-open-experiments/contrib/filters/target/scr-plugin-generated/OSGI-INF/scr-plugin/scrinfo.xml with 3 entries.
 [INFO] Generating 3 Service Component Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/filters/target/scr-plugin-generated/OSGI-INF/serviceComponents.xml
@@ -143,7 +142,7 @@ Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
  T E S T S
 -------------------------------------------------------
 Running org.sakaiproject.nakamura.webapp.filter.CacheControlFilterTest
-Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.305 sec
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.322 sec
 
 Results :
 
@@ -157,110 +156,26 @@ Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
 [INFO] <<< maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.filters <<<
 [INFO] 
 [INFO] --- maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.filters ---
-[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/filters/target/org.sakaiproject.nakamura.filters-0.10-sources.jar
+[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/filters/target/org.sakaiproject.nakamura.filters-1.0.0-sources.jar
 [INFO] 
 [INFO] --- ianal-maven-plugin:1.0-alpha-1:verify-legal-files (default) @ org.sakaiproject.nakamura.filters ---
-[INFO] Checking legal files in: org.sakaiproject.nakamura.filters-0.10.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.filters-0.10.jar
-[INFO] Checking legal files in: org.sakaiproject.nakamura.filters-0.10-sources.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.filters-0.10-sources.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.filters-1.0.0.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.filters-1.0.0.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.filters-1.0.0-sources.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.filters-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-install-plugin:2.3:install (default-install) @ org.sakaiproject.nakamura.filters ---
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/filters/target/org.sakaiproject.nakamura.filters-0.10.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.filters/0.10/org.sakaiproject.nakamura.filters-0.10.jar
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/filters/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.filters/0.10/org.sakaiproject.nakamura.filters-0.10.pom
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/filters/target/org.sakaiproject.nakamura.filters-0.10-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.filters/0.10/org.sakaiproject.nakamura.filters-0.10-sources.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/filters/target/org.sakaiproject.nakamura.filters-1.0.0.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.filters/1.0.0/org.sakaiproject.nakamura.filters-1.0.0.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/filters/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.filters/1.0.0/org.sakaiproject.nakamura.filters-1.0.0.pom
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/filters/target/org.sakaiproject.nakamura.filters-1.0.0-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.filters/1.0.0/org.sakaiproject.nakamura.filters-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-bundle-plugin:2.0.1:install (default-install) @ org.sakaiproject.nakamura.filters ---
 [INFO] Parsing file:/Users/zach/.m2/repository/repository.xml
-[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.filters/0.10/org.sakaiproject.nakamura.filters-0.10.jar
+[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.filters/1.0.0/org.sakaiproject.nakamura.filters-1.0.0.jar
 [INFO] Writing OBR metadata
 [INFO]                                                                         
 [INFO] ------------------------------------------------------------------------
-[INFO] Building Sakai Nakamura :: Mailman Support 0.10
-[INFO] ------------------------------------------------------------------------
-[WARNING] The artifact xml-apis:xml-apis:jar:2.0.2 has been relocated to xml-apis:xml-apis:jar:1.0.b2
-[INFO] 
-[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ org.sakaiproject.nakamura.mailman ---
-[INFO] Deleting /Users/zach/dev/zathomas-open-experiments/contrib/mailman/target
-[INFO] 
-[INFO] --- maven-dependency-plugin:2.1:copy-dependencies (embed-dependencies) @ org.sakaiproject.nakamura.mailman ---
-[INFO] Copying nekohtml-1.9.12.jar to /Users/zach/dev/zathomas-open-experiments/contrib/mailman/target/classes/nekohtml-1.9.12.jar
-[INFO] Copying xercesImpl-2.9.1.jar to /Users/zach/dev/zathomas-open-experiments/contrib/mailman/target/classes/xercesImpl-2.9.1.jar
-[INFO] Copying xml-apis-1.0.b2.jar to /Users/zach/dev/zathomas-open-experiments/contrib/mailman/target/classes/xml-apis-1.0.b2.jar
-[INFO] Copying xml-resolver-1.2.jar to /Users/zach/dev/zathomas-open-experiments/contrib/mailman/target/classes/xml-resolver-1.2.jar
-[INFO] 
-[INFO] --- maven-resources-plugin:2.4.1:resources (default-resources) @ org.sakaiproject.nakamura.mailman ---
-[INFO] Using 'UTF-8' encoding to copy filtered resources.
-[INFO] Copying 1 resource
-[INFO] 
-[INFO] --- maven-compiler-plugin:2.0.2:compile (default-compile) @ org.sakaiproject.nakamura.mailman ---
-[INFO] Compiling 6 source files to /Users/zach/dev/zathomas-open-experiments/contrib/mailman/target/classes
-[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/mailman/src/main/java/org/sakaiproject/nakamura/mailman/impl/MailmanGroupManager.java:[34,37] [deprecation] org.sakaiproject.nakamura.util.PersonalUtils in org.sakaiproject.nakamura.util has been deprecated
-
-[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/mailman/src/main/java/org/sakaiproject/nakamura/mailman/impl/MailmanGroupManager.java:[156,45] [deprecation] org.sakaiproject.nakamura.util.PersonalUtils in org.sakaiproject.nakamura.util has been deprecated
-
-[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/mailman/src/main/java/org/sakaiproject/nakamura/mailman/impl/MailmanGroupManager.java:[157,26] [deprecation] org.sakaiproject.nakamura.util.PersonalUtils in org.sakaiproject.nakamura.util has been deprecated
-
-[INFO] 
-[INFO] --- maven-scr-plugin:1.4.4:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.mailman ---
-[INFO] Generating 4 MetaType Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/mailman/target/scr-plugin-generated/OSGI-INF/metatype/metatype.xml
-[INFO] Writing abstract service descriptor /Users/zach/dev/zathomas-open-experiments/contrib/mailman/target/scr-plugin-generated/OSGI-INF/scr-plugin/scrinfo.xml with 3 entries.
-[INFO] Generating 3 Service Component Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/mailman/target/scr-plugin-generated/OSGI-INF/serviceComponents.xml
-[INFO] 
-[INFO] --- maven-resources-plugin:2.4.1:testResources (default-testResources) @ org.sakaiproject.nakamura.mailman ---
-[INFO] Using 'UTF-8' encoding to copy filtered resources.
-[INFO] Copying 8 resources
-[INFO] 
-[INFO] --- maven-compiler-plugin:2.0.2:testCompile (default-testCompile) @ org.sakaiproject.nakamura.mailman ---
-[INFO] Compiling 2 source files to /Users/zach/dev/zathomas-open-experiments/contrib/mailman/target/test-classes
-[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/mailman/src/test/java/org/sakaiproject/nakamura/mailman/impl/MailmanGroupManagerTest.java:[18,37] [deprecation] org.sakaiproject.nakamura.util.PersonalUtils in org.sakaiproject.nakamura.util has been deprecated
-
-[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/mailman/src/test/java/org/sakaiproject/nakamura/mailman/impl/MailmanGroupManagerTest.java:[126,29] [deprecation] org.sakaiproject.nakamura.util.PersonalUtils in org.sakaiproject.nakamura.util has been deprecated
-
-[INFO] 
-[INFO] --- maven-surefire-plugin:2.5:test (default-test) @ org.sakaiproject.nakamura.mailman ---
-[INFO] Surefire report directory: /Users/zach/dev/zathomas-open-experiments/contrib/mailman/target/surefire-reports
-
--------------------------------------------------------
- T E S T S
--------------------------------------------------------
-Running org.sakaiproject.nakamura.mailman.impl.MailmanInterfaceTest
-Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.566 sec
-Running org.sakaiproject.nakamura.mailman.impl.MailmanGroupManagerTest
-Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.095 sec
-
-Results :
-
-Tests run: 12, Failures: 0, Errors: 0, Skipped: 0
-
-[INFO] 
-[INFO] --- maven-bundle-plugin:2.0.1:bundle (default-bundle) @ org.sakaiproject.nakamura.mailman ---
-[INFO] 
-[INFO] >>> maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.mailman >>>
-[INFO] 
-[INFO] <<< maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.mailman <<<
-[INFO] 
-[INFO] --- maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.mailman ---
-[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/mailman/target/org.sakaiproject.nakamura.mailman-0.10-sources.jar
-[INFO] 
-[INFO] --- ianal-maven-plugin:1.0-alpha-1:verify-legal-files (default) @ org.sakaiproject.nakamura.mailman ---
-[INFO] Checking legal files in: org.sakaiproject.nakamura.mailman-0.10.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.mailman-0.10.jar
-[INFO] Checking legal files in: org.sakaiproject.nakamura.mailman-0.10-sources.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.mailman-0.10-sources.jar
-[INFO] 
-[INFO] --- maven-install-plugin:2.3:install (default-install) @ org.sakaiproject.nakamura.mailman ---
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/mailman/target/org.sakaiproject.nakamura.mailman-0.10.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.mailman/0.10/org.sakaiproject.nakamura.mailman-0.10.jar
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/mailman/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.mailman/0.10/org.sakaiproject.nakamura.mailman-0.10.pom
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/mailman/target/org.sakaiproject.nakamura.mailman-0.10-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.mailman/0.10/org.sakaiproject.nakamura.mailman-0.10-sources.jar
-[INFO] 
-[INFO] --- maven-bundle-plugin:2.0.1:install (default-install) @ org.sakaiproject.nakamura.mailman ---
-[INFO] Parsing file:/Users/zach/.m2/repository/repository.xml
-[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.mailman/0.10/org.sakaiproject.nakamura.mailman-0.10.jar
-[INFO] Writing OBR metadata
-[INFO]                                                                         
-[INFO] ------------------------------------------------------------------------
-[INFO] Building Sakai Nakamura :: LDAP Connection Bundle 0.10
+[INFO] Building Sakai Nakamura :: LDAP Connection Bundle 1.0.0
 [INFO] ------------------------------------------------------------------------
 [INFO] 
 [INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ org.sakaiproject.nakamura.ldap ---
@@ -273,7 +188,7 @@ Tests run: 12, Failures: 0, Errors: 0, Skipped: 0
 [INFO] --- maven-compiler-plugin:2.0.2:compile (default-compile) @ org.sakaiproject.nakamura.ldap ---
 [INFO] Compiling 13 source files to /Users/zach/dev/zathomas-open-experiments/contrib/ldap/target/classes
 [INFO] 
-[INFO] --- maven-scr-plugin:1.4.4:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.ldap ---
+[INFO] --- maven-scr-plugin:1.7.0:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.ldap ---
 [INFO] Generating 2 MetaType Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/ldap/target/scr-plugin-generated/OSGI-INF/metatype/metatype.xml
 [INFO] Writing abstract service descriptor /Users/zach/dev/zathomas-open-experiments/contrib/ldap/target/scr-plugin-generated/OSGI-INF/scr-plugin/scrinfo.xml with 4 entries.
 [INFO] Generating 4 Service Component Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/ldap/target/scr-plugin-generated/OSGI-INF/serviceComponents.xml
@@ -292,29 +207,29 @@ Tests run: 12, Failures: 0, Errors: 0, Skipped: 0
  T E S T S
 -------------------------------------------------------
 Running org.sakaiproject.nakamura.ldap.PooledLDAPConnectionTest
-Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.176 sec
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.18 sec
 Running org.sakaiproject.nakamura.ldap.liveness.SearchExecutingLdapConnectionLivenessValidatorInitializationTest
-Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.086 sec
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.075 sec
 Running org.sakaiproject.nakamura.ldap.PooledLDAPConnectionFactoryTest
-Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.12 sec
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.136 sec
 Running org.sakaiproject.nakamura.ldap.SimpleLdapConnectionManagerTest
-Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.097 sec
+Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.111 sec
 Running org.sakaiproject.nakamura.ldap.liveness.MaxLifetimeLdapConnectionLivenessValidatorTest
-Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.014 sec
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.019 sec
 Running org.sakaiproject.nakamura.ldap.GenericObjectPoolTest
-Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.017 sec
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.028 sec
 Running org.sakaiproject.nakamura.ldap.liveness.SearchExecutingLdapConnectionLivenessValidatorTest
-Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.031 sec
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.041 sec
 Running org.sakaiproject.nakamura.ldap.PoolingLdapConnectionManagerTest
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 sec
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 sec
 Running org.sakaiproject.nakamura.ldap.liveness.NativeLdapConnectionLivenessValidatorTest
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 sec
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 sec
 Running org.sakaiproject.nakamura.api.ldap.LdapConnectionManagerConfigTest
 Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 sec
 
 Results :
 
-Tests run: 60, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 59, Failures: 0, Errors: 0, Skipped: 0
 
 [INFO] 
 [INFO] --- maven-bundle-plugin:2.0.1:bundle (default-bundle) @ org.sakaiproject.nakamura.ldap ---
@@ -324,26 +239,26 @@ Tests run: 60, Failures: 0, Errors: 0, Skipped: 0
 [INFO] <<< maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.ldap <<<
 [INFO] 
 [INFO] --- maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.ldap ---
-[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/ldap/target/org.sakaiproject.nakamura.ldap-0.10-sources.jar
+[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/ldap/target/org.sakaiproject.nakamura.ldap-1.0.0-sources.jar
 [INFO] 
 [INFO] --- ianal-maven-plugin:1.0-alpha-1:verify-legal-files (default) @ org.sakaiproject.nakamura.ldap ---
-[INFO] Checking legal files in: org.sakaiproject.nakamura.ldap-0.10.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.ldap-0.10.jar
-[INFO] Checking legal files in: org.sakaiproject.nakamura.ldap-0.10-sources.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.ldap-0.10-sources.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.ldap-1.0.0.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.ldap-1.0.0.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.ldap-1.0.0-sources.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.ldap-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-install-plugin:2.3:install (default-install) @ org.sakaiproject.nakamura.ldap ---
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/ldap/target/org.sakaiproject.nakamura.ldap-0.10.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.ldap/0.10/org.sakaiproject.nakamura.ldap-0.10.jar
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/ldap/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.ldap/0.10/org.sakaiproject.nakamura.ldap-0.10.pom
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/ldap/target/org.sakaiproject.nakamura.ldap-0.10-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.ldap/0.10/org.sakaiproject.nakamura.ldap-0.10-sources.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/ldap/target/org.sakaiproject.nakamura.ldap-1.0.0.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.ldap/1.0.0/org.sakaiproject.nakamura.ldap-1.0.0.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/ldap/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.ldap/1.0.0/org.sakaiproject.nakamura.ldap-1.0.0.pom
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/ldap/target/org.sakaiproject.nakamura.ldap-1.0.0-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.ldap/1.0.0/org.sakaiproject.nakamura.ldap-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-bundle-plugin:2.0.1:install (default-install) @ org.sakaiproject.nakamura.ldap ---
 [INFO] Parsing file:/Users/zach/.m2/repository/repository.xml
-[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.ldap/0.10/org.sakaiproject.nakamura.ldap-0.10.jar
+[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.ldap/1.0.0/org.sakaiproject.nakamura.ldap-1.0.0.jar
 [INFO] Writing OBR metadata
 [INFO]                                                                         
 [INFO] ------------------------------------------------------------------------
-[INFO] Building Sakai Nakamura :: Person Directory Bundle 0.10
+[INFO] Building Sakai Nakamura :: Person Directory Bundle 1.0.0
 [INFO] ------------------------------------------------------------------------
 [INFO] 
 [INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ org.sakaiproject.nakamura.persondirectory ---
@@ -356,7 +271,7 @@ Tests run: 60, Failures: 0, Errors: 0, Skipped: 0
 [INFO] --- maven-compiler-plugin:2.0.2:compile (default-compile) @ org.sakaiproject.nakamura.persondirectory ---
 [INFO] Compiling 4 source files to /Users/zach/dev/zathomas-open-experiments/contrib/persondirectory/target/classes
 [INFO] 
-[INFO] --- maven-scr-plugin:1.4.4:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.persondirectory ---
+[INFO] --- maven-scr-plugin:1.7.0:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.persondirectory ---
 [INFO] Generating 2 MetaType Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/persondirectory/target/scr-plugin-generated/OSGI-INF/metatype/metatype.xml
 [INFO] Writing abstract service descriptor /Users/zach/dev/zathomas-open-experiments/contrib/persondirectory/target/scr-plugin-generated/OSGI-INF/scr-plugin/scrinfo.xml with 2 entries.
 [INFO] Generating 2 Service Component Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/persondirectory/target/scr-plugin-generated/OSGI-INF/serviceComponents.xml
@@ -375,11 +290,11 @@ Tests run: 60, Failures: 0, Errors: 0, Skipped: 0
  T E S T S
 -------------------------------------------------------
 Running org.sakaiproject.nakamura.persondirectory.providers.PersonProfileProviderAdapterTest
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.265 sec
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.292 sec
 Running org.sakaiproject.nakamura.api.persondirectory.PersonProviderExceptionTest
-Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 sec
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.021 sec
 Running org.sakaiproject.nakamura.persondirectory.providers.LdapPersonProviderTest
-Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.142 sec
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.16 sec
 
 Results :
 
@@ -393,26 +308,26 @@ Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
 [INFO] <<< maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.persondirectory <<<
 [INFO] 
 [INFO] --- maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.persondirectory ---
-[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/persondirectory/target/org.sakaiproject.nakamura.persondirectory-0.10-sources.jar
+[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/persondirectory/target/org.sakaiproject.nakamura.persondirectory-1.0.0-sources.jar
 [INFO] 
 [INFO] --- ianal-maven-plugin:1.0-alpha-1:verify-legal-files (default) @ org.sakaiproject.nakamura.persondirectory ---
-[INFO] Checking legal files in: org.sakaiproject.nakamura.persondirectory-0.10.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.persondirectory-0.10.jar
-[INFO] Checking legal files in: org.sakaiproject.nakamura.persondirectory-0.10-sources.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.persondirectory-0.10-sources.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.persondirectory-1.0.0.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.persondirectory-1.0.0.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.persondirectory-1.0.0-sources.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.persondirectory-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-install-plugin:2.3:install (default-install) @ org.sakaiproject.nakamura.persondirectory ---
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/persondirectory/target/org.sakaiproject.nakamura.persondirectory-0.10.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.persondirectory/0.10/org.sakaiproject.nakamura.persondirectory-0.10.jar
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/persondirectory/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.persondirectory/0.10/org.sakaiproject.nakamura.persondirectory-0.10.pom
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/persondirectory/target/org.sakaiproject.nakamura.persondirectory-0.10-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.persondirectory/0.10/org.sakaiproject.nakamura.persondirectory-0.10-sources.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/persondirectory/target/org.sakaiproject.nakamura.persondirectory-1.0.0.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.persondirectory/1.0.0/org.sakaiproject.nakamura.persondirectory-1.0.0.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/persondirectory/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.persondirectory/1.0.0/org.sakaiproject.nakamura.persondirectory-1.0.0.pom
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/persondirectory/target/org.sakaiproject.nakamura.persondirectory-1.0.0-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.persondirectory/1.0.0/org.sakaiproject.nakamura.persondirectory-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-bundle-plugin:2.0.1:install (default-install) @ org.sakaiproject.nakamura.persondirectory ---
 [INFO] Parsing file:/Users/zach/.m2/repository/repository.xml
-[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.persondirectory/0.10/org.sakaiproject.nakamura.persondirectory-0.10.jar
+[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.persondirectory/1.0.0/org.sakaiproject.nakamura.persondirectory-1.0.0.jar
 [INFO] Writing OBR metadata
 [INFO]                                                                         
 [INFO] ------------------------------------------------------------------------
-[INFO] Building Sakai Nakamura :: CAS Authentication Bundle 0.10
+[INFO] Building Sakai Nakamura :: CAS Authentication Bundle 1.0.0
 [INFO] ------------------------------------------------------------------------
 [INFO] 
 [INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ org.sakaiproject.nakamura.auth.cas ---
@@ -424,8 +339,12 @@ Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
 [INFO] 
 [INFO] --- maven-compiler-plugin:2.0.2:compile (default-compile) @ org.sakaiproject.nakamura.auth.cas ---
 [INFO] Compiling 5 source files to /Users/zach/dev/zathomas-open-experiments/contrib/casauth/target/classes
+[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/casauth/src/main/java/org/sakaiproject/nakamura/auth/cas/CasAuthenticationHandler.java:[31,39] [deprecation] org.apache.felix.scr.annotations.Services in org.apache.felix.scr.annotations has been deprecated
+
+[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/casauth/src/main/java/org/sakaiproject/nakamura/auth/cas/CasAuthenticationHandler.java:[73,1] [deprecation] org.apache.felix.scr.annotations.Services in org.apache.felix.scr.annotations has been deprecated
+
 [INFO] 
-[INFO] --- maven-scr-plugin:1.4.4:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.auth.cas ---
+[INFO] --- maven-scr-plugin:1.7.0:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.auth.cas ---
 [INFO] Generating 4 MetaType Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/casauth/target/scr-plugin-generated/OSGI-INF/metatype/metatype.xml
 [INFO] Writing abstract service descriptor /Users/zach/dev/zathomas-open-experiments/contrib/casauth/target/scr-plugin-generated/OSGI-INF/scr-plugin/scrinfo.xml with 3 entries.
 [INFO] Generating 3 Service Component Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/casauth/target/scr-plugin-generated/OSGI-INF/serviceComponents.xml
@@ -444,15 +363,15 @@ Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
  T E S T S
 -------------------------------------------------------
 Running org.sakaiproject.nakamura.auth.cas.CasAuthenticationHandlerTest
-Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.6 sec
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.641 sec
 Running org.sakaiproject.nakamura.auth.cas.CasAuthenticationTokenServiceWrapperTest
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.256 sec
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.205 sec
 Running org.sakaiproject.nakamura.auth.cas.CasAuthenticationPluginTest
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 sec
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 sec
 Running org.sakaiproject.nakamura.auth.cas.CasLoginModulePluginTest
-Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.026 sec
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.023 sec
 Running org.sakaiproject.nakamura.auth.cas.CasLoginServletTest
-Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.056 sec
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.059 sec
 
 Results :
 
@@ -466,26 +385,26 @@ Tests run: 32, Failures: 0, Errors: 0, Skipped: 0
 [INFO] <<< maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.auth.cas <<<
 [INFO] 
 [INFO] --- maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.auth.cas ---
-[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/casauth/target/org.sakaiproject.nakamura.auth.cas-0.10-sources.jar
+[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/casauth/target/org.sakaiproject.nakamura.auth.cas-1.0.0-sources.jar
 [INFO] 
 [INFO] --- ianal-maven-plugin:1.0-alpha-1:verify-legal-files (default) @ org.sakaiproject.nakamura.auth.cas ---
-[INFO] Checking legal files in: org.sakaiproject.nakamura.auth.cas-0.10.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.auth.cas-0.10.jar
-[INFO] Checking legal files in: org.sakaiproject.nakamura.auth.cas-0.10-sources.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.auth.cas-0.10-sources.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.auth.cas-1.0.0.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.auth.cas-1.0.0.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.auth.cas-1.0.0-sources.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.auth.cas-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-install-plugin:2.3:install (default-install) @ org.sakaiproject.nakamura.auth.cas ---
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/casauth/target/org.sakaiproject.nakamura.auth.cas-0.10.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.cas/0.10/org.sakaiproject.nakamura.auth.cas-0.10.jar
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/casauth/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.cas/0.10/org.sakaiproject.nakamura.auth.cas-0.10.pom
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/casauth/target/org.sakaiproject.nakamura.auth.cas-0.10-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.cas/0.10/org.sakaiproject.nakamura.auth.cas-0.10-sources.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/casauth/target/org.sakaiproject.nakamura.auth.cas-1.0.0.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.cas/1.0.0/org.sakaiproject.nakamura.auth.cas-1.0.0.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/casauth/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.cas/1.0.0/org.sakaiproject.nakamura.auth.cas-1.0.0.pom
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/casauth/target/org.sakaiproject.nakamura.auth.cas-1.0.0-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.cas/1.0.0/org.sakaiproject.nakamura.auth.cas-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-bundle-plugin:2.0.1:install (default-install) @ org.sakaiproject.nakamura.auth.cas ---
 [INFO] Parsing file:/Users/zach/.m2/repository/repository.xml
-[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.cas/0.10/org.sakaiproject.nakamura.auth.cas-0.10.jar
+[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.cas/1.0.0/org.sakaiproject.nakamura.auth.cas-1.0.0.jar
 [INFO] Writing OBR metadata
 [INFO]                                                                         
 [INFO] ------------------------------------------------------------------------
-[INFO] Building Sakai Nakamura :: LDAP Authentication Bundle 0.10
+[INFO] Building Sakai Nakamura :: LDAP Authentication Bundle 1.0.0
 [INFO] ------------------------------------------------------------------------
 [INFO] 
 [INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ org.sakaiproject.nakamura.auth.ldap ---
@@ -496,13 +415,9 @@ Tests run: 32, Failures: 0, Errors: 0, Skipped: 0
 [INFO] Copying 1 resource
 [INFO] 
 [INFO] --- maven-compiler-plugin:2.0.2:compile (default-compile) @ org.sakaiproject.nakamura.auth.ldap ---
-[INFO] Compiling 3 source files to /Users/zach/dev/zathomas-open-experiments/contrib/ldapauth/target/classes
-[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/ldapauth/src/main/java/org/sakaiproject/nakamura/auth/ldap/LdapAuthenticationFeedbackHandler.java:[41,41] [deprecation] org.sakaiproject.nakamura.api.user.AuthorizablePostProcessService in org.sakaiproject.nakamura.api.user has been deprecated
-
-[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/ldapauth/src/main/java/org/sakaiproject/nakamura/auth/ldap/LdapAuthenticationFeedbackHandler.java:[65,10] [deprecation] org.sakaiproject.nakamura.api.user.AuthorizablePostProcessService in org.sakaiproject.nakamura.api.user has been deprecated
-
+[INFO] Compiling 2 source files to /Users/zach/dev/zathomas-open-experiments/contrib/ldapauth/target/classes
 [INFO] 
-[INFO] --- maven-scr-plugin:1.4.4:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.auth.ldap ---
+[INFO] --- maven-scr-plugin:1.7.0:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.auth.ldap ---
 [INFO] Generating 4 MetaType Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/ldapauth/target/scr-plugin-generated/OSGI-INF/metatype/metatype.xml
 [INFO] Writing abstract service descriptor /Users/zach/dev/zathomas-open-experiments/contrib/ldapauth/target/scr-plugin-generated/OSGI-INF/scr-plugin/scrinfo.xml with 2 entries.
 [INFO] Generating 2 Service Component Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/ldapauth/target/scr-plugin-generated/OSGI-INF/serviceComponents.xml
@@ -521,9 +436,9 @@ Tests run: 32, Failures: 0, Errors: 0, Skipped: 0
  T E S T S
 -------------------------------------------------------
 Running org.sakaiproject.nakamura.auth.ldap.LdapAuthenticationPluginTest
-Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.579 sec
+Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.617 sec
 Running org.sakaiproject.nakamura.auth.ldap.LdapLoginModulePluginTest
-Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.086 sec
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.089 sec
 
 Results :
 
@@ -537,26 +452,26 @@ Tests run: 30, Failures: 0, Errors: 0, Skipped: 0
 [INFO] <<< maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.auth.ldap <<<
 [INFO] 
 [INFO] --- maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.auth.ldap ---
-[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/ldapauth/target/org.sakaiproject.nakamura.auth.ldap-0.10-sources.jar
+[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/ldapauth/target/org.sakaiproject.nakamura.auth.ldap-1.0.0-sources.jar
 [INFO] 
 [INFO] --- ianal-maven-plugin:1.0-alpha-1:verify-legal-files (default) @ org.sakaiproject.nakamura.auth.ldap ---
-[INFO] Checking legal files in: org.sakaiproject.nakamura.auth.ldap-0.10.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.auth.ldap-0.10.jar
-[INFO] Checking legal files in: org.sakaiproject.nakamura.auth.ldap-0.10-sources.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.auth.ldap-0.10-sources.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.auth.ldap-1.0.0.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.auth.ldap-1.0.0.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.auth.ldap-1.0.0-sources.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.auth.ldap-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-install-plugin:2.3:install (default-install) @ org.sakaiproject.nakamura.auth.ldap ---
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/ldapauth/target/org.sakaiproject.nakamura.auth.ldap-0.10.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.ldap/0.10/org.sakaiproject.nakamura.auth.ldap-0.10.jar
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/ldapauth/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.ldap/0.10/org.sakaiproject.nakamura.auth.ldap-0.10.pom
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/ldapauth/target/org.sakaiproject.nakamura.auth.ldap-0.10-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.ldap/0.10/org.sakaiproject.nakamura.auth.ldap-0.10-sources.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/ldapauth/target/org.sakaiproject.nakamura.auth.ldap-1.0.0.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.ldap/1.0.0/org.sakaiproject.nakamura.auth.ldap-1.0.0.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/ldapauth/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.ldap/1.0.0/org.sakaiproject.nakamura.auth.ldap-1.0.0.pom
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/ldapauth/target/org.sakaiproject.nakamura.auth.ldap-1.0.0-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.ldap/1.0.0/org.sakaiproject.nakamura.auth.ldap-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-bundle-plugin:2.0.1:install (default-install) @ org.sakaiproject.nakamura.auth.ldap ---
 [INFO] Parsing file:/Users/zach/.m2/repository/repository.xml
-[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.ldap/0.10/org.sakaiproject.nakamura.auth.ldap-0.10.jar
+[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.ldap/1.0.0/org.sakaiproject.nakamura.auth.ldap-1.0.0.jar
 [INFO] Writing OBR metadata
 [INFO]                                                                         
 [INFO] ------------------------------------------------------------------------
-[INFO] Building Sakai Nakamura :: OpenSSO Authentication Bundle 0.10
+[INFO] Building Sakai Nakamura :: OpenSSO Authentication Bundle 1.0.0
 [INFO] ------------------------------------------------------------------------
 [INFO] 
 [INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ org.sakaiproject.nakamura.auth.opensso ---
@@ -568,14 +483,12 @@ Tests run: 30, Failures: 0, Errors: 0, Skipped: 0
 [INFO] 
 [INFO] --- maven-compiler-plugin:2.0.2:compile (default-compile) @ org.sakaiproject.nakamura.auth.opensso ---
 [INFO] Compiling 5 source files to /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/target/classes
-[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/src/main/java/org/sakaiproject/nakamura/auth/opensso/OpenSsoAuthenticationHandler.java:[48,41] [deprecation] org.sakaiproject.nakamura.api.user.AuthorizablePostProcessService in org.sakaiproject.nakamura.api.user has been deprecated
+[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/src/main/java/org/sakaiproject/nakamura/auth/opensso/OpenSsoAuthenticationHandler.java:[33,39] [deprecation] org.apache.felix.scr.annotations.Services in org.apache.felix.scr.annotations has been deprecated
 
-[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/src/main/java/org/sakaiproject/nakamura/auth/opensso/OpenSsoAuthenticationHandler.java:[125,12] [deprecation] org.sakaiproject.nakamura.api.user.AuthorizablePostProcessService in org.sakaiproject.nakamura.api.user has been deprecated
-
-[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/src/main/java/org/sakaiproject/nakamura/auth/opensso/OpenSsoAuthenticationHandler.java:[153,6] [deprecation] org.sakaiproject.nakamura.api.user.AuthorizablePostProcessService in org.sakaiproject.nakamura.api.user has been deprecated
+[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/src/main/java/org/sakaiproject/nakamura/auth/opensso/OpenSsoAuthenticationHandler.java:[76,1] [deprecation] org.apache.felix.scr.annotations.Services in org.apache.felix.scr.annotations has been deprecated
 
 [INFO] 
-[INFO] --- maven-scr-plugin:1.4.4:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.auth.opensso ---
+[INFO] --- maven-scr-plugin:1.7.0:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.auth.opensso ---
 [INFO] Generating 4 MetaType Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/target/scr-plugin-generated/OSGI-INF/metatype/metatype.xml
 [INFO] Writing abstract service descriptor /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/target/scr-plugin-generated/OSGI-INF/scr-plugin/scrinfo.xml with 3 entries.
 [INFO] Generating 3 Service Component Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/target/scr-plugin-generated/OSGI-INF/serviceComponents.xml
@@ -586,14 +499,6 @@ Tests run: 30, Failures: 0, Errors: 0, Skipped: 0
 [INFO] 
 [INFO] --- maven-compiler-plugin:2.0.2:testCompile (default-testCompile) @ org.sakaiproject.nakamura.auth.opensso ---
 [INFO] Compiling 5 source files to /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/target/test-classes
-[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/src/test/java/org/sakaiproject/nakamura/auth/opensso/OpenSsoAuthenticationHandlerTest.java:[42,41] [deprecation] org.sakaiproject.nakamura.api.user.AuthorizablePostProcessService in org.sakaiproject.nakamura.api.user has been deprecated
-
-[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/src/test/java/org/sakaiproject/nakamura/auth/opensso/OpenSsoAuthenticationHandlerTest.java:[77,2] [deprecation] org.sakaiproject.nakamura.api.user.AuthorizablePostProcessService in org.sakaiproject.nakamura.api.user has been deprecated
-
-[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/src/test/java/org/sakaiproject/nakamura/auth/opensso/OpenSsoAuthenticationHandlerTest.java:[246,4] [deprecation] org.sakaiproject.nakamura.api.user.AuthorizablePostProcessService in org.sakaiproject.nakamura.api.user has been deprecated
-
-[WARNING] /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/src/test/java/org/sakaiproject/nakamura/auth/opensso/OpenSsoAuthenticationHandlerTest.java:[246,61] [deprecation] org.sakaiproject.nakamura.api.user.AuthorizablePostProcessService in org.sakaiproject.nakamura.api.user has been deprecated
-
 [INFO] 
 [INFO] --- maven-surefire-plugin:2.5:test (default-test) @ org.sakaiproject.nakamura.auth.opensso ---
 [INFO] Surefire report directory: /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/target/surefire-reports
@@ -602,15 +507,15 @@ Tests run: 30, Failures: 0, Errors: 0, Skipped: 0
  T E S T S
 -------------------------------------------------------
 Running org.sakaiproject.nakamura.auth.opensso.OpenSsoLoginServletTest
-Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.56 sec
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.517 sec
 Running org.sakaiproject.nakamura.auth.opensso.OpenSsoLoginModulePluginTest
-Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.04 sec
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.148 sec
 Running org.sakaiproject.nakamura.auth.opensso.OpenSsoAuthenticationTokenServiceWrapperTest
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.021 sec
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.203 sec
 Running org.sakaiproject.nakamura.auth.opensso.OpenSsoAuthenticationHandlerTest
-Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.312 sec
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.341 sec
 Running org.sakaiproject.nakamura.auth.opensso.OpenSsoAuthenticationPluginTest
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.01 sec
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 sec
 
 Results :
 
@@ -624,92 +529,30 @@ Tests run: 35, Failures: 0, Errors: 0, Skipped: 0
 [INFO] <<< maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.auth.opensso <<<
 [INFO] 
 [INFO] --- maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.auth.opensso ---
-[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/target/org.sakaiproject.nakamura.auth.opensso-0.10-sources.jar
+[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/target/org.sakaiproject.nakamura.auth.opensso-1.0.0-sources.jar
 [INFO] 
 [INFO] --- ianal-maven-plugin:1.0-alpha-1:verify-legal-files (default) @ org.sakaiproject.nakamura.auth.opensso ---
-[INFO] Checking legal files in: org.sakaiproject.nakamura.auth.opensso-0.10.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.auth.opensso-0.10.jar
-[INFO] Checking legal files in: org.sakaiproject.nakamura.auth.opensso-0.10-sources.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.auth.opensso-0.10-sources.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.auth.opensso-1.0.0.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.auth.opensso-1.0.0.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.auth.opensso-1.0.0-sources.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.auth.opensso-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-install-plugin:2.3:install (default-install) @ org.sakaiproject.nakamura.auth.opensso ---
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/target/org.sakaiproject.nakamura.auth.opensso-0.10.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.opensso/0.10/org.sakaiproject.nakamura.auth.opensso-0.10.jar
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.opensso/0.10/org.sakaiproject.nakamura.auth.opensso-0.10.pom
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/target/org.sakaiproject.nakamura.auth.opensso-0.10-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.opensso/0.10/org.sakaiproject.nakamura.auth.opensso-0.10-sources.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/target/org.sakaiproject.nakamura.auth.opensso-1.0.0.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.opensso/1.0.0/org.sakaiproject.nakamura.auth.opensso-1.0.0.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.opensso/1.0.0/org.sakaiproject.nakamura.auth.opensso-1.0.0.pom
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/openssoauth/target/org.sakaiproject.nakamura.auth.opensso-1.0.0-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.opensso/1.0.0/org.sakaiproject.nakamura.auth.opensso-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-bundle-plugin:2.0.1:install (default-install) @ org.sakaiproject.nakamura.auth.opensso ---
 [INFO] Parsing file:/Users/zach/.m2/repository/repository.xml
-[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.opensso/0.10/org.sakaiproject.nakamura.auth.opensso-0.10.jar
+[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.auth.opensso/1.0.0/org.sakaiproject.nakamura.auth.opensso-1.0.0.jar
 [INFO] Writing OBR metadata
 [INFO]                                                                         
 [INFO] ------------------------------------------------------------------------
-[INFO] Building Sakai Nakamura :: Foreign Principal Provider 0.10
-[INFO] ------------------------------------------------------------------------
-[INFO] 
-[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ org.sakaiproject.nakamura.foreignprincipal ---
-[INFO] 
-[INFO] --- maven-resources-plugin:2.4.1:resources (default-resources) @ org.sakaiproject.nakamura.foreignprincipal ---
-[INFO] Using 'UTF-8' encoding to copy filtered resources.
-[INFO] skip non existing resourceDirectory /Users/zach/dev/zathomas-open-experiments/contrib/foreignprincipal/src/main/resources
-[INFO] 
-[INFO] --- maven-compiler-plugin:2.0.2:compile (default-compile) @ org.sakaiproject.nakamura.foreignprincipal ---
-[INFO] Compiling 2 source files to /Users/zach/dev/zathomas-open-experiments/contrib/foreignprincipal/target/classes
-[INFO] 
-[INFO] --- maven-scr-plugin:1.4.4:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.foreignprincipal ---
-[INFO] Generating 2 MetaType Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/foreignprincipal/target/scr-plugin-generated/OSGI-INF/metatype/metatype.xml
-[INFO] Writing abstract service descriptor /Users/zach/dev/zathomas-open-experiments/contrib/foreignprincipal/target/scr-plugin-generated/OSGI-INF/scr-plugin/scrinfo.xml with 1 entries.
-[INFO] Generating 1 Service Component Descriptors to /Users/zach/dev/zathomas-open-experiments/contrib/foreignprincipal/target/scr-plugin-generated/OSGI-INF/serviceComponents.xml
-[INFO] 
-[INFO] --- maven-resources-plugin:2.4.1:testResources (default-testResources) @ org.sakaiproject.nakamura.foreignprincipal ---
-[INFO] Using 'UTF-8' encoding to copy filtered resources.
-[INFO] skip non existing resourceDirectory /Users/zach/dev/zathomas-open-experiments/contrib/foreignprincipal/src/test/resources
-[INFO] 
-[INFO] --- maven-compiler-plugin:2.0.2:testCompile (default-testCompile) @ org.sakaiproject.nakamura.foreignprincipal ---
-[INFO] Compiling 1 source file to /Users/zach/dev/zathomas-open-experiments/contrib/foreignprincipal/target/test-classes
-[INFO] 
-[INFO] --- maven-surefire-plugin:2.5:test (default-test) @ org.sakaiproject.nakamura.foreignprincipal ---
-[INFO] Surefire report directory: /Users/zach/dev/zathomas-open-experiments/contrib/foreignprincipal/target/surefire-reports
-
--------------------------------------------------------
- T E S T S
--------------------------------------------------------
-Running org.sakaiproject.nakamura.foreignprincipal.impl.ForeignPrincipalTest
-Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.362 sec
-
-Results :
-
-Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
-
-[INFO] 
-[INFO] --- maven-bundle-plugin:2.1.0:bundle (default-bundle) @ org.sakaiproject.nakamura.foreignprincipal ---
-[INFO] 
-[INFO] >>> maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.foreignprincipal >>>
-[INFO] 
-[INFO] <<< maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.foreignprincipal <<<
-[INFO] 
-[INFO] --- maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.foreignprincipal ---
-[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/foreignprincipal/target/org.sakaiproject.nakamura.foreignprincipal-0.10-sources.jar
-[INFO] 
-[INFO] --- ianal-maven-plugin:1.0-alpha-1:verify-legal-files (default) @ org.sakaiproject.nakamura.foreignprincipal ---
-[INFO] Checking legal files in: org.sakaiproject.nakamura.foreignprincipal-0.10.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.foreignprincipal-0.10.jar
-[INFO] Checking legal files in: org.sakaiproject.nakamura.foreignprincipal-0.10-sources.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.foreignprincipal-0.10-sources.jar
-[INFO] 
-[INFO] --- maven-install-plugin:2.3:install (default-install) @ org.sakaiproject.nakamura.foreignprincipal ---
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/foreignprincipal/target/org.sakaiproject.nakamura.foreignprincipal-0.10.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.foreignprincipal/0.10/org.sakaiproject.nakamura.foreignprincipal-0.10.jar
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/foreignprincipal/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.foreignprincipal/0.10/org.sakaiproject.nakamura.foreignprincipal-0.10.pom
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/foreignprincipal/target/org.sakaiproject.nakamura.foreignprincipal-0.10-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.foreignprincipal/0.10/org.sakaiproject.nakamura.foreignprincipal-0.10-sources.jar
-[INFO] 
-[INFO] --- maven-bundle-plugin:2.1.0:install (default-install) @ org.sakaiproject.nakamura.foreignprincipal ---
-[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.foreignprincipal/0.10/org.sakaiproject.nakamura.foreignprincipal-0.10.jar
-[INFO] Writing OBR metadata
-[INFO]                                                                         
-[INFO] ------------------------------------------------------------------------
-[INFO] Building Sakai Nakamura :: Root Node Configuration 0.10
+[INFO] Building Sakai Nakamura :: Root Node Configuration 1.0.0
 [INFO] ------------------------------------------------------------------------
 [INFO] 
 [INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ org.sakaiproject.nakamura.rootconfig ---
+[INFO] Deleting /Users/zach/dev/zathomas-open-experiments/contrib/rootconfig/target
 [INFO] 
 [INFO] --- maven-resources-plugin:2.4.1:resources (default-resources) @ org.sakaiproject.nakamura.rootconfig ---
 [INFO] Using 'UTF-8' encoding to copy filtered resources.
@@ -737,7 +580,7 @@ Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
  T E S T S
 -------------------------------------------------------
 Running org.sakaiproject.nakamura.rootconfig.impl.RootConfigurationServiceTest
-Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.345 sec
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.368 sec
 
 Results :
 
@@ -751,28 +594,29 @@ Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
 [INFO] <<< maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.rootconfig <<<
 [INFO] 
 [INFO] --- maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.rootconfig ---
-[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/rootconfig/target/org.sakaiproject.nakamura.rootconfig-0.10-sources.jar
+[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/rootconfig/target/org.sakaiproject.nakamura.rootconfig-1.0.0-sources.jar
 [INFO] 
 [INFO] --- ianal-maven-plugin:1.0-alpha-1:verify-legal-files (default) @ org.sakaiproject.nakamura.rootconfig ---
-[INFO] Checking legal files in: org.sakaiproject.nakamura.rootconfig-0.10.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.rootconfig-0.10.jar
-[INFO] Checking legal files in: org.sakaiproject.nakamura.rootconfig-0.10-sources.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.rootconfig-0.10-sources.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.rootconfig-1.0.0.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.rootconfig-1.0.0.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.rootconfig-1.0.0-sources.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.rootconfig-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-install-plugin:2.3:install (default-install) @ org.sakaiproject.nakamura.rootconfig ---
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/rootconfig/target/org.sakaiproject.nakamura.rootconfig-0.10.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.rootconfig/0.10/org.sakaiproject.nakamura.rootconfig-0.10.jar
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/rootconfig/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.rootconfig/0.10/org.sakaiproject.nakamura.rootconfig-0.10.pom
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/rootconfig/target/org.sakaiproject.nakamura.rootconfig-0.10-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.rootconfig/0.10/org.sakaiproject.nakamura.rootconfig-0.10-sources.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/rootconfig/target/org.sakaiproject.nakamura.rootconfig-1.0.0.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.rootconfig/1.0.0/org.sakaiproject.nakamura.rootconfig-1.0.0.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/rootconfig/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.rootconfig/1.0.0/org.sakaiproject.nakamura.rootconfig-1.0.0.pom
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/rootconfig/target/org.sakaiproject.nakamura.rootconfig-1.0.0-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.rootconfig/1.0.0/org.sakaiproject.nakamura.rootconfig-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-bundle-plugin:2.1.0:install (default-install) @ org.sakaiproject.nakamura.rootconfig ---
-[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.rootconfig/0.10/org.sakaiproject.nakamura.rootconfig-0.10.jar
+[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.rootconfig/1.0.0/org.sakaiproject.nakamura.rootconfig-1.0.0.jar
 [INFO] Writing OBR metadata
 [INFO]                                                                         
 [INFO] ------------------------------------------------------------------------
-[INFO] Building Sakai Nakamura :: robots.txt 0.10
+[INFO] Building Sakai Nakamura :: robots.txt 1.0.0
 [INFO] ------------------------------------------------------------------------
 [INFO] 
 [INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ org.sakaiproject.nakamura.robots.txt ---
+[INFO] Deleting /Users/zach/dev/zathomas-open-experiments/contrib/robots.txt/target
 [INFO] 
 [INFO] --- maven-resources-plugin:2.4.1:resources (default-resources) @ org.sakaiproject.nakamura.robots.txt ---
 [INFO] Using 'UTF-8' encoding to copy filtered resources.
@@ -781,7 +625,8 @@ Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
 [INFO] --- maven-compiler-plugin:2.0.2:compile (default-compile) @ org.sakaiproject.nakamura.robots.txt ---
 [INFO] No sources to compile
 [INFO] 
-[INFO] --- maven-scr-plugin:1.4.4:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.robots.txt ---
+[INFO] --- maven-scr-plugin:1.7.0:scr (generate-scr-scrdescriptor) @ org.sakaiproject.nakamura.robots.txt ---
+[WARNING] Source tree does not exist. Ignoring /Users/zach/dev/zathomas-open-experiments/contrib/robots.txt/src/main/java
 [INFO] 
 [INFO] --- maven-resources-plugin:2.4.1:testResources (default-testResources) @ org.sakaiproject.nakamura.robots.txt ---
 [INFO] Using 'UTF-8' encoding to copy filtered resources.
@@ -794,49 +639,47 @@ Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
 [INFO] No tests to run.
 [INFO] 
 [INFO] --- maven-bundle-plugin:2.0.1:bundle (default-bundle) @ org.sakaiproject.nakamura.robots.txt ---
-[WARNING] Warning building bundle org.sakaiproject.nakamura:org.sakaiproject.nakamura.robots.txt:bundle:0.10 : Did not find matching referal for *
+[WARNING] Warning building bundle org.sakaiproject.nakamura:org.sakaiproject.nakamura.robots.txt:bundle:1.0.0 : Did not find matching referal for *
 [INFO] 
 [INFO] >>> maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.robots.txt >>>
 [INFO] 
 [INFO] <<< maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.robots.txt <<<
 [INFO] 
 [INFO] --- maven-source-plugin:2.0.4:jar (attach-sources) @ org.sakaiproject.nakamura.robots.txt ---
-[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/robots.txt/target/org.sakaiproject.nakamura.robots.txt-0.10-sources.jar
+[INFO] Building jar: /Users/zach/dev/zathomas-open-experiments/contrib/robots.txt/target/org.sakaiproject.nakamura.robots.txt-1.0.0-sources.jar
 [INFO] 
 [INFO] --- ianal-maven-plugin:1.0-alpha-1:verify-legal-files (default) @ org.sakaiproject.nakamura.robots.txt ---
-[INFO] Checking legal files in: org.sakaiproject.nakamura.robots.txt-0.10.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.robots.txt-0.10.jar
-[INFO] Checking legal files in: org.sakaiproject.nakamura.robots.txt-0.10-sources.jar
-[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.robots.txt-0.10-sources.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.robots.txt-1.0.0.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.robots.txt-1.0.0.jar
+[INFO] Checking legal files in: org.sakaiproject.nakamura.robots.txt-1.0.0-sources.jar
+[WARNING] Artifact does not contain any legal files: org.sakaiproject.nakamura.robots.txt-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-install-plugin:2.3:install (default-install) @ org.sakaiproject.nakamura.robots.txt ---
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/robots.txt/target/org.sakaiproject.nakamura.robots.txt-0.10.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.robots.txt/0.10/org.sakaiproject.nakamura.robots.txt-0.10.jar
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/robots.txt/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.robots.txt/0.10/org.sakaiproject.nakamura.robots.txt-0.10.pom
-[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/robots.txt/target/org.sakaiproject.nakamura.robots.txt-0.10-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.robots.txt/0.10/org.sakaiproject.nakamura.robots.txt-0.10-sources.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/robots.txt/target/org.sakaiproject.nakamura.robots.txt-1.0.0.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.robots.txt/1.0.0/org.sakaiproject.nakamura.robots.txt-1.0.0.jar
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/robots.txt/pom.xml to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.robots.txt/1.0.0/org.sakaiproject.nakamura.robots.txt-1.0.0.pom
+[INFO] Installing /Users/zach/dev/zathomas-open-experiments/contrib/robots.txt/target/org.sakaiproject.nakamura.robots.txt-1.0.0-sources.jar to /Users/zach/.m2/repository/org/sakaiproject/nakamura/org.sakaiproject.nakamura.robots.txt/1.0.0/org.sakaiproject.nakamura.robots.txt-1.0.0-sources.jar
 [INFO] 
 [INFO] --- maven-bundle-plugin:2.0.1:install (default-install) @ org.sakaiproject.nakamura.robots.txt ---
 [INFO] Parsing file:/Users/zach/.m2/repository/repository.xml
-[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.robots.txt/0.10/org.sakaiproject.nakamura.robots.txt-0.10.jar
+[INFO] Installing org/sakaiproject/nakamura/org.sakaiproject.nakamura.robots.txt/1.0.0/org.sakaiproject.nakamura.robots.txt-1.0.0.jar
 [INFO] Writing OBR metadata
 [INFO] ------------------------------------------------------------------------
 [INFO] Reactor Summary:
 [INFO] 
-[INFO] Sakai Nakamura Project ............................ SUCCESS [0.484s]
-[INFO] Sakai Nakamura :: Sakai Import Bundle ............. SUCCESS [6.030s]
-[INFO] Sakai Nakamura :: Filters Bundle .................. SUCCESS [2.452s]
-[INFO] Sakai Nakamura :: Mailman Support ................. SUCCESS [5.609s]
-[INFO] Sakai Nakamura :: LDAP Connection Bundle .......... SUCCESS [3.632s]
-[INFO] Sakai Nakamura :: Person Directory Bundle ......... SUCCESS [2.914s]
-[INFO] Sakai Nakamura :: CAS Authentication Bundle ....... SUCCESS [4.548s]
-[INFO] Sakai Nakamura :: LDAP Authentication Bundle ...... SUCCESS [3.785s]
-[INFO] Sakai Nakamura :: OpenSSO Authentication Bundle ... SUCCESS [4.724s]
-[INFO] Sakai Nakamura :: Foreign Principal Provider ...... SUCCESS [4.551s]
-[INFO] Sakai Nakamura :: Root Node Configuration ......... SUCCESS [2.590s]
-[INFO] Sakai Nakamura :: robots.txt ...................... SUCCESS [0.250s]
+[INFO] Sakai Nakamura Project ............................ SUCCESS [0.688s]
+[INFO] Sakai Nakamura :: Sakai Import Bundle ............. SUCCESS [8.818s]
+[INFO] Sakai Nakamura :: Filters Bundle .................. SUCCESS [2.742s]
+[INFO] Sakai Nakamura :: LDAP Connection Bundle .......... SUCCESS [4.359s]
+[INFO] Sakai Nakamura :: Person Directory Bundle ......... SUCCESS [3.812s]
+[INFO] Sakai Nakamura :: CAS Authentication Bundle ....... SUCCESS [5.760s]
+[INFO] Sakai Nakamura :: LDAP Authentication Bundle ...... SUCCESS [4.458s]
+[INFO] Sakai Nakamura :: OpenSSO Authentication Bundle ... SUCCESS [5.425s]
+[INFO] Sakai Nakamura :: Root Node Configuration ......... SUCCESS [4.458s]
+[INFO] Sakai Nakamura :: robots.txt ...................... SUCCESS [0.613s]
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time: 42.413s
-[INFO] Finished at: Wed Apr 20 23:10:30 CDT 2011
-[INFO] Final Memory: 22M/265M
+[INFO] Total time: 42.219s
+[INFO] Finished at: Thu Aug 11 12:53:24 CDT 2011
+[INFO] Final Memory: 20M/265M
 [INFO] ------------------------------------------------------------------------

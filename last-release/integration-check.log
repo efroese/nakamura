@@ -1,89 +1,101 @@
-~/timefields/open-experiments/testscripts/SlingRuby/kerns ~/timefields/open-experiments
-kern-1003.rb 2 tests, 19 assertions, 0 failures, 0 errors
-kern-1020.rb 2 tests, 28 assertions, 0 failures, 0 errors
-kern-1024.rb 1 tests, 9 assertions, 0 failures, 0 errors
-kern-1025.rb 1 tests, 3 assertions, 0 failures, 0 errors
-kern-1045.rb 1 tests, 5 assertions, 0 failures, 0 errors
-kern-1055.rb 2 tests, 10 assertions, 0 failures, 0 errors
-kern-1057.rb 1 tests, 6 assertions, 0 failures, 0 errors
-kern-1064.rb 1 tests, 6 assertions, 0 failures, 0 errors
-kern-1090.rb 1 tests, 9 assertions, 0 failures, 0 errors
-kern-1100.rb 3 tests, 24 assertions, 0 failures, 0 errors
-kern-1105.rb 1 tests, 108 assertions, 0 failures, 0 errors
-kern-1154.rb 2 tests, 5 assertions, 0 failures, 0 errors
-kern-254.rb 1 tests, 5 assertions, 0 failures, 0 errors
-kern-259.rb 1 tests, 10 assertions, 0 failures, 0 errors
-kern-270.rb 1 tests, 3 assertions, 0 failures, 0 errors
-kern-275.rb 3 tests, 12 assertions, 0 failures, 0 errors
-kern-277.rb 3 tests, 22 assertions, 0 failures, 0 errors
-kern-280.rb 1 tests, 2 assertions, 0 failures, 0 errors
-kern-284.rb 2 tests, 10 assertions, 0 failures, 0 errors
-kern-288.rb 1 tests, 5 assertions, 0 failures, 0 errors
-kern-289.rb 1 tests, 7 assertions, 0 failures, 0 errors
-kern-292.rb 3 tests, 24 assertions, 0 failures, 0 errors
-kern-293.rb 1 tests, 5 assertions, 0 failures, 0 errors
-kern-294.rb 2 tests, 4 assertions, 0 failures, 0 errors
-kern-296.rb 1 tests, 8 assertions, 0 failures, 0 errors
-kern-307.rb 2 tests, 18 assertions, 0 failures, 0 errors
-kern-308.rb 2 tests, 18 assertions, 0 failures, 0 errors
-kern-309.rb 1 tests, 10 assertions, 0 failures, 0 errors
-kern-310.rb 1 tests, 4 assertions, 0 failures, 0 errors
-kern-312.rb 3 tests, 11 assertions, 0 failures, 0 errors
-kern-325.rb 1 tests, 2 assertions, 0 failures, 0 errors
-kern-330.rb 4 tests, 28 assertions, 0 failures, 0 errors
-kern-335.rb 1 tests, 6 assertions, 0 failures, 0 errors
-kern-345.rb 3 tests, 41 assertions, 0 failures, 0 errors
-kern-356.rb 2 tests, 15 assertions, 0 failures, 0 errors
-kern-455.rb 1 tests, 21 assertions, 0 failures, 0 errors
-kern-456.rb 1 tests, 4 assertions, 0 failures, 0 errors
-kern-458.rb 1 tests, 1 assertions, 0 failures, 0 errors
-kern-483.rb 1 tests, 8 assertions, 0 failures, 0 errors
-kern-485.rb 1 tests, 2 assertions, 0 failures, 0 errors
-kern-538.rb 5 tests, 47 assertions, 0 failures, 0 errors
-kern-543.rb 1 tests, 9 assertions, 0 failures, 0 errors
-kern-551.rb 10 tests, 89 assertions, 0 failures, 0 errors
-kern-552.rb 1 tests, 3 assertions, 0 failures, 0 errors
-kern-563.rb 2 tests, 7 assertions, 0 failures, 0 errors
-kern-568.rb 3 tests, 11 assertions, 0 failures, 0 errors
-kern-577.rb 1 tests, 14 assertions, 0 failures, 0 errors
-kern-629.rb 3 tests, 35 assertions, 0 failures, 0 errors
-kern-637.rb 1 tests, 3 assertions, 0 failures, 0 errors
-kern-693.rb 5 tests, 25 assertions, 0 failures, 0 errors
-kern-702.rb 1 tests, 7 assertions, 0 failures, 0 errors
-kern-723.rb 1 tests, 7 assertions, 0 failures, 0 errors
-kern-726.rb 1 tests, 7 assertions, 0 failures, 0 errors
-kern-734.rb 4 tests, 26 assertions, 0 failures, 0 errors
-kern-740.rb 4 tests, 34 assertions, 0 failures, 0 errors
-kern-759.rb 1 tests, 12 assertions, 0 failures, 0 errors
-kern-763.rb 1 tests, 6 assertions, 0 failures, 0 errors
-kern-797.rb 1 tests, 23 assertions, 0 failures, 0 errors
-kern-854.rb 1 tests, 7 assertions, 0 failures, 0 errors
-kern-857.rb 1 tests, 8 assertions, 0 failures, 0 errors
-kern-891.rb 1 tests, 14 assertions, 0 failures, 0 errors
-kern-892.rb 1 tests, 1 assertions, 0 failures, 0 errors
-kern-909.rb 1 tests, 12 assertions, 0 failures, 0 errors
-kern-911.rb 1 tests, 4 assertions, 0 failures, 0 errors
-kern-926.rb 2 tests, 24 assertions, 0 failures, 0 errors
-kern-929.rb 1 tests, 5 assertions, 0 failures, 0 errors
-kern-933.rb 1 tests, 4 assertions, 0 failures, 0 errors
-kern-935.rb 1 tests, 6 assertions, 0 failures, 0 errors
-kern-939.rb 5 tests, 34 assertions, 0 failures, 0 errors
-kern-949.rb 3 tests, 19 assertions, 0 failures, 0 errors
-kern-959.rb 1 tests, 5 assertions, 0 failures, 0 errors
-kern-989.rb 1 tests, 17 assertions, 0 failures, 0 errors
-~/timefields/open-experiments
-~/timefields/open-experiments/testscripts/SlingRuby/tests ~/timefields/open-experiments
-authz-test.rb 4 tests, 212 assertions, 0 failures, 0 errors
-basiclti-test.rb 3 tests, 225 assertions, 0 failures, 0 errors
-contact-test.rb 1 tests, 23 assertions, 0 failures, 0 errors
-form-auth-test.rb 1 tests, 8 assertions, 0 failures, 0 errors
-message-test.rb 1 tests, 45 assertions, 0 failures, 0 errors
-node-create-test.rb 5 tests, 36 assertions, 0 failures, 0 errors
-owner-authz-test.rb 1 tests, 25 assertions, 0 failures, 0 errors
-owner-principal-test.rb 1 tests, 7 assertions, 0 failures, 0 errors
-private-store-test.rb 1 tests, 8 assertions, 0 failures, 0 errors
-rss-test.rb 3 tests, 3 assertions, 0 failures, 0 errors
-sling-search-test.rb 2 tests, 14 assertions, 0 failures, 0 errors
-sling-site-test.rb 7 tests, 43 assertions, 0 failures, 0 errors
-user-manager-test.rb 5 tests, 27 assertions, 0 failures, 0 errors
-~/timefields/open-experiments
+~/dev/zathomas-open-experiments/testscripts/SlingRuby/kerns ~/dev/zathomas-open-experiments
+kern-1003.rb 2 tests, 18 assertions, 0 failures, 0 errors, 0 skips
+kern-1020.rb 2 tests, 17 assertions, 1 failures, 0 errors, 0 skips
+kern-1024.rb 1 tests, 9 assertions, 0 failures, 0 errors, 0 skips
+kern-1025.rb 1 tests, 3 assertions, 0 failures, 0 errors, 0 skips
+kern-1045.rb 1 tests, 3 assertions, 0 failures, 1 errors, 0 skips
+kern-1055.rb 2 tests, 10 assertions, 2 failures, 0 errors, 0 skips
+kern-1057.rb 1 tests, 6 assertions, 0 failures, 0 errors, 0 skips
+kern-1064.rb 1 tests, 6 assertions, 0 failures, 0 errors, 0 skips
+kern-1090.rb 1 tests, 6 assertions, 0 failures, 0 errors, 0 skips
+kern-1100.rb 3 tests, 24 assertions, 0 failures, 0 errors, 0 skips
+kern-1105.rb 1 tests, 103 assertions, 0 failures, 0 errors, 0 skips
+kern-1154.rb 2 tests, 5 assertions, 0 failures, 0 errors, 0 skips
+kern-1372.rb 3 tests, 145 assertions, 0 failures, 0 errors, 0 skips
+kern-1376.rb 1 tests, 11 assertions, 0 failures, 0 errors, 0 skips
+kern-1540.rb 1 tests, 14 assertions, 0 failures, 0 errors, 0 skips
+kern-1795.rb 3 tests, 35 assertions, 0 failures, 0 errors, 0 skips
+kern-1829.rb 1 tests, 12 assertions, 0 failures, 0 errors, 0 skips
+kern-1836.rb 1 tests, 6 assertions, 0 failures, 0 errors, 0 skips
+kern-1874.rb 1 tests, 20 assertions, 0 failures, 0 errors, 0 skips
+kern-1877.rb 1 tests, 16 assertions, 1 failures, 0 errors, 0 skips
+kern-1887.rb 2 tests, 7 assertions, 0 failures, 0 errors, 0 skips
+kern-1895.rb 1 tests, 15 assertions, 0 failures, 0 errors, 0 skips
+kern-1896.rb 1 tests, 12 assertions, 0 failures, 0 errors, 0 skips
+kern-1902.rb 1 tests, 12 assertions, 0 failures, 0 errors, 0 skips
+kern-1998.rb 1 tests, 16 assertions, 0 failures, 0 errors, 0 skips
+kern-2027.rb 1 tests, 8 assertions, 0 failures, 0 errors, 0 skips
+kern-2034.rb 1 tests, 5 assertions, 0 failures, 0 errors, 0 skips
+kern-2035.rb 6 tests, 67 assertions, 0 failures, 0 errors, 0 skips
+kern-2078.rb 1 tests, 7 assertions, 0 failures, 0 errors, 0 skips
+kern-2113.rb 1 tests, 118 assertions, 0 failures, 0 errors, 0 skips
+kern-2158.rb 1 tests, 10 assertions, 0 failures, 0 errors, 0 skips
+kern-2183.rb 3 tests, 32 assertions, 0 failures, 0 errors, 0 skips
+kern-254.rb 1 tests, 5 assertions, 0 failures, 0 errors, 0 skips
+kern-270.rb 1 tests, 3 assertions, 0 failures, 0 errors, 0 skips
+kern-275.rb 3 tests, 12 assertions, 0 failures, 0 errors, 0 skips
+kern-277.rb 3 tests, 22 assertions, 0 failures, 0 errors, 0 skips
+kern-280.rb 1 tests, 2 assertions, 0 failures, 0 errors, 0 skips
+kern-284.rb 2 tests, 10 assertions, 0 failures, 0 errors, 0 skips
+kern-288.rb 1 tests, 5 assertions, 0 failures, 0 errors, 0 skips
+kern-289.rb 1 tests, 7 assertions, 0 failures, 0 errors, 0 skips
+kern-292.rb 3 tests, 24 assertions, 0 failures, 0 errors, 0 skips
+kern-293.rb 1 tests, 5 assertions, 0 failures, 0 errors, 0 skips
+kern-294.rb 2 tests, 4 assertions, 0 failures, 0 errors, 0 skips
+kern-296.rb 1 tests, 8 assertions, 0 failures, 0 errors, 0 skips
+kern-307.rb 2 tests, 18 assertions, 0 failures, 0 errors, 0 skips
+kern-308.rb 2 tests, 17 assertions, 0 failures, 0 errors, 0 skips
+kern-310.rb 1 tests, 4 assertions, 0 failures, 0 errors, 0 skips
+kern-312.rb 3 tests, 11 assertions, 0 failures, 0 errors, 0 skips
+kern-330.rb 5 tests, 32 assertions, 0 failures, 0 errors, 0 skips
+kern-335.rb 1 tests, 6 assertions, 0 failures, 0 errors, 0 skips
+kern-345.rb 3 tests, 41 assertions, 0 failures, 0 errors, 0 skips
+kern-356.rb 2 tests, 11 assertions, 0 failures, 0 errors, 0 skips
+kern-455.rb 1 tests, 13 assertions, 0 failures, 0 errors, 0 skips
+kern-458.rb 1 tests, 1 assertions, 0 failures, 0 errors, 0 skips
+kern-483.rb 1 tests, 8 assertions, 0 failures, 0 errors, 0 skips
+kern-538.rb 5 tests, 47 assertions, 0 failures, 0 errors, 0 skips
+kern-552.rb 1 tests, 3 assertions, 0 failures, 0 errors, 0 skips
+kern-563.rb 2 tests, 7 assertions, 0 failures, 0 errors, 0 skips
+kern-568.rb 3 tests, 11 assertions, 0 failures, 0 errors, 0 skips
+kern-734.rb 4 tests, 26 assertions, 0 failures, 0 errors, 0 skips
+kern-740.rb 4 tests, 34 assertions, 0 failures, 0 errors, 0 skips
+kern-759.rb 1 tests, 12 assertions, 0 failures, 0 errors, 0 skips
+kern-763.rb 1 tests, 3 assertions, 0 failures, 1 errors, 0 skips
+kern-797.rb 1 tests, 22 assertions, 0 failures, 0 errors, 0 skips
+kern-854.rb 1 tests, 7 assertions, 0 failures, 0 errors, 0 skips
+kern-857.rb 1 tests, 8 assertions, 0 failures, 0 errors, 0 skips
+kern-891.rb 1 tests, 10 assertions, 0 failures, 0 errors, 0 skips
+kern-892.rb 1 tests, 1 assertions, 0 failures, 0 errors, 0 skips
+kern-909.rb 1 tests, 12 assertions, 0 failures, 0 errors, 0 skips
+kern-911.rb 1 tests, 4 assertions, 0 failures, 0 errors, 0 skips
+kern-926.rb 2 tests, 27 assertions, 0 failures, 0 errors, 0 skips
+kern-929.rb 1 tests, 7 assertions, 0 failures, 0 errors, 0 skips
+kern-933.rb 1 tests, 4 assertions, 0 failures, 0 errors, 0 skips
+kern-935.rb 1 tests, 6 assertions, 0 failures, 0 errors, 0 skips
+kern-939.rb 5 tests, 32 assertions, 0 failures, 0 errors, 0 skips
+kern-949.rb 2 tests, 0 assertions, 0 failures, 0 errors, 0 skips
+kern-959.rb 1 tests, 0 assertions, 0 failures, 0 errors, 0 skips
+kern-989.rb 1 tests, 15 assertions, 0 failures, 0 errors, 0 skips
+~/dev/zathomas-open-experiments
+~/dev/zathomas-open-experiments/testscripts/SlingRuby/tests ~/dev/zathomas-open-experiments
+authz-test.rb 4 tests, 208 assertions, 0 failures, 0 errors, 0 skips
+basiclti-test.rb 3 tests, 257 assertions, 0 failures, 0 errors, 0 skips
+contact-test.rb 1 tests, 25 assertions, 0 failures, 0 errors, 0 skips
+form-auth-test.rb 1 tests, 8 assertions, 0 failures, 0 errors, 0 skips
+message-test.rb 1 tests, 45 assertions, 0 failures, 0 errors, 0 skips
+node-create-test.rb 5 tests, 36 assertions, 0 failures, 0 errors, 0 skips
+owner-authz-test.rb 1 tests, 0 assertions, 0 failures, 0 errors, 0 skips
+owner-principal-test.rb 1 tests, 0 assertions, 0 failures, 0 errors, 0 skips
+page-create-test.rb 4 tests, 23 assertions, 0 failures, 0 errors, 0 skips
+page-structure-test.rb 1 tests, 12 assertions, 0 failures, 0 errors, 0 skips
+private-store-test.rb 1 tests, 8 assertions, 0 failures, 0 errors, 0 skips
+rss-test.rb 3 tests, 3 assertions, 0 failures, 0 errors, 0 skips
+sling-search-test.rb 2 tests, 14 assertions, 0 failures, 0 errors, 0 skips
+user-manager-test.rb 6 tests, 33 assertions, 0 failures, 0 errors, 0 skips
+var-cluster-test.rb 3 tests, 30 assertions, 0 failures, 0 errors, 0 skips
+~/dev/zathomas-open-experiments
+~/dev/zathomas-open-experiments/testscripts/target/classes/SlingRuby/kerns ~/dev/zathomas-open-experiments
+~/dev/zathomas-open-experiments
+~/dev/zathomas-open-experiments/testscripts/target/classes/SlingRuby/tests ~/dev/zathomas-open-experiments
+~/dev/zathomas-open-experiments

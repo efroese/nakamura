@@ -176,13 +176,12 @@ public class AuthorizableIndexingHandler implements IndexingHandler {
       Event event) {
     Collection<String> retval = Collections.emptyList();
     String topic = event.getTopic();
+    String authName = String.valueOf(event.getProperty(FIELD_PATH));
     if (topic.endsWith(StoreListener.DELETE_TOPIC)) {
       logger.debug("GetDelete for {} ", event);
-      String groupName = String.valueOf(event.getProperty(UserConstants.EVENT_PROP_USERID));
-      retval = ImmutableList.of("id:" + ClientUtils.escapeQueryChars(groupName));
+      retval = ImmutableList.of("id:" + ClientUtils.escapeQueryChars(authName));
     } else {
       // KERN-1822 check if the authorizable is marked to be excluded from searches
-      String authName = String.valueOf(event.getProperty(FIELD_PATH));
       Authorizable authorizable = getAuthorizable(authName, repositorySession);
       if (authorizable != null
           && Boolean.parseBoolean(String.valueOf(authorizable.getProperty(UserConstants.SAKAI_EXCLUDE)))) {

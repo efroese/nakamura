@@ -49,8 +49,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -300,252 +302,261 @@ public class DefaultPostProcessor implements LiteAuthorizablePostProcessor {
   public void process(SlingHttpServletRequest request, Authorizable authorizable,
       Session session, Modification change, Map<String, Object[]> parameters)
       throws Exception {
-    LOGGER.debug("Default Prost processor on {} with {} ", authorizable.getId(), change);
+    LOGGER.debug("Default Post processor on {} with {} ", authorizable.getId(), change);
 
-    ContentManager contentManager = session.getContentManager();
-    AccessControlManager accessControlManager = session.getAccessControlManager();
-    AuthorizableManager authorizableManager = session.getAuthorizableManager();
-    boolean isGroup = authorizable instanceof Group;
+    Session adminSession = null;
+    try {
+      ContentManager contentManager = session.getContentManager();
+      AccessControlManager accessControlManager = session.getAccessControlManager();
+      AuthorizableManager authorizableManager = session.getAuthorizableManager();
+      adminSession = session.getRepository().loginAdministrative();
+      AuthorizableManager adminAuthorizableManager = adminSession.getAuthorizableManager();
+      boolean isGroup = authorizable instanceof Group;
 
-//    if (ModificationType.DELETE.equals(change.getType())) {
-//      LOGGER.debug("Performing delete operation on {} ", authorizable.getId());
-//      if (isGroup) {
-//        deleteManagersGroup(authorizable, authorizableManager);
-//      }
-//      return; // do not
-//    }
+  //    if (ModificationType.DELETE.equals(change.getType())) {
+  //      LOGGER.debug("Performing delete operation on {} ", authorizable.getId());
+  //      if (isGroup) {
+  //        deleteManagersGroup(authorizable, authorizableManager);
+  //      }
+  //      return; // do not
+  //    }
 
-    // WARNING: Creation and Update requests are more disjunct than is usual.
-    //
-    // In our current (bad) API, the only way to create a collaborative space (home
-    // folder, messaging, discussions, web pages, contacts, roles) is as a side-effect of
-    // creating an Authorizable. Because we want to let integrators create Group spaces
-    // without necessarily becoming Group members, this is done in an administrative session.
-    //
-    // After the collaborative space is created, its various functional areas are managed
-    // by specialized servlets and bundles. POSTs to an Authorizable are generally
-    // only updates to that Authorizable object and should not require implicit access
-    // to resources owned by the Authorizable. In particular, a request to add a member to
-    // an existing Group Authorizable should not implicitly create a Home folder, pages,
-    // contact lists, etc., for the Authorizable. (E.g., adding a member to the
-    // internally-generated Group Authorizable that holds personal connections should not
-    // recursively generate yet another connections-holding Group.)
-    //
-    // TODO We plan to replace this client-server API with a template-based approach that
-    // decouples Authorizable management from collaborative space creation.
-    boolean isCreate = ModificationType.CREATE.equals(change.getType());
+      // WARNING: Creation and Update requests are more disjunct than is usual.
+      //
+      // In our current (bad) API, the only way to create a collaborative space (home
+      // folder, messaging, discussions, web pages, contacts, roles) is as a side-effect of
+      // creating an Authorizable. Because we want to let integrators create Group spaces
+      // without necessarily becoming Group members, this is done in an administrative session.
+      //
+      // After the collaborative space is created, its various functional areas are managed
+      // by specialized servlets and bundles. POSTs to an Authorizable are generally
+      // only updates to that Authorizable object and should not require implicit access
+      // to resources owned by the Authorizable. In particular, a request to add a member to
+      // an existing Group Authorizable should not implicitly create a Home folder, pages,
+      // contact lists, etc., for the Authorizable. (E.g., adding a member to the
+      // internally-generated Group Authorizable that holds personal connections should not
+      // recursively generate yet another connections-holding Group.)
+      //
+      // TODO We plan to replace this client-server API with a template-based approach that
+      // decouples Authorizable management from collaborative space creation.
+      boolean isCreate = ModificationType.CREATE.equals(change.getType());
 
-    // If the sessionw as capable of performing the create or modify operation, it must be
-    // capable of performing these operations.
-    String authId = authorizable.getId();
-    String homePath = LitePersonalUtils.getHomePath(authId);
+      // If the sessionw as capable of performing the create or modify operation, it must be
+      // capable of performing these operations.
+      String authId = authorizable.getId();
+      String homePath = LitePersonalUtils.getHomePath(authId);
 
-    // User Authorizable PostProcessor
-    // ==============================
-    // no action required
+      // User Authorizable PostProcessor
+      // ==============================
+      // no action required
 
-    // Group Authorizable PostProcessor
-    // ==============================
-    // no action required (IMO we should drop the generated group and use ACL on the
-    // object itself)
-    if (isGroup) {
-      if (isCreate) {
-        setGroupManagers(authorizable, authorizableManager, accessControlManager,
-            parameters);
-      } else {
-        updateManagersGroup(authorizable, authorizableManager, accessControlManager,
-            parameters);
-      }
-    }
-
-    // Home Authorizable PostProcessor
-    // ==============================
-    // home path
-    if (!contentManager.exists(homePath)) {
-      if (isCreate) {
-        Builder<String, Object> props = ImmutableMap.builder();
-        if (isGroup) {
-          props.put(SLING_RESOURCE_TYPE, SAKAI_GROUP_HOME_RT);
-
+      // Group Authorizable PostProcessor
+      // ==============================
+      // no action required (IMO we should drop the generated group and use ACL on the
+      // object itself)
+      if (isGroup) {
+        if (isCreate) {
+          setGroupManagers(authorizable, authorizableManager, accessControlManager,
+              parameters);
         } else {
-          props.put(SLING_RESOURCE_TYPE, SAKAI_USER_HOME_RT);
-        }
-        if (authorizable.hasProperty(SAKAI_SEARCH_EXCLUDE_TREE_PROP)) {
-          // raw copy
-          props.put(SAKAI_SEARCH_EXCLUDE_TREE_PROP,
-              authorizable.getProperty(SAKAI_SEARCH_EXCLUDE_TREE_PROP));
-        }
-        contentManager.update(new Content(homePath, props.build()));
-
-        List<AclModification> aclModifications = new ArrayList<AclModification>();
-        // KERN-886 : Depending on the profile preference we set some ACL's on the profile.
-        if (User.ANON_USER.equals(authId)) {
-          AclModification.addAcl(true, Permissions.CAN_READ, User.ANON_USER,
-              aclModifications);
-          AclModification.addAcl(true, Permissions.CAN_READ, Group.EVERYONE,
-              aclModifications);
-        } else if (VISIBILITY_PUBLIC.equals(visibilityPreference)) {
-          AclModification.addAcl(true, Permissions.CAN_READ, User.ANON_USER,
-              aclModifications);
-          AclModification.addAcl(true, Permissions.CAN_READ, Group.EVERYONE,
-              aclModifications);
-        } else if (VISIBILITY_LOGGED_IN.equals(visibilityPreference)) {
-          AclModification.addAcl(false, Permissions.CAN_READ, User.ANON_USER,
-              aclModifications);
-          AclModification.addAcl(true, Permissions.CAN_READ, Group.EVERYONE,
-              aclModifications);
-        } else if (VISIBILITY_PRIVATE.equals(visibilityPreference)) {
-          AclModification.addAcl(false, Permissions.CAN_READ, User.ANON_USER,
-              aclModifications);
-          AclModification.addAcl(false, Permissions.CAN_READ, Group.EVERYONE,
-              aclModifications);
-        }
-
-        Map<String, Object> acl = Maps.newHashMap();
-        syncOwnership(authorizable, acl, aclModifications);
-
-        AclModification[] aclMods = aclModifications
-            .toArray(new AclModification[aclModifications.size()]);
-        accessControlManager.setAcl(Security.ZONE_CONTENT, homePath, aclMods);
-
-        accessControlManager.setAcl(Security.ZONE_AUTHORIZABLES, authorizable.getId(),
-            aclMods);
-
-        // Create standard Home subpaths
-        createPath(authId, LitePersonalUtils.getPublicPath(authId), SAKAI_PUBLIC_RT, false,
-            contentManager, accessControlManager, null);
-        createPath(authId, LitePersonalUtils.getPrivatePath(authId), SAKAI_PRIVATE_RT, true,
-            contentManager, accessControlManager, null);
-
-        // Message PostProcessor
-        createPath(authId, homePath + MESSAGE_FOLDER, SAKAI_MESSAGESTORE_RT, true,
-            contentManager, accessControlManager, null);
-        // Calendar
-        createPath(authId, homePath + CALENDAR_FOLDER, SAKAI_CALENDAR_RT, false,
-            contentManager, accessControlManager, null);
-        // Connections
-        createPath(authId, homePath + CONTACTS_FOLDER, SAKAI_CONTACTSTORE_RT, true,
-            contentManager, accessControlManager, null);
-        authorizableManager.createGroup("g-contacts-" + authorizable.getId(), "g-contacts-"
-            + authorizable.getId(), null);
-        // Pages
-        boolean createdPages = createPath(authId, homePath + PAGES_FOLDER, SAKAI_PAGES_RT,
-            false, contentManager, accessControlManager, null);
-        createPath(authId, homePath + PAGES_DEFAULT_FILE, SAKAI_PAGES_RT, false,
-            contentManager, accessControlManager, null);
-        if (createdPages) {
-          intitializeContent(request, authorizable, session, homePath + PAGES_FOLDER,
+          updateManagersGroup(authorizable, authorizableManager, accessControlManager,
               parameters);
         }
-        // Profile
-        String profileType = (authorizable instanceof Group) ? SAKAI_GROUP_PROFILE_RT
-                                                            : SAKAI_USER_PROFILE_RT;
-        // FIXME BL120 this is a hackaround to KERN-1569; UI needs to change behavior
-        final Map<String, Object> sakaiAuthzProperties = new HashMap<String, Object>();
-        sakaiAuthzProperties.put("homePath", LitePersonalUtils.getHomeResourcePath(authId));
-        if (authorizable instanceof Group) {
-          for (final Entry<String, Object> entry : authorizable.getSafeProperties()
-              .entrySet()) {
-            final String key = entry.getKey();
-            if (key.startsWith("sakai:group") || "sakai:pages-visible".equals(key)) {
-              sakaiAuthzProperties.put(key, entry.getValue());
-            }
+      }
+
+      // Home Authorizable PostProcessor
+      // ==============================
+      // home path
+      if (!contentManager.exists(homePath)) {
+        if (isCreate) {
+          Builder<String, Object> props = ImmutableMap.builder();
+          if (isGroup) {
+            props.put(SLING_RESOURCE_TYPE, SAKAI_GROUP_HOME_RT);
+
+          } else {
+            props.put(SLING_RESOURCE_TYPE, SAKAI_USER_HOME_RT);
           }
-          createPath(authId, LitePersonalUtils.getPublicPath(authId) + PROFILE_FOLDER,
-              profileType, false, contentManager, accessControlManager,
-              sakaiAuthzProperties);
-          createPath(authId, homePath + JOINREQUESTS_FOLDER, JOINREQUESTS_RT, false,
+          if (authorizable.hasProperty(SAKAI_SEARCH_EXCLUDE_TREE_PROP)) {
+            // raw copy
+            props.put(SAKAI_SEARCH_EXCLUDE_TREE_PROP,
+                authorizable.getProperty(SAKAI_SEARCH_EXCLUDE_TREE_PROP));
+          }
+          contentManager.update(new Content(homePath, props.build()));
+
+          List<AclModification> aclModifications = new ArrayList<AclModification>();
+          // KERN-886 : Depending on the profile preference we set some ACL's on the profile.
+          if (User.ANON_USER.equals(authId)) {
+            AclModification.addAcl(true, Permissions.CAN_READ, User.ANON_USER,
+                aclModifications);
+            AclModification.addAcl(true, Permissions.CAN_READ, Group.EVERYONE,
+                aclModifications);
+          } else if (VISIBILITY_PUBLIC.equals(visibilityPreference)) {
+            AclModification.addAcl(true, Permissions.CAN_READ, User.ANON_USER,
+                aclModifications);
+            AclModification.addAcl(true, Permissions.CAN_READ, Group.EVERYONE,
+                aclModifications);
+          } else if (VISIBILITY_LOGGED_IN.equals(visibilityPreference)) {
+            AclModification.addAcl(false, Permissions.CAN_READ, User.ANON_USER,
+                aclModifications);
+            AclModification.addAcl(true, Permissions.CAN_READ, Group.EVERYONE,
+                aclModifications);
+          } else if (VISIBILITY_PRIVATE.equals(visibilityPreference)) {
+            AclModification.addAcl(false, Permissions.CAN_READ, User.ANON_USER,
+                aclModifications);
+            AclModification.addAcl(false, Permissions.CAN_READ, Group.EVERYONE,
+                aclModifications);
+          }
+
+          Map<String, Object> acl = Maps.newHashMap();
+          syncOwnership(authorizable, acl, aclModifications);
+
+          AclModification[] aclMods = aclModifications
+              .toArray(new AclModification[aclModifications.size()]);
+          accessControlManager.setAcl(Security.ZONE_CONTENT, homePath, aclMods);
+
+          accessControlManager.setAcl(Security.ZONE_AUTHORIZABLES, authorizable.getId(),
+              aclMods);
+
+          // Create standard Home subpaths
+          createPath(authId, LitePersonalUtils.getPublicPath(authId), SAKAI_PUBLIC_RT, false,
               contentManager, accessControlManager, null);
-        } else {
-          createPath(authId, LitePersonalUtils.getPublicPath(authId) + PROFILE_FOLDER,
-              profileType, false, contentManager, accessControlManager, sakaiAuthzProperties);
-        }
-        // end KERN-1569 hackaround
-        // createPath(authId, LitePersonalUtils.getPublicPath(authId) + PROFILE_FOLDER,
-        // profileType, false, contentManager, accessControlManager, null);
+          createPath(authId, LitePersonalUtils.getPrivatePath(authId), SAKAI_PRIVATE_RT, true,
+              contentManager, accessControlManager, null);
 
-        Map<String, Object> profileProperties = processProfileParameters(
-            defaultProfileTemplate, authorizable, parameters);
-        createPath(authId, LitePersonalUtils.getProfilePath(authId) + PROFILE_BASIC,
-            "nt:unstructured", false, contentManager, accessControlManager, null);
-        for (String propName : profileProperties.keySet()) {
-          createPath(authId, LitePersonalUtils.getProfilePath(authId) + PROFILE_BASIC + "/" + propName,
-              "nt:unstructured", false, contentManager, accessControlManager, ImmutableMap.of("value", profileProperties.get(propName)));
-          authorizable.setProperty(propName, profileProperties.get(propName));
-        }
-        authorizableManager.updateAuthorizable(authorizable);
-        if ( isCreate ) {
-          if ( isGroup ) {
-            ActivityUtils.postActivity(eventAdmin, session.getUserId(), homePath, "Authorizable", "default", "group", "GROUP_CREATED", null);
-          } else {
-            ActivityUtils.postActivity(eventAdmin, session.getUserId(), homePath, "Authorizable", "default", "user", "USER_CREATED", null);
+          // Message PostProcessor
+          createPath(authId, homePath + MESSAGE_FOLDER, SAKAI_MESSAGESTORE_RT, true,
+              contentManager, accessControlManager, null);
+          // Calendar
+          createPath(authId, homePath + CALENDAR_FOLDER, SAKAI_CALENDAR_RT, false,
+              contentManager, accessControlManager, null);
+          // Connections
+          createPath(authId, homePath + CONTACTS_FOLDER, SAKAI_CONTACTSTORE_RT, true,
+              contentManager, accessControlManager, null);
+          authorizableManager.createGroup("g-contacts-" + authorizable.getId(), "g-contacts-"
+              + authorizable.getId(), null);
+          // Pages
+          boolean createdPages = createPath(authId, homePath + PAGES_FOLDER, SAKAI_PAGES_RT,
+              false, contentManager, accessControlManager, null);
+          createPath(authId, homePath + PAGES_DEFAULT_FILE, SAKAI_PAGES_RT, false,
+              contentManager, accessControlManager, null);
+          if (createdPages) {
+            intitializeContent(request, authorizable, session, homePath + PAGES_FOLDER,
+                parameters);
           }
-        } else {
-          if ( isGroup ) {
-            ActivityUtils.postActivity(eventAdmin, session.getUserId(), homePath, "Authorizable", "default", "group", "GROUP_UPDATED", null);
+          // Profile
+          String profileType = (authorizable instanceof Group) ? SAKAI_GROUP_PROFILE_RT
+                                                              : SAKAI_USER_PROFILE_RT;
+          // FIXME BL120 this is a hackaround to KERN-1569; UI needs to change behavior
+          final Map<String, Object> sakaiAuthzProperties = new HashMap<String, Object>();
+          sakaiAuthzProperties.put("homePath", LitePersonalUtils.getHomeResourcePath(authId));
+          if (authorizable instanceof Group) {
+            for (final Entry<String, Object> entry : authorizable.getSafeProperties()
+                .entrySet()) {
+              final String key = entry.getKey();
+              if (key.startsWith("sakai:group") || "sakai:pages-visible".equals(key)) {
+                sakaiAuthzProperties.put(key, entry.getValue());
+              }
+            }
+            createPath(authId, LitePersonalUtils.getPublicPath(authId) + PROFILE_FOLDER,
+                profileType, false, contentManager, accessControlManager,
+                sakaiAuthzProperties);
+            createPath(authId, homePath + JOINREQUESTS_FOLDER, JOINREQUESTS_RT, false,
+                contentManager, accessControlManager, null);
           } else {
-            ActivityUtils.postActivity(eventAdmin, session.getUserId(), homePath, "Authorizable", "default", "user", "USER_UPDATED", null);
+            createPath(authId, LitePersonalUtils.getPublicPath(authId) + PROFILE_FOLDER,
+                profileType, false, contentManager, accessControlManager, sakaiAuthzProperties);
           }
-        }
-      }
-    } else {
-      // Attempt to sync the Acl on the home folder with whatever is present in the
-      // authorizable permissions. This is done for backwards compatibility. It
-      // will not succeed if the current session has write access to the Authorizable
-      // but lacks write access to the Home folder.
-      //
-      // TODO Consider dropping this feature since the Home path's ACL can be
-      // explicitly modified in a Batch POST.
+          // end KERN-1569 hackaround
+          // createPath(authId, LitePersonalUtils.getPublicPath(authId) + PROFILE_FOLDER,
+          // profileType, false, contentManager, accessControlManager, null);
 
-      Map<String, Object> acl = accessControlManager.getAcl(Security.ZONE_CONTENT,
-          homePath);
-      List<AclModification> aclModifications = new ArrayList<AclModification>();
-
-      syncOwnership(authorizable, acl, aclModifications);
-
-      try {
-        accessControlManager.setAcl(Security.ZONE_CONTENT, homePath,
-            aclModifications.toArray(new AclModification[aclModifications.size()]));
-      } catch (AccessDeniedException e) {
-        LOGGER.warn("User {} is not able to update ACLs for the Home path of Authorizable {} - exception {}",
-            new Object[] {session.getUserId(), authorizable.getId(), e.getMessage()});
-      }
-
-      acl = accessControlManager
-          .getAcl(Security.ZONE_AUTHORIZABLES, authorizable.getId());
-      aclModifications = new ArrayList<AclModification>();
-
-      syncOwnership(authorizable, acl, aclModifications);
-
-      accessControlManager.setAcl(Security.ZONE_AUTHORIZABLES, authorizable.getId(),
-          aclModifications.toArray(new AclModification[aclModifications.size()]));
-
-      // FIXME BL120 this is another hackaround for KERN-1584.
-      // authprofile missing sakai:group-joinable and sakai:group-visible.
-      if (parameters != null) {
-        final Content authprofile = contentManager.get(LitePersonalUtils
-            .getPublicPath(authId) + PROFILE_FOLDER);
-        if (authprofile != null) {
-          boolean modified = false;
-          for (final Entry<String, Object[]> entry : parameters.entrySet()) {
-            final String key = entry.getKey();
-            if ("sakai:group-joinable".equals(key) 
-                || "sakai:group-visible".equals(key)
-                || "sakai:pages-visible".equals(key)) {
-              authprofile.setProperty(entry.getKey(), entry.getValue()[0]);
-              modified = true;
+          Map<String, Object> profileProperties = processProfileParameters(
+              defaultProfileTemplate, authorizable, parameters);
+          createPath(authId, LitePersonalUtils.getProfilePath(authId) + PROFILE_BASIC,
+              "nt:unstructured", false, contentManager, accessControlManager, null);
+          for (String propName : profileProperties.keySet()) {
+            createPath(authId, LitePersonalUtils.getProfilePath(authId) + PROFILE_BASIC + "/" + propName,
+                "nt:unstructured", false, contentManager, accessControlManager, ImmutableMap.of("value", profileProperties.get(propName)));
+            authorizable.setProperty(propName, profileProperties.get(propName));
+          }
+          authorizableManager.updateAuthorizable(authorizable);
+          if ( isCreate ) {
+            if ( isGroup ) {
+              ActivityUtils.postActivity(eventAdmin, session.getUserId(), homePath, "Authorizable", "default", "group", "GROUP_CREATED", null);
+            } else {
+              ActivityUtils.postActivity(eventAdmin, session.getUserId(), homePath, "Authorizable", "default", "user", "USER_CREATED", null);
+            }
+          } else {
+            if ( isGroup ) {
+              ActivityUtils.postActivity(eventAdmin, session.getUserId(), homePath, "Authorizable", "default", "group", "GROUP_UPDATED", null);
+            } else {
+              ActivityUtils.postActivity(eventAdmin, session.getUserId(), homePath, "Authorizable", "default", "user", "USER_UPDATED", null);
             }
           }
-          if (modified) {
-            contentManager.update(authprofile);
-          }
-        } else {
-          IllegalStateException e = new IllegalStateException(
-              "Could not locate group profile");
-          LOGGER.error(e.getLocalizedMessage(), e);
         }
+      } else {
+        // Attempt to sync the Acl on the home folder with whatever is present in the
+        // authorizable permissions. This is done for backwards compatibility. It
+        // will not succeed if the current session has write access to the Authorizable
+        // but lacks write access to the Home folder.
+        //
+        // TODO Consider dropping this feature since the Home path's ACL can be
+        // explicitly modified in a Batch POST.
+
+        Map<String, Object> acl = accessControlManager.getAcl(Security.ZONE_CONTENT,
+            homePath);
+        List<AclModification> aclModifications = new ArrayList<AclModification>();
+
+        syncOwnership(authorizable, acl, aclModifications);
+
+        try {
+          accessControlManager.setAcl(Security.ZONE_CONTENT, homePath,
+              aclModifications.toArray(new AclModification[aclModifications.size()]));
+        } catch (AccessDeniedException e) {
+          LOGGER.warn("User {} is not able to update ACLs for the Home path of Authorizable {} - exception {}",
+              new Object[] {session.getUserId(), authorizable.getId(), e.getMessage()});
+        }
+
+        acl = accessControlManager
+            .getAcl(Security.ZONE_AUTHORIZABLES, authorizable.getId());
+        aclModifications = new ArrayList<AclModification>();
+
+        syncOwnership(authorizable, acl, aclModifications);
+
+        accessControlManager.setAcl(Security.ZONE_AUTHORIZABLES, authorizable.getId(),
+            aclModifications.toArray(new AclModification[aclModifications.size()]));
+
+        // FIXME BL120 this is another hackaround for KERN-1584.
+        // authprofile missing sakai:group-joinable and sakai:group-visible.
+        if (parameters != null) {
+          final Content authprofile = contentManager.get(LitePersonalUtils
+              .getPublicPath(authId) + PROFILE_FOLDER);
+          if (authprofile != null) {
+            boolean modified = false;
+            for (final Entry<String, Object[]> entry : parameters.entrySet()) {
+              final String key = entry.getKey();
+              if ("sakai:group-joinable".equals(key)
+                  || "sakai:group-visible".equals(key)
+                  || "sakai:pages-visible".equals(key)) {
+                authprofile.setProperty(entry.getKey(), entry.getValue()[0]);
+                modified = true;
+              }
+            }
+            if (modified) {
+              contentManager.update(authprofile);
+            }
+          } else {
+            IllegalStateException e = new IllegalStateException(
+                "Could not locate group profile");
+            LOGGER.error(e.getLocalizedMessage(), e);
+          }
+        }
+        // end KERN-1584 hackaround
       }
-      // end KERN-1584 hackaround
+    } finally {
+      if (adminSession != null) {
+        adminSession.logout();
+      }
     }
 
   }
@@ -847,7 +858,20 @@ public class DefaultPostProcessor implements LiteAuthorizablePostProcessor {
   }
 
   private void syncOwnership(Authorizable authorizable, Map<String, Object> acl,
-      List<AclModification> aclModifications) {
+      List<AclModification> aclModifications) throws StorageClientException, AccessDeniedException {
+    boolean alreadySpecifiedAnonymousAcl = false;
+    boolean alreadySpecifiedEveryoneAcl = false;
+    for (AclModification aclMod : aclModifications) {
+      if (aclMod.getAceKey().equals(AclModification.grantKey(User.ANON_USER))) {
+        alreadySpecifiedAnonymousAcl = true;
+      } else if (aclMod.getAceKey().equals(AclModification.denyKey(User.ANON_USER))) {
+        alreadySpecifiedAnonymousAcl = true;
+      } else if (aclMod.getAceKey().equals(AclModification.grantKey(Group.EVERYONE))) {
+        alreadySpecifiedEveryoneAcl = true;
+      } else if (aclMod.getAceKey().equals(AclModification.denyKey(Group.EVERYONE))) {
+        alreadySpecifiedEveryoneAcl = true;
+      }
+    }
     // remove all acls we are not concerned with from the copy of the current state
 
     // make sure the owner has permission on their home
@@ -881,8 +905,7 @@ public class DefaultPostProcessor implements LiteAuthorizablePostProcessor {
             aclModifications.add(new AclModification(key, Permissions.CAN_READ
                 .getPermission(), Operation.OP_REPLACE));
           } else {
-            aclModifications.add(new AclModification(key, Permissions.CAN_MANAGE
-                .getPermission(), Operation.OP_XOR));
+            aclModifications.add(new AclModification(key, Permissions.ALL.getPermission(), Operation.OP_DEL));
           }
         }
       }
@@ -905,7 +928,7 @@ public class DefaultPostProcessor implements LiteAuthorizablePostProcessor {
                                                  Permissions.ALL.getPermission(), Operation.OP_DEL));
         aclModifications.add(new AclModification(AclModification.grantKey(User.ANON_USER),
                                                  Permissions.CAN_READ.getPermission(), Operation.OP_REPLACE));
-      } else {
+      } else if (!alreadySpecifiedAnonymousAcl) {
         // Deny "anonymous" access to everything
         aclModifications.add(new AclModification(
                                                  AclModification.grantKey(User.ANON_USER), Permissions.ALL.getPermission(),
@@ -919,7 +942,7 @@ public class DefaultPostProcessor implements LiteAuthorizablePostProcessor {
                                                  Permissions.ALL.getPermission(), Operation.OP_DEL));
         aclModifications.add(new AclModification(AclModification.grantKey(Group.EVERYONE),
                                                  Permissions.CAN_READ.getPermission(), Operation.OP_REPLACE));
-      } else {
+      } else if (!alreadySpecifiedEveryoneAcl) {
         // Deny "everyone" access to everything
         aclModifications.add(new AclModification(
                                                  AclModification.grantKey(Group.EVERYONE), Permissions.ALL.getPermission(),
@@ -928,15 +951,19 @@ public class DefaultPostProcessor implements LiteAuthorizablePostProcessor {
             Permissions.ALL.getPermission(), Operation.OP_REPLACE));
       }
     } else {
-      // anon and everyone can read
-      aclModifications.add(new AclModification(AclModification.denyKey(User.ANON_USER),
-          Permissions.ALL.getPermission(), Operation.OP_DEL));
-      aclModifications.add(new AclModification(AclModification.denyKey(Group.EVERYONE),
-          Permissions.ALL.getPermission(), Operation.OP_DEL));
-      aclModifications.add(new AclModification(AclModification.grantKey(User.ANON_USER),
-          Permissions.CAN_READ.getPermission(), Operation.OP_REPLACE));
-      aclModifications.add(new AclModification(AclModification.grantKey(Group.EVERYONE),
-          Permissions.CAN_READ.getPermission(), Operation.OP_REPLACE));
+      // assuming the permissions have not been set already, anon and everyone can read
+      if (!alreadySpecifiedAnonymousAcl) {
+        aclModifications.add(new AclModification(AclModification.denyKey(User.ANON_USER),
+            Permissions.ALL.getPermission(), Operation.OP_DEL));
+        aclModifications.add(new AclModification(AclModification.grantKey(User.ANON_USER),
+            Permissions.CAN_READ.getPermission(), Operation.OP_REPLACE));
+      }
+      if (!alreadySpecifiedEveryoneAcl) {
+        aclModifications.add(new AclModification(AclModification.denyKey(Group.EVERYONE),
+            Permissions.ALL.getPermission(), Operation.OP_DEL));
+        aclModifications.add(new AclModification(AclModification.grantKey(Group.EVERYONE),
+            Permissions.CAN_READ.getPermission(), Operation.OP_REPLACE));
+      }
 
     }
 

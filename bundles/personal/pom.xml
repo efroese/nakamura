@@ -16,12 +16,12 @@
   <parent>
     <groupId>org.sakaiproject.nakamura</groupId>
     <artifactId>base</artifactId>
-    <version>0.11-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
   <artifactId>org.sakaiproject.nakamura.personal</artifactId>
   <packaging>bundle</packaging>
-  <version>0.11-SNAPSHOT</version>
+  <version>1.1-SNAPSHOT</version>
   <name>Sakai Nakamura :: Personal Space Bundle</name>
   <description>Provides support for the personal storage area bound to the current user, and
     support for public user spaces addressable via a url containing the user id.</description>
@@ -55,7 +55,7 @@
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.utils</artifactId>
-      <version>0.11-SNAPSHOT</version>
+      <version>1.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -81,7 +81,7 @@
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.jcr</artifactId>
-      <version>0.11-SNAPSHOT</version>
+      <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.apache.sling</groupId>
@@ -91,12 +91,12 @@
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.user</artifactId>
-      <version>0.11-SNAPSHOT</version>
+      <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.http</artifactId>
-      <version>0.11-SNAPSHOT</version>
+      <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.apache.jackrabbit</groupId>
@@ -137,12 +137,12 @@
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.doc</artifactId>
-      <version>0.11-SNAPSHOT</version>
+      <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.testutils</artifactId>
-      <version>0.11-SNAPSHOT</version>
+      <version>1.1-SNAPSHOT</version>
      <scope>test</scope>
     </dependency>
   </dependencies>
