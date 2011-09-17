@@ -272,6 +272,11 @@ KERN-1187
             <artifactId>org.apache.felix.metatype</artifactId>
             <version>1.0.4</version>
         </bundle>
+        <bundle>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>2.6.5</version>
+        </bundle>
     </startLevel>
 
     <startLevel level="15">
