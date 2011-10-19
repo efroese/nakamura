@@ -71,10 +71,10 @@
       <artifactId>org.osgi.compendium</artifactId> </dependency> <dependency>
       <groupId>javax.servlet</groupId> <artifactId>servlet-api</artifactId> </dependency>
     -->
+
     <dependency>
-      <groupId>com.google.collections</groupId>
-      <artifactId>google-collections</artifactId>
-      <scope>compile</scope>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.code.guice</groupId>

@@ -1,11 +1,9 @@
 #!/usr/bin/env ruby
 
-# Add all files in testscripts\SlingRuby\lib directory to ruby "require" search path
-require './ruby-lib-dir.rb'
 
 require 'set'
-require 'sling/test'
-require 'sling/message'
+require 'nakamura/test'
+require 'nakamura/message'
 require 'rexml/document'
 require 'rexml/streamlistener'
 include REXML
@@ -20,7 +18,7 @@ class TC_BasicLTI < Test::Unit::TestCase
   end
   
   def hackzzz
-    @now = Time.now.to_f.to_s.gsub('.', '');
+    @now = Time.now.to_nsec
     @creator = create_user("creator-test#{@now}");
     assert_not_nil(@creator)
     @user = create_user("user-test#{@now}");
@@ -158,11 +156,7 @@ class TC_BasicLTI < Test::Unit::TestCase
     resp = @s.execute_get(@s.url_for("/var.json"));
     assert_equal(200, resp.code.to_i, "Should be able to read /var.");
     resp = @s.execute_get(@s.url_for("/var/basiclti.json"));
-    assert_equal(404, resp.code.to_i, "Should NOT be able to read /var/basiclti.");
-    resp = @s.execute_get(@s.url_for("/var/basiclti/sakai.singleuser.json"));
-    assert_equal(404, resp.code.to_i, "Should NOT be able to read /var/basiclti/sakai.singleuser.");
-    resp = @s.execute_get(@s.url_for("/var/basiclti/sakai.singleuser/ltiKeys.json"));
-    assert_equal(404, resp.code.to_i, "Should NOT be able to read /var/basiclti/sakai.singleuser/ltiKeys.json.");
+    assert_equal("{}", resp.body, "Should NOT be able to read /var/basiclti.");
     
     # verify normal user cannot read /var/basiclti
     @s.switch_user(@creator);
@@ -170,11 +164,7 @@ class TC_BasicLTI < Test::Unit::TestCase
     resp = @s.execute_get(@s.url_for("/var.json"));
     assert_equal(200, resp.code.to_i, "Should be able to read /var.");
     resp = @s.execute_get(@s.url_for("/var/basiclti.json"));
-    assert_equal(404, resp.code.to_i, "Should NOT be able to read /var/basiclti.");
-    resp = @s.execute_get(@s.url_for("/var/basiclti/sakai.singleuser.json"));
-    assert_equal(404, resp.code.to_i, "Should NOT be able to read /var/basiclti/sakai.singleuser.");
-    resp = @s.execute_get(@s.url_for("/var/basiclti/sakai.singleuser/ltiKeys.json"));
-    assert_equal(404, resp.code.to_i, "Should NOT be able to read /var/basiclti/sakai.singleuser/ltiKeys.json.");
+    assert_equal("{}", resp.body, "Should NOT be able to read /var/basiclti.");
     
     # verify admin user can read /var/basiclti
     @s.switch_user(@admin);
@@ -193,10 +183,6 @@ class TC_BasicLTI < Test::Unit::TestCase
     assert_not_nil(props["jcr:mixinTypes"]);
     assert_not_nil(props["jcr:mixinTypes"][0]);
     assert_equal("rep:AccessControllable", props["jcr:mixinTypes"][0], "Node should be accessed controlled");
-    resp = @s.execute_get(@s.url_for("/var/basiclti/sakai.singleuser.json"));
-    assert_equal(200, resp.code.to_i, "Admin should be able to read /var/basiclti/sakai.singleuser.");
-    resp = @s.execute_get(@s.url_for("/var/basiclti/sakai.singleuser/ltiKeys.json"));
-    assert_equal(200, resp.code.to_i, "Admin should be able to read /var/basiclti/sakai.singleuser/ltiKeys.json.");
     
     # create a sakai/basiclti VirtualTool node
     prepare_group()
@@ -344,15 +330,20 @@ class TC_BasicLTI < Test::Unit::TestCase
     assert_equal(@bltiJcrPath, hash["resource_link_id"], "resource_link_id should equal saveUrl");
     assert_equal(false, hash["roles"].empty?, "roles should not be empty");
     assert_equal(false, hash["tool_consumer_instance_contact_email"].empty?, "tool_consumer_instance_contact_email should not be empty");
+    assert_equal("admin@sakaiproject.org", hash["tool_consumer_instance_contact_email"]);
     assert_equal(false, hash["tool_consumer_instance_description"].empty?, "tool_consumer_instance_description should not be empty");
+    assert_equal("The Sakai Project", hash["tool_consumer_instance_description"]);
     assert_equal(false, hash["tool_consumer_instance_guid"].empty?, "tool_consumer_instance_guid should not be empty");
+    assert_equal("sakaiproject.org", hash["tool_consumer_instance_guid"]);
     assert_equal(false, hash["tool_consumer_instance_name"].empty?, "tool_consumer_instance_name should not be empty");
+    assert_equal("Sakai Development", hash["tool_consumer_instance_name"]);
     assert_equal(false, hash["tool_consumer_instance_url"].empty?, "tool_consumer_instance_url should not be empty");
+    assert_equal("http://sakaiproject.org", hash["tool_consumer_instance_url"]);
     assert_equal(false, hash["user_id"].empty?, "user_id should not be empty");
   end
 
   def prepare_group()
-    now = Time.now.to_f.to_s.gsub('.', '')
+    now = Time.now.to_nsec
     @groupid = "basiclti-group-#{now}"
     @groupname = "Basic LTI Test Group #{now}"
     @s.switch_user(@creator)

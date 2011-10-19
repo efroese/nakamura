@@ -1,9 +1,8 @@
 #!/usr/bin/env ruby
 require 'fileutils'
-require './ruby-lib-dir'
-require 'sling/sling'
+require 'nakamura'
 include SlingInterface
-require 'sling/users'
+require 'nakamura/users'
 include SlingUsers
 require 'rubygems'
 require 'docsplit'
@@ -26,6 +25,17 @@ module Net::HTTPHeader
       @header[key.downcase] = [value.strip]
     end
   end
+  def encode_kvpair(k, vs)
+    if vs.nil? or vs == '' then
+      "#{urlencode(k)}="
+    elsif vs.kind_of?(Array)
+      # In Ruby 1.8.7, Array(string-with-newlines) will split the string
+      # after each embedded newline.
+      Array(vs).map {|v| "#{urlencode(k)}=#{urlencode(v.to_s)}" }
+    else
+      "#{urlencode(k)}=#{urlencode(vs.to_s)}"
+    end
+  end  
 end
 
 # Re-sized an image and saves the stream of bytes of the re-sized image to a new file with a specific filename.
@@ -120,6 +130,7 @@ def main
 
   server=ARGV[0]
   admin_password = ARGV[1] || "admin"
+  term_server = ARGV[2] + "terms"
   @s = Sling.new(server)
   admin = User.new("admin", admin_password)
   @s.switch_user(admin)
@@ -193,6 +204,53 @@ def main
 
           FileUtils.rm DOCS_DIR + "/#{filename_thumb}"
         else
+          begin
+            # Get text from the document
+            Docsplit.extract_text filename, :ocr => false
+            text_content = IO.read(id + ".txt")
+            postData = Net::HTTP.post_form(URI.parse(term_server), {'context' => text_content})
+            if postData != nil
+              postData = JSON.parse postData.body
+            end
+            tags = ""
+            if postData != nil 
+              for i in (0..postData.length - 1)
+                tags += "- " + postData[i] + "\n"
+              end
+            end
+            # Add old tags to new tags
+            origin_tags = meta["sakai:tags"]
+            if origin_tags != nil && origin_tags.length > 0
+              for tag in origin_tags
+                postData << tag
+              end
+            end
+            # Generate tags for document
+            @s.execute_post @s.url_for("p/#{id}"), {"sakai:tags" => postData}
+            log "Generate tags for #{id}, #{postData}"
+            FileUtils.rm id + ".txt"
+            user_id = meta["sakai:pool-content-created-for"]
+            admin_id = "admin"
+            origin_file_name = meta["sakai:pooled-content-file-name"]
+            if postData != nil && postData.length > 0
+              msg_body = "We have automatically added the following tags for #{origin_file_name}:\n\n #{tags}.\n\nThis will allow you to find it back more easily and will help other people in finding your content, in case your content is public.\n\nRegards, \nThe Sakai Team"
+              @s.execute_post(@s.url_for("~#{admin_id}/message.create.html"), {
+                "sakai:type" => "internal",
+                "sakai:sendstate" => "pending",
+                "sakai:messagebox" => "outbox",
+                "sakai:to" => "internal:#{user_id}",
+                "sakai:from" => "#{admin_id}",
+                "sakai:subject" => "We've added some tags to #{origin_file_name}",
+                "sakai:body" => msg_body,
+                "_charset_" => "utf-8",
+                "sakai:category" => "message"
+              })
+              log "sending message from #{admin_id} user to #{user_id}"
+            end
+          rescue Exception => msg
+            log "failed to generate document tags: #{msg}", :warn
+          end
+
           # Generating image previews of the document.
           Docsplit.extract_images filename, :size => '1000x', :format => :jpg
 

@@ -50,12 +50,14 @@
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.solr</artifactId>
-      <version>1.0</version>
+<<<<<<< HEAD
+=======
     </dependency>
     <dependency>
       <groupId>org.apache.solr</groupId>
       <artifactId>solr-core</artifactId>
       <version>4.0.1040465</version>
+>>>>>>> af3a239063d29d8cecf04b8e15c421889d5c39b9
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

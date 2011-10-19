@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -153,7 +153,7 @@ public class CreateContentPoolServlet extends SlingAllMethodsServlet {
   }
 
 
-  private void notifyFileUploadHandlers(String poolId, RequestParameter p,
+  private void notifyFileUploadHandlers(Map<String, Object> results, String poolId, RequestParameter p,
                                         String userId, boolean isNew)
     throws AccessDeniedException, StorageClientException
   {
@@ -162,7 +162,7 @@ public class CreateContentPoolServlet extends SlingAllMethodsServlet {
     // to the beginning of the file).
     for (FileUploadHandler fileUploadHandler : fileUploadHandlers) {
       try {
-        fileUploadHandler.handleFile(poolId, p.getInputStream(), userId, isNew);
+        fileUploadHandler.handleFile(results, poolId, p.getInputStream(), userId, isNew);
       } catch (Throwable t) {
         LOGGER.error("FileUploadHandler '{}' failed to handle upload of file '{}' for userid '{}': {}",
                      new Object[] { fileUploadHandler, p.getFileName(), userId, t.getMessage()});
@@ -228,7 +228,7 @@ public class CreateContentPoolServlet extends SlingAllMethodsServlet {
               statusCode = HttpServletResponse.SC_CREATED;
               fileUpload = true;
 
-              notifyFileUploadHandlers(createPoolId, p, au.getId(), true);
+              notifyFileUploadHandlers(results, createPoolId, p, au.getId(), true);
             } else {
               // Add it to the map so we can output something to the UI.
               Content content = createFile(poolId, alternativeStream, session, p, au, false);
@@ -236,7 +236,7 @@ public class CreateContentPoolServlet extends SlingAllMethodsServlet {
               statusCode = HttpServletResponse.SC_OK;
               fileUpload = true;
 
-              notifyFileUploadHandlers(poolId, p, au.getId(), false);
+              notifyFileUploadHandlers(results, poolId, p, au.getId(), false);
               break;
             }
 

@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -17,7 +17,7 @@
  */
 package org.sakaiproject.nakamura.files.search;
 
-import com.google.common.base.Join;
+import com.google.common.base.Joiner;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.felix.scr.annotations.Component;
@@ -75,7 +75,7 @@ public class MeManagerViewerSearchPropertyProvider implements SolrSearchProperty
     final Set<String> viewerAndManagerPrincipals = getPrincipals(session,
         user);
     if (!viewerAndManagerPrincipals.isEmpty()) {
-      propertiesMap.put("au", Join.join(" OR ", viewerAndManagerPrincipals));
+      propertiesMap.put("au", Joiner.on(" OR ").join(viewerAndManagerPrincipals));
     }
 
     String q = request.getParameter("q");

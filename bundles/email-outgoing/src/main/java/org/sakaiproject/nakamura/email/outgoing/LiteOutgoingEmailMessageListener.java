@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -22,7 +22,10 @@ import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.MultiPartEmail;
+import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.sling.commons.osgi.OsgiUtil;
@@ -82,8 +85,16 @@ public class LiteOutgoingEmailMessageListener implements MessageListener {
 
   @Property(value = "localhost")
   private static final String SMTP_SERVER = "sakai.smtp.server";
-  @Property(intValue = 25, label = "%sakai.smtp.port.name")
+  @Property(intValue = 25)
   private static final String SMTP_PORT = "sakai.smtp.port";
+  @Property(boolValue = false)
+  private static final String SMTP_USE_TLS = "sakai.smtp.tls";
+  @Property(boolValue = false)
+  private static final String SMTP_USE_SSL = "sakai.smtp.ssl";
+  @Property
+  private static final String SMTP_AUTH_USER = "sakai.smtp.auth.user";
+  @Property
+  private static final String SMTP_AUTH_PASS = "sakai.smtp.auth.pass";
   @Property(intValue = 240)
   private static final String MAX_RETRIES = "sakai.email.maxRetries";
   @Property(intValue = 30)
@@ -122,13 +133,17 @@ public class LiteOutgoingEmailMessageListener implements MessageListener {
   public static final String RECIPIENTS = "recipients";
 
   private Connection connection = null;
-  private Integer maxRetries;
-  private Integer smtpPort;
   private String smtpServer;
+  private Integer smtpPort;
+  private boolean useTls;
+  private boolean useSsl;
+  private String authUser;
+  private String authPass;
+  private Integer maxRetries;
+  private Integer retryInterval;
   private String replyAsAddress;
   private String replyAsName;
 
-  private Integer retryInterval;
 
   public LiteOutgoingEmailMessageListener() {
   }
@@ -186,8 +201,7 @@ public class LiteOutgoingEmailMessageListener implements MessageListener {
                     email = constructMessage(messageContent, recipients, adminSession,
                         sparseSession);
 
-                    email.setSmtpPort(smtpPort);
-                    email.setHostName(smtpServer);
+                    setOptions(email);
 
                     email.send();
                   } catch (EmailException e) {
@@ -270,6 +284,26 @@ public class LiteOutgoingEmailMessageListener implements MessageListener {
     }
   }
 
+  /**
+   * Set transfer options on the email based on configuration of this service.
+   *
+   * @param email The email where to set options.
+   */
+  private void setOptions(MultiPartEmail email) {
+    email.setHostName(smtpServer);
+    email.setTLS(useTls);
+    email.setSSL(useSsl);
+    if (useSsl) {
+      email.setSslSmtpPort(Integer.toString(smtpPort));
+    } else {
+      email.setSmtpPort(smtpPort);
+    }
+
+    if (!StringUtils.isBlank(authUser) && !StringUtils.isBlank(authPass)) {
+      email.setAuthentication(authUser, authPass);
+    }
+  }
+
   private MultiPartEmail constructMessage(Content contentNode, List<String> recipients,
       javax.jcr.Session session, org.sakaiproject.nakamura.api.lite.Session sparseSession)
       throws EmailDeliveryException, StorageClientException, AccessDeniedException,
@@ -285,7 +319,6 @@ public class LiteOutgoingEmailMessageListener implements MessageListener {
     try {
       // set from: to the reply as address
       email.setFrom(replyAsAddress, replyAsName);
-      email.setAuthentication("user", "pass");
 
       if (toRecipients.size() == 1) {
         // set to: to the rcpt if sending to just one person
@@ -485,6 +518,8 @@ public class LiteOutgoingEmailMessageListener implements MessageListener {
     }
   }
 
+  @Activate
+  @Modified
   protected void activate(ComponentContext ctx) {
     @SuppressWarnings("rawtypes")
     Dictionary props = ctx.getProperties();
@@ -548,6 +583,11 @@ public class LiteOutgoingEmailMessageListener implements MessageListener {
       LOGGER.error("No reply-as email name set");
     }
 
+    useTls = OsgiUtil.toBoolean(props.get(SMTP_USE_TLS), false);
+    useSsl = OsgiUtil.toBoolean(props.get(SMTP_USE_SSL), false);
+    authUser = OsgiUtil.toString(props.get(SMTP_AUTH_USER), "");
+    authPass = OsgiUtil.toString(props.get(SMTP_AUTH_PASS), "");
+
     try {
       connection = connFactoryService.getDefaultConnectionFactory().createConnection();
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -566,6 +606,7 @@ public class LiteOutgoingEmailMessageListener implements MessageListener {
     }
   }
 
+  @Deactivate
   protected void deactivate(ComponentContext ctx) {
     if (connection != null) {
       try {

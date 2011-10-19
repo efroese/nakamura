@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -40,7 +40,8 @@ public interface FileUploadHandler {
    *          True if the uploaded file is new content.  False if it replaces an existing node.
    *
    **/
-  void handleFile(String poolId,
+  void handleFile(Map<String, Object> results,
+                  String poolId,
                   InputStream fileInputStream,
                   String userId,
                   boolean isNew)

@@ -2,10 +2,10 @@
   "sling:resourceType": "sakai/solr-search",
   "sakai:query-template": "tag:(${tag})",
   "sakai:query-template-options": {
-      "fq": "resourceType:${_resourceType}${_type}${_categoryAnd}",
+      "fq": ["resourceType:${_resourceType}", "${_type}", "${_category}"],
       "sort": "${sortOn} ${sortOrder}"
   },
-  "_categoryAnd": "",
+  "_category": "",
   "sortOn": "score",
   "sortOrder": "desc",
   "sakai:title": "By Tag",

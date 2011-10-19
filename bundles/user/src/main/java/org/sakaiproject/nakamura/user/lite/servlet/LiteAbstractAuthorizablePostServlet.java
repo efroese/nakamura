@@ -1,18 +1,19 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/**
+ * Licensed to the Sakai Foundation (SF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The SF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 package org.sakaiproject.nakamura.user.lite.servlet;
 
@@ -42,20 +43,19 @@ import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import org.sakaiproject.nakamura.api.resource.DateParser;
 import org.sakaiproject.nakamura.api.resource.JSONResponse;
 import org.sakaiproject.nakamura.api.resource.RequestProperty;
-import org.sakaiproject.nakamura.user.lite.servlet.LitePropertyType.Type;
+import org.sakaiproject.nakamura.api.resource.lite.SparsePropertyValueHandler;
+import org.sakaiproject.nakamura.api.resource.lite.SparseType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.jcr.RepositoryException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -547,13 +547,9 @@ public abstract class LiteAbstractAuthorizablePostServlet extends
 
         String parentPath = "a:"+parent.getId();
         // no explicit typehint
-        Type type = Type.UNDEFINED;
+        SparseType type = SparseType.UNDEFINED;
         if (prop.getTypeHint() != null) {
-            try {
-                type = LitePropertyType.create(prop.getTypeHint());
-            } catch (Exception e) {
-                // ignore
-            }
+          type = SparseType.getByName(prop.getTypeHint());
         }
 
         String[] values = prop.getStringValues();
@@ -585,38 +581,16 @@ public abstract class LiteAbstractAuthorizablePostServlet extends
                 }
             } else {
                 // modify property
-                if (type == Type.DATE) {
-                    // try conversion
-                    Calendar c = dateParser.parse(values[0]);
-                    if (c != null) {
-                      
-                          parent.setProperty(prop.getName(), c);
-                          toSave.put(parent.getId(),parent);
-                         changes.add(Modification.onModified(parentPath
-                                + "/" + prop.getName()));
-                        return;
-                    }
-                    // fall back to default behaviour
-                }
+                SparsePropertyValueHandler valueHandler = new SparsePropertyValueHandler(dateParser, changes);
+                Object val = valueHandler.fromRequest(type, values);
                 toSave.put(parent.getId(),parent);
-                parent.setProperty(prop.getName(), values[0]);
+                parent.setProperty(prop.getName(), val);
             }
         } else {
             removePropertyIfExists(parent, prop.getName());
-            if (type == Type.DATE) {
-                // try conversion
-                Calendar[] c = dateParser.parse(values);
-                if (c != null) {
-                    parent.setProperty(prop.getName(), c);
-                    toSave.put(parent.getId(),parent);
-                    changes.add(Modification.onModified(parentPath + "/"
-                        + prop.getName()));
-                    return;
-                }
-                // fall back to default behaviour
-            }
-
-            parent.setProperty(prop.getName(), values);
+            SparsePropertyValueHandler valueHandler = new SparsePropertyValueHandler(dateParser, changes);
+            Object vals = valueHandler.fromRequest(type, values);
+            parent.setProperty(prop.getName(), vals);
             toSave.put(parent.getId(),parent);
             changes.add(Modification.onModified(parentPath + "/"
                 + prop.getName()));

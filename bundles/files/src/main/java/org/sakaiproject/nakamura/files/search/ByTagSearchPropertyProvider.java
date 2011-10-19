@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -83,9 +83,9 @@ public class ByTagSearchPropertyProvider implements SolrSearchPropertyProvider {
         // filter futher if only one type of authorizable was requested. the default is
         // to not include a type filter which will return all authorizables
         if (rpType.contains("u") && !rpType.contains("g")) {
-          type = " AND type:u";
+          type = "type:u";
         } else if (!rpType.contains("u") && rpType.contains("g")) {
-          type = " AND type:g";
+          type = "type:g";
         }
       } else if (types.contains("c")) {
         resourceType = "sakai/pooled-content";

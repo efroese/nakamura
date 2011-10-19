@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import org.junit.Before;
@@ -59,7 +60,6 @@ public class LiteDiscussionManagerTest {
    * Login as administrator
    *
    * @return Returns the administrator session.
-   * @throws LoginException
    * @throws RepositoryException
    * @throws IOException
    */
@@ -75,7 +75,7 @@ public class LiteDiscussionManagerTest {
     settingsNode.setProperty(SLING_RESOURCE_TYPE_PROPERTY, "sakai/settings");
     settingsNode.setProperty("sakai:marker", "foo");
     settingsNode.setProperty("sakai:type", "discussion");
-    when(cm.find(isA(Map.class))).thenReturn(Lists.immutableList(settingsNode));
+    when(cm.find(isA(Map.class))).thenReturn(ImmutableList.of(settingsNode));
 
     LiteDiscussionManager manager = new LiteDiscussionManagerImpl();
     Content result = manager.findSettings("foo", session, "discussion");
@@ -103,7 +103,7 @@ public class LiteDiscussionManagerTest {
     Content randomNode = new Content("/messages/foo", null);
     randomNode.setProperty("foo", "bar");
 
-    when(cm.find(isA(Map.class))).thenReturn(Lists.immutableList(msgNode));
+    when(cm.find(isA(Map.class))).thenReturn(ImmutableList.of(msgNode));
     LiteDiscussionManager manager = new LiteDiscussionManagerImpl();
     Content result = manager.findMessage("10", "foo", session, "/messages");
 

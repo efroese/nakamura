@@ -38,7 +38,7 @@
           <instructions>
             <Bundle-Category>sakai-nakamura</Bundle-Category>
             <DynamicImport-Package>sun.misc.*</DynamicImport-Package>
-            <Export-Package>org.sakaiproject.nakamura.api.templates</Export-Package>
+            <Export-Package>org.sakaiproject.nakamura.api.templates,org.apache.velocity.*</Export-Package>
             <Import-Package>!com.sun.*,!sun.misc,!sun.rmi.rmic,!sun.tools.*,!kaffe.rmi.*,!org.apache.bsf,org.apache.tools.ant.*;resolution:=optional,!org.apache.bcel.*,!org.jdom.*,!org.apache.avalon.*,*</Import-Package>
             <Embed-Transitive>true</Embed-Transitive>
             <Embed-Dependency>velocity,werken-xpath,commons-logging,log4j,logkit,ant,xml-resolver,antlr,oro</Embed-Dependency>
@@ -123,7 +123,6 @@
     <dependency>
       <groupId>org.apache.jackrabbit</groupId>
       <artifactId>jackrabbit-jcr-commons</artifactId>
-      <version>2.0.0</version>
     </dependency>
     <dependency>
       <groupId>javax.jcr</groupId>
@@ -132,23 +131,18 @@
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.jcr.api</artifactId>
-      <version>2.1.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.commons.osgi</artifactId>
-      <version>2.0.6</version>
     </dependency>
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.api</artifactId>
-      <version>2.0.4-incubator</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
-      <version>2.5</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

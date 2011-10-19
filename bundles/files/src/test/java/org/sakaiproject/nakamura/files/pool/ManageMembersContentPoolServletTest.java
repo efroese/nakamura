@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -36,6 +36,11 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.testing.jcr.MockNode;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.params.SolrParams;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,11 +56,13 @@ import org.sakaiproject.nakamura.api.lite.accesscontrol.Security;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import org.sakaiproject.nakamura.api.profile.ProfileService;
+import org.sakaiproject.nakamura.api.solr.SolrServerService;
 import org.sakaiproject.nakamura.lite.BaseMemoryRepository;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.Principal;
+import java.util.Iterator;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -96,6 +103,18 @@ public class ManageMembersContentPoolServletTest {
   private ResourceResolver resourceResolver;
   @Mock
   private ProfileService profileService;
+  @Mock
+  private SolrServerService solrSearchService;
+  @Mock
+  private SolrServer solrServer;
+  @Mock
+  QueryResponse queryResponse;
+  @Mock
+  SolrQuery query;
+  @Mock
+  SolrDocumentList results;
+  @Mock
+  Iterator iterator;
 
   private ManageMembersContentPoolServlet servlet;
   private PrintWriter printWriter;
@@ -126,7 +145,11 @@ public class ManageMembersContentPoolServletTest {
     sparseSession = sparseRepository.loginAdministrative("ieb");
     servlet = new ManageMembersContentPoolServlet();
     // servlet.slingRepository = slingRepository;
-
+    servlet.solrSearchService = solrSearchService;
+    when(solrSearchService.getServer()).thenReturn(solrServer);
+    when(solrServer.query((SolrParams) Mockito.any())).thenReturn(queryResponse);
+    when(queryResponse.getResults()).thenReturn(results);
+    when(results.iterator()).thenReturn(iterator);
     // TODO With this, we are testing the internals of the ProfileServiceImpl
     // class as well as the internals of the MeServlet class. Mocking it would
     // reduce the cost of test maintenance.

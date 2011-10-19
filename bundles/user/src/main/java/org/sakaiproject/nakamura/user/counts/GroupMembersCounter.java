@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -17,16 +17,20 @@
  */
 package org.sakaiproject.nakamura.user.counts;
 
+import static org.sakaiproject.nakamura.api.user.UserConstants.PROP_PSEUDO_GROUP;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.authorizable.Authorizable;
 import org.sakaiproject.nakamura.api.lite.authorizable.AuthorizableManager;
 import org.sakaiproject.nakamura.api.lite.authorizable.Group;
+import org.sakaiproject.nakamura.api.user.UserConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class GroupMembersCounter {
-  static final String PSEUDOGROUP = "sakai:pseudoGroup";
 
   private static final Logger LOGGER = LoggerFactory
       .getLogger(GroupMembersCountChangeListener.class);
@@ -43,16 +47,36 @@ public class GroupMembersCounter {
   }
 
   private int countMembers(String[] members, AuthorizableManager authMgr) {
+    return countMembers(members, authMgr, new HashSet<String>());
+  }
+  
+  
+  private int countMembers(String[] members, AuthorizableManager authMgr,
+      Set<String> groupsAlreadyProcessed) {
     int count = 0;
     for (String member : members) {
+      LOGGER.debug("Checking member: " + member);
       try {
         Authorizable auth = authMgr.findAuthorizable(member);
-        if (auth instanceof Group && "true".equals(auth.getProperty(PSEUDOGROUP))) {
-          // only count the members in a pseudogroup; not the group itself
-          count += countMembers(((Group) auth).getMembers(), authMgr);
+        // only count the members in a pseudogroup; not the group itself
+		if (auth instanceof Group && Boolean.TRUE.equals(auth.getProperty(UserConstants.PROP_PSEUDO_GROUP))) {
+          Group group = (Group) auth;
+          LOGGER.debug("Processing pseudoGroup: " + group.getId());
+          if (!groupsAlreadyProcessed.contains(group.getId())) {
+            LOGGER.debug("pseudoGroup: " + group.getId() + "not already processed, counting..");
+            groupsAlreadyProcessed.add(group.getId());
+            count += countMembers(group.getMembers(), authMgr, groupsAlreadyProcessed);
+          } else {
+            LOGGER.debug("pseudoGroup: " + group.getId() + "already processed, not counted again");
+          }
         } else {
-          // users and non-pseudo groups get counted as 1
-          count++;
+          if (auth != null) {
+            // users and non-pseudo groups get counted as 1
+            LOGGER.debug("Counting member: " + auth.getId());
+            count++;
+          } else {
+            LOGGER.debug("Authorizable is null, member " + member + " likely has been deleted, not counting");
+          }
         }
       } catch (AccessDeniedException e) {
         LOGGER.error(e.getMessage(), e);

@@ -51,13 +51,19 @@
 <!-- nakamura -->
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
+      <artifactId>org.sakaiproject.nakamura.core</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.ldap</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
-      <artifactId>org.sakaiproject.nakamura.profile</artifactId>
+      <artifactId>org.sakaiproject.nakamura.profile.api</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 
@@ -103,7 +109,7 @@
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
-      <artifactId>org.sakaiproject.nakamura.profile</artifactId>
+      <artifactId>org.sakaiproject.nakamura.profile.api</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
   </dependencies>

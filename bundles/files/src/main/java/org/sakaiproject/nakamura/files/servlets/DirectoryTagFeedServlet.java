@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -19,13 +19,13 @@ package org.sakaiproject.nakamura.files.servlets;
 
 import com.google.common.collect.ImmutableMap;
 
+import org.apache.commons.lang.CharSet;
 import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
-import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.apache.sling.commons.json.JSONException;
@@ -56,8 +56,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;import java.util.Iterator;
-import java.util.List;import java.util.NoSuchElementException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -123,7 +125,8 @@ public class DirectoryTagFeedServlet extends SlingSafeMethodsServlet {
   @Override
   protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
       throws ServletException, IOException {
-
+    response.setContentType("application/json");
+    response.setCharacterEncoding("UTF-8");
     // digest the selectors to determine if we should send a tidy result
     // or if we need to traverse deeper into the tagged node.
     boolean tidy = false;
@@ -148,7 +151,6 @@ public class DirectoryTagFeedServlet extends SlingSafeMethodsServlet {
     }
     
     request.setAttribute("depth", depth);
-
     JSONWriter write = new JSONWriter(response.getWriter());
     write.setTidy(tidy);
     Resource directoryResource = request.getResource();
@@ -207,7 +209,7 @@ public class DirectoryTagFeedServlet extends SlingSafeMethodsServlet {
     String sortRandom = "random_" + String.valueOf(random) + " asc";
     final String queryString = sb.toString();
     org.sakaiproject.nakamura.api.search.solr.Query solrQuery = new org.sakaiproject.nakamura.api.search.solr.Query(
-        queryString, ImmutableMap.of("sort", sortRandom));
+        queryString, ImmutableMap.of("sort", (Object) sortRandom));
     final SolrSearchBatchResultProcessor rp = new LiteFileSearchBatchResultProcessor(
         solrSearchServiceFactory, profileService);
     final SolrSearchResultSet srs = rp.getSearchResultSet(request, solrQuery);

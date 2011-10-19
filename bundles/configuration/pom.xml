@@ -39,8 +39,7 @@
             <Export-Package> org.sakaiproject.nakamura.api.configuration </Export-Package>
             <Import-Package> * </Import-Package>
             <Embed-Transitive>true</Embed-Transitive>
-            <Embed-Dependency>google-collections
-            </Embed-Dependency>
+            <Embed-Dependency/>
           </instructions>
         </configuration>
       </plugin>
@@ -79,12 +78,7 @@
       <groupId>org.apache.felix</groupId>
       <artifactId>org.osgi.compendium</artifactId>
     </dependency>
-    <!--  this is bundled but not exposed so we dont have to depend on the guice module that depends on this. -->
-    <dependency>
-      <groupId>com.google.collections</groupId>
-      <artifactId>google-collections</artifactId>
-      <scope>compile</scope>
-    </dependency>
+
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>

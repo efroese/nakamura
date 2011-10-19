@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -35,7 +35,6 @@ import static org.sakaiproject.nakamura.api.basiclti.BasicLTIAppConstants.DEBUG;
 import static org.sakaiproject.nakamura.api.basiclti.BasicLTIAppConstants.DEBUG_LOCK;
 import static org.sakaiproject.nakamura.api.basiclti.BasicLTIAppConstants.FRAME_HEIGHT;
 import static org.sakaiproject.nakamura.api.basiclti.BasicLTIAppConstants.FRAME_HEIGHT_LOCK;
-import static org.sakaiproject.nakamura.api.basiclti.BasicLTIAppConstants.GLOBAL_SETTINGS;
 import static org.sakaiproject.nakamura.api.basiclti.BasicLTIAppConstants.LTI_ADMIN_NODE_NAME;
 import static org.sakaiproject.nakamura.api.basiclti.BasicLTIAppConstants.LTI_KEY;
 import static org.sakaiproject.nakamura.api.basiclti.BasicLTIAppConstants.LTI_KEY_LOCK;
@@ -60,6 +59,8 @@ import static org.sakaiproject.nakamura.basiclti.LiteBasicLTIServletUtils.remove
 import static org.sakaiproject.nakamura.basiclti.LiteBasicLTIServletUtils.sensitiveKeys;
 import static org.sakaiproject.nakamura.basiclti.LiteBasicLTIServletUtils.unsupportedKeys;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -69,12 +70,15 @@ import org.apache.sling.api.request.RequestParameterMap;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.commons.json.JSONException;
+import org.apache.sling.commons.osgi.OsgiUtil;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.apache.sling.jcr.base.util.AccessControlUtil;
 import org.imsglobal.basiclti.BasicLTIConstants;
 import org.imsglobal.basiclti.BasicLTIUtil;
+import org.osgi.service.component.ComponentContext;
 import org.osgi.service.event.EventAdmin;
 import org.sakaiproject.nakamura.api.basiclti.LiteBasicLTIContextIdResolver;
+import org.sakaiproject.nakamura.api.basiclti.VirtualToolDataProvider;
 import org.sakaiproject.nakamura.api.doc.BindingType;
 import org.sakaiproject.nakamura.api.doc.ServiceBinding;
 import org.sakaiproject.nakamura.api.doc.ServiceDocumentation;
@@ -112,12 +116,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.UnsupportedRepositoryOperationException;
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -202,36 +204,58 @@ public class LiteBasicLTIConsumerServlet extends SlingAllMethodsServlet {
   @Reference
   protected transient LiteBasicLTIContextIdResolver contextIdResolver;
 
+  // TODO eventually needs to be a list of providers not just a single provider.
+  @Reference
+  protected transient VirtualToolDataProvider virtualToolDataProvider;
+
   // global properties used for every tool launch
   /**
    * See: {@link BasicLTIConstants#TOOL_CONSUMER_INSTANCE_CONTACT_EMAIL}
    */
   private transient String instanceContactEmail;
+  @Property(value = "admin@sakaiproject.org", name = "lti.instanceContactEmail", description = "An email contact for the LTI Consumer instance; e.g. System.Admin@school.edu")
+  protected static final String INSTANCE_CONTACT_EMAIL = "lti.instanceContactEmail";
+
   /**
    * See: {@link BasicLTIConstants#TOOL_CONSUMER_INSTANCE_DESCRIPTION}
    */
   private transient String instanceDescription;
+  @Property(value = "The Sakai Project", name = "lti.instanceDescription", description = "This is a user visible field - it should be about the length of a line; e.g. University of School (LMSng)")
+  protected static final String INSTANCE_DESCRIPTION = "lti.instanceDescription";
+
   /**
    * See: {@link BasicLTIConstants#TOOL_CONSUMER_INSTANCE_GUID}
    */
   private transient String instanceGuid;
+  @Property(value = "sakaiproject.org", name = "lti.instanceGuid", description = "Should be unique to the consumer; e.g. lmsng.school.edu")
+  protected static final String INSTANCE_GUID = "lti.instanceGuid";
+
   /**
    * See: {@link BasicLTIConstants#TOOL_CONSUMER_INSTANCE_NAME}
    */
   private transient String instanceName;
+  @Property(value = "Sakai Development", name = "lti.instanceName", description = "A user visible description of the consumer instance name")
+  protected static final String INSTANCE_NAME = "lti.instanceName";
+
   /**
    * See: {@link BasicLTIConstants#TOOL_CONSUMER_INSTANCE_URL}
    */
   private transient String instanceUrl;
+  @Property(value = "http://sakaiproject.org", name = "lti.instanceUrl", description = "Needs documentation; not required but tasty...")
+  protected static final String INSTANCE_URL = "lti.instanceUrl";
 
-  /**
-   * {@inheritDoc}
-   * 
-   * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
-   */
-  @Override
-  public void init(ServletConfig config) throws ServletException {
-    super.init(config);
+  @Activate
+  protected void activate(ComponentContext componentContext) throws Exception {
+    LOG.debug("activate(ComponentContext componentContext)");
+    Dictionary<?, ?> properties = componentContext.getProperties();
+    instanceContactEmail = OsgiUtil.toString(properties.get(INSTANCE_CONTACT_EMAIL),
+        "admin@sakaiproject.org");
+    instanceDescription = OsgiUtil.toString(properties.get(INSTANCE_DESCRIPTION),
+        "The Sakai Project");
+    instanceGuid = OsgiUtil.toString(properties.get(INSTANCE_GUID), "sakaiproject.org");
+    instanceName = OsgiUtil.toString(properties.get(INSTANCE_NAME), "Sakai Development");
+    instanceUrl = OsgiUtil.toString(properties.get(INSTANCE_URL),
+        "http://sakaiproject.org");
 
     applicationSettings = new HashMap<String, String>(8);
     applicationSettings.put(LTI_URL, LTI_URL_LOCK);
@@ -242,54 +266,6 @@ public class LiteBasicLTIConsumerServlet extends SlingAllMethodsServlet {
     applicationSettings.put(RELEASE_NAMES, RELEASE_NAMES_LOCK);
     applicationSettings.put(RELEASE_EMAIL, RELEASE_EMAIL_LOCK);
     applicationSettings.put(RELEASE_PRINCIPAL_NAME, RELEASE_PRINCIPAL_NAME_LOCK);
-
-    javax.jcr.Session adminSession = null;
-    try {
-      adminSession = jcrRepository.loginAdministrative(null);
-      if (adminSession.itemExists(GLOBAL_SETTINGS)) {
-        final javax.jcr.Node adminNode = (javax.jcr.Node) adminSession
-            .getItem(GLOBAL_SETTINGS);
-        final PropertyIterator iter = adminNode.getProperties();
-        while (iter.hasNext()) {
-          final Property property = iter.nextProperty();
-          final String propertyName = property.getName();
-          if ("instanceContactEmail".equals(propertyName)) {
-            instanceContactEmail = property.getValue().getString();
-            continue;
-          }
-          if ("instanceDescription".equals(propertyName)) {
-            instanceDescription = property.getValue().getString();
-            continue;
-          }
-          if ("instanceGuid".equals(propertyName)) {
-            instanceGuid = property.getValue().getString();
-            continue;
-          }
-          if ("instanceName".equals(propertyName)) {
-            instanceName = property.getValue().getString();
-            continue;
-          }
-          if ("instanceUrl".equals(propertyName)) {
-            instanceUrl = property.getValue().getString();
-            continue;
-          }
-        }
-      } else {
-        LOG.error("GLOBAL_SETTINGS node does not exist: {}", GLOBAL_SETTINGS);
-        throw new IllegalStateException("GLOBAL_SETTINGS node does not exist: "
-            + GLOBAL_SETTINGS);
-      }
-    } catch (RepositoryException e) {
-      throw new Error(e);
-    } finally {
-      if (adminSession != null) {
-        adminSession.logout();
-      }
-    }
-    if (instanceContactEmail == null || instanceDescription == null
-        || instanceGuid == null || instanceName == null || instanceUrl == null) {
-      throw new IllegalStateException("Missing one or more required global settings!");
-    }
   }
 
   /**
@@ -688,7 +664,8 @@ public class LiteBasicLTIConsumerServlet extends SlingAllMethodsServlet {
     try {
       adminSession = jcrRepository.loginAdministrative(null);
       if (adminSession.itemExists(adminNodePath)) {
-        LOG.debug("Found administrative settings for virtual tool: " + vtoolId);
+        LOG.debug("Found administrative settings for virtual tool (in JCR content): "
+            + vtoolId);
         final javax.jcr.Node adminNode = (javax.jcr.Node) adminSession
             .getItem(adminNodePath);
         if (launchMode) {
@@ -697,9 +674,17 @@ public class LiteBasicLTIConsumerServlet extends SlingAllMethodsServlet {
           adminSettings = readProperties(adminNode);
         }
       } else {
-        LOG.debug(
-            "No administrative settings found for virtual tool: {}. No policy to apply.",
-            vtoolId);
+        // No settings found in JCR; consult with VirtualToolDataProvider
+        if (launchMode) {
+          adminSettings = virtualToolDataProvider.getLaunchValues(vtoolId);
+          if (adminSettings != null) {
+            adminSettings.putAll(virtualToolDataProvider.getKeySecret(vtoolId));
+          }
+        } else {
+          adminSettings = virtualToolDataProvider.getLaunchValues(vtoolId);
+        }
+      }
+      if (adminSettings == null) {
         adminSettings = Collections.emptyMap();
       }
     } finally {
@@ -727,7 +712,7 @@ public class LiteBasicLTIConsumerServlet extends SlingAllMethodsServlet {
     final PropertyIterator iter = node.getProperties();
     final Map<String, Object> settings = new HashMap<String, Object>((int) iter.getSize());
     while (iter.hasNext()) {
-      final Property property = iter.nextProperty();
+      final javax.jcr.Property property = iter.nextProperty();
       switch (property.getValue().getType()) {
       case PropertyType.STRING:
         settings.put(property.getName(), property.getValue().getString());
@@ -965,7 +950,7 @@ public class LiteBasicLTIConsumerServlet extends SlingAllMethodsServlet {
         final PropertyIterator iter = adminNode.getProperties();
         settings = new HashMap<String, String>((int) iter.getSize());
         while (iter.hasNext()) {
-          final Property property = iter.nextProperty();
+          final javax.jcr.Property property = iter.nextProperty();
           final String propertyName = property.getName();
           if (sensitiveKeys.contains(propertyName)) { // the ones we care about
             settings.put(propertyName, property.getValue().getString());

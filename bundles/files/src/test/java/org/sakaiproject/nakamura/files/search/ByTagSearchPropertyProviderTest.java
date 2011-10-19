@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -72,13 +72,13 @@ public class ByTagSearchPropertyProviderTest {
     propProvider.loadUserProperties(request, props);
     assertTrue(props.containsKey(PROP_RESOURCE_TYPE));
     assertEquals("authorizable", props.get(PROP_RESOURCE_TYPE));
-    assertEquals(" AND type:u", props.get(PROP_TYPE));
+    assertEquals("type:u", props.get(PROP_TYPE));
 
     props.clear();
     propProvider.loadUserProperties(request, props);
     assertTrue(props.containsKey(PROP_RESOURCE_TYPE));
     assertEquals("authorizable", props.get(PROP_RESOURCE_TYPE));
-    assertEquals(" AND type:g", props.get(PROP_TYPE));
+    assertEquals("type:g", props.get(PROP_TYPE));
 
     props.clear();
     propProvider.loadUserProperties(request, props);
@@ -102,13 +102,13 @@ public class ByTagSearchPropertyProviderTest {
     propProvider.loadUserProperties(request, props);
     assertTrue(props.containsKey(PROP_RESOURCE_TYPE));
     assertEquals(DEFAULT_FILTER_QUERY, props.get(PROP_RESOURCE_TYPE));
-    assertEquals(" AND type:u", props.get(PROP_TYPE));
+    assertEquals("type:u", props.get(PROP_TYPE));
 
     props.clear();
     propProvider.loadUserProperties(request, props);
     assertTrue(props.containsKey(PROP_RESOURCE_TYPE));
     assertEquals(DEFAULT_FILTER_QUERY, props.get(PROP_RESOURCE_TYPE));
-    assertEquals(" AND type:g", props.get(PROP_TYPE));
+    assertEquals("type:g", props.get(PROP_TYPE));
   }
 
   @Test
@@ -131,7 +131,7 @@ public class ByTagSearchPropertyProviderTest {
     propProvider.loadUserProperties(request, props);
     assertTrue(props.containsKey(PROP_RESOURCE_TYPE));
     assertEquals(DEFAULT_FILTER_QUERY, props.get(PROP_RESOURCE_TYPE));
-    assertEquals(" AND type:u", props.get(PROP_TYPE));
+    assertEquals("type:u", props.get(PROP_TYPE));
 
     props.clear();
     propProvider.loadUserProperties(request, props);
@@ -143,6 +143,6 @@ public class ByTagSearchPropertyProviderTest {
     propProvider.loadUserProperties(request, props);
     assertTrue(props.containsKey(PROP_RESOURCE_TYPE));
     assertEquals("authorizable", props.get(PROP_RESOURCE_TYPE));
-    assertEquals(" AND type:g", props.get(PROP_TYPE));
+    assertEquals("type:g", props.get(PROP_TYPE));
   }
 }

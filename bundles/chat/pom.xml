@@ -49,10 +49,10 @@
 		</plugins>
 	</build>
 	<dependencies>
-      <dependency>
-        <groupId>com.google.collections</groupId>
-        <artifactId>google-collections</artifactId>
-      </dependency>
+        <dependency>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </dependency>
 		<dependency>
 			 <groupId>org.sakaiproject.nakamura</groupId>
 			 <artifactId>org.sakaiproject.nakamura.doc</artifactId>
@@ -70,7 +70,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.sakaiproject.nakamura</groupId>
-			<artifactId>org.sakaiproject.nakamura.search</artifactId>
+			<artifactId>org.sakaiproject.nakamura.search.api</artifactId>
 			<version>1.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
@@ -95,8 +95,6 @@
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
-			<version>2.5</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.jcr</groupId>
@@ -111,25 +109,22 @@
 		<dependency>
 			<groupId>org.apache.jackrabbit</groupId>
 			<artifactId>jackrabbit-api</artifactId>
-			<version>2.0.0</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.sling</groupId>
 			<artifactId>org.apache.sling.jcr.resource</artifactId>
-			<version>2.0.7-20100823</version>
-			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.sling</groupId>
+			<artifactId>org.apache.sling.commons.json</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.sling</groupId>
 			<artifactId>org.apache.sling.commons.osgi</artifactId>
-			<version>2.0.4-incubator</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.sling</groupId>
 			<artifactId>org.apache.sling.commons.testing</artifactId>
-			<version>2.0.4-incubator</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -150,11 +145,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.solr</groupId>
-			<artifactId>solr-solrj</artifactId>
-			<version>1.4.1</version>
-			<type>jar</type>
-			<scope>provided</scope>
+			<groupId>org.sakaiproject.nakamura</groupId>
+			<artifactId>org.sakaiproject.nakamura.solr</artifactId>
 		</dependency>
 	</dependencies>
 </project>

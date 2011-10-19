@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -155,8 +155,8 @@ public class LiteCountServlet extends SlingSafeMethodsServlet {
       } else {
         itemCount = MAX_RESULTS_COUNTED;
       }
-      Map<String, String> queryOptions = ImmutableMap.of(
-          PARAMS_ITEMS_PER_PAGE, Long.toString(itemCount),
+      Map<String, Object> queryOptions = ImmutableMap.of(
+          PARAMS_ITEMS_PER_PAGE, (Object) Long.toString(itemCount),
           CommonParams.START, "0",
           CommonParams.SORT, "_created desc"
       );

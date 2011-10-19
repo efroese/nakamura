@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -15,7 +15,6 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 package org.sakaiproject.nakamura.files.pool;
 
 import static org.apache.jackrabbit.JcrConstants.JCR_CONTENT;
@@ -281,7 +280,7 @@ public class CreateContentPoolServletTest {
     // Exceptions in a handler should be caught and logged, but shouldn't stop
     // other handlers from running.
     cp.bindFileUploadHandler(new FileUploadHandler() {
-        public void handleFile(String poolId, InputStream fileInputStream,
+        public void handleFile(Map<String, Object> results, String poolId, InputStream fileInputStream,
                                String userId, boolean isNew) throws IOException {
           throw new RuntimeException("Handler failed!");
         }
@@ -289,7 +288,7 @@ public class CreateContentPoolServletTest {
 
     final ArrayList notifiedFiles = new ArrayList();
     cp.bindFileUploadHandler(new FileUploadHandler() {
-        public void handleFile(String poolId, InputStream fileInputStream,
+        public void handleFile(Map<String, Object> results, String poolId, InputStream fileInputStream,
                                String userId, boolean isNew) throws IOException {
           notifiedFiles.add(poolId);
         }

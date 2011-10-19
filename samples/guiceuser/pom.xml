@@ -49,11 +49,10 @@
     </plugins>
   </build>
   <dependencies>
-    <dependency>
-      <groupId>com.google.collections</groupId>
-      <artifactId>google-collections</artifactId>
-      <scope>provided</scope>
-    </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+      </dependency>
     <dependency>
       <groupId>com.google.code.guice</groupId>
       <artifactId>guice</artifactId>

@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -17,6 +17,7 @@
  */
 package org.sakaiproject.nakamura.user.counts;
 
+import static org.sakaiproject.nakamura.api.user.UserConstants.PROP_PSEUDO_GROUP_PARENT;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Property;
@@ -48,7 +49,6 @@ import org.slf4j.LoggerFactory;
 public class GroupMembersCountChangeListener extends AbstractCountHandler implements EventHandler {
   
   private static final Logger LOGGER = LoggerFactory.getLogger(GroupMembersCountChangeListener.class);
-  static final String PSEUDOGROUP_PARENT = "sakai:pseudogroupparent";
 
   private GroupMembersCounter groupMembersCounter = new GroupMembersCounter();
 
@@ -63,8 +63,8 @@ public class GroupMembersCountChangeListener extends AbstractCountHandler implem
       if ( !CountProvider.IGNORE_AUTHIDS.contains(groupId) ) {
         Authorizable au = authorizableManager.findAuthorizable(groupId);
         if ( au instanceof Group ) {
-          if (au.hasProperty(PSEUDOGROUP_PARENT)) {
-            String parent = String.valueOf(au.getProperty(PSEUDOGROUP_PARENT));
+          if (au.hasProperty(PROP_PSEUDO_GROUP_PARENT)) {
+            String parent = String.valueOf(au.getProperty(PROP_PSEUDO_GROUP_PARENT));
             au = authorizableManager.findAuthorizable(parent);
           }
           if (au != null) {

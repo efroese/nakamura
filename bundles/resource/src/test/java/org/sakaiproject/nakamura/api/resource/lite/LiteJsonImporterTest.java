@@ -1,3 +1,20 @@
+/**
+ * Licensed to the Sakai Foundation (SF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The SF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package org.sakaiproject.nakamura.api.resource.lite;
 
 import com.google.common.collect.ImmutableList;
@@ -125,17 +142,17 @@ public class LiteJsonImporterTest {
   @Test
   public void testArray() throws JSONException {
     LiteJsonImporter liteJsonImporter = new LiteJsonImporter();
-    JSONArray arr = new JSONArray(Lists.immutableList("1", "2", "3"));
+    JSONArray arr = new JSONArray(ImmutableList.of("1", "2", "3"));
     String[] s = liteJsonImporter.getArray(arr, String.class);
     Assert.assertArrayEquals(new String[] { "1", "2", "3" }, s);
     Integer[] ia = liteJsonImporter.getArray(arr, Integer.class);
     Assert.assertArrayEquals(new Integer[] { 1, 2, 3 }, ia);
     Long[] la = liteJsonImporter.getArray(arr, Long.class);
     Assert.assertArrayEquals(new Long[] { 1L, 2L, 3L }, la);
-    arr = new JSONArray(Lists.immutableList("1.1", "2.2", "3.3"));
+    arr = new JSONArray(ImmutableList.of("1.1", "2.2", "3.3"));
     Double[] da = liteJsonImporter.getArray(arr, Double.class);
     Assert.assertArrayEquals(new Double[] { 1.1, 2.2, 3.3 }, da);
-    arr = new JSONArray(Lists.immutableList("true", "false", "0"));
+    arr = new JSONArray(ImmutableList.of("true", "false", "0"));
     Boolean[] ba = liteJsonImporter.getArray(arr, Boolean.class);
     Assert.assertArrayEquals(new Boolean[] { true, false, false }, ba);
   }

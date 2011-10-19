@@ -68,13 +68,14 @@
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.api</artifactId>
-      <version>2.0.4-incubator</version>
-      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.jcr.resource</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.commons.osgi</artifactId>
-      <version>2.0.6</version>
     </dependency>
     <dependency>
      <groupId>javax.jcr</groupId>
@@ -112,7 +113,6 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>org.apache.felix</groupId>
@@ -135,9 +135,8 @@
     	<scope>test</scope>
     </dependency>
     <dependency>
-    	<groupId>com.google.collections</groupId>
-    	<artifactId>google-collections</artifactId>
-    	<version>0.8</version>
+	<groupId>com.google.guava</groupId>
+	<artifactId>guava</artifactId>
     	<type>jar</type>
     	<scope>test</scope>
     </dependency>

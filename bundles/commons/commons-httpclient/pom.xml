@@ -71,14 +71,13 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>1.4.0</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>
                             commons-httpclient
                         </Bundle-SymbolicName>
-                        <Export-Package>*;version=3.1</Export-Package>
+                        <Export-Package>org.apache.commons.httpclient.*;version=3.1</Export-Package>
                     </instructions>
                 </configuration>
             </plugin>

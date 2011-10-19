@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -27,6 +27,7 @@ import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.io.JSONWriter;
 import org.osgi.framework.Constants;
+import org.sakaiproject.nakamura.api.connections.ConnectionManager;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
 import org.sakaiproject.nakamura.api.lite.StorageClientUtils;
@@ -74,6 +75,9 @@ public class ProfileNodeSearchResultProcessor implements SolrSearchResultProcess
 
   @Reference
   protected PresenceService presenceService;
+  
+  @Reference
+  private ConnectionManager connMgr;
 
   public ProfileNodeSearchResultProcessor() {
   }
@@ -116,7 +120,8 @@ public class ProfileNodeSearchResultProcessor implements SolrSearchResultProcess
       Result result, boolean objectInProgress) throws JSONException {
     javax.jcr.Session jcrSession = request.getResourceResolver().adaptTo(javax.jcr.Session.class);
     Session session = StorageClientUtils.adaptToSession(jcrSession);
-
+    String currUser = request.getRemoteUser();
+    ExtendedJSONWriter exWriter = (ExtendedJSONWriter) write;
     try {
       AuthorizableManager authMgr = session.getAuthorizableManager();
 
@@ -133,6 +138,8 @@ public class ProfileNodeSearchResultProcessor implements SolrSearchResultProcess
         // If this is a User Profile, then include Presence data.
         if (!auth.isGroup()) {
           PresenceUtils.makePresenceJSON(write, authorizableId, presenceService, true);
+          // add contact information if appropriate
+          connMgr.writeConnectionInfo(exWriter, session, currUser, authorizableId);
         }
       }
       if (!objectInProgress) {

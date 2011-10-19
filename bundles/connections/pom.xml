@@ -57,7 +57,7 @@
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
-      <artifactId>org.sakaiproject.nakamura.search</artifactId>
+      <artifactId>org.sakaiproject.nakamura.search.api</artifactId>
       <version>1.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
@@ -70,23 +70,19 @@
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.jcr.resource</artifactId>
-      <version>2.0.7-20100823</version>
-      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.commons.json</artifactId>
     </dependency>
     <!--  sling and JCR -->
     <dependency>
       <groupId>org.apache.jackrabbit</groupId>
       <artifactId>jackrabbit-api</artifactId>
-      <version>2.0.0</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>javax.jcr</groupId>
       <artifactId>jcr</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.solr</groupId>
-      <artifactId>solr-solrj</artifactId>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
@@ -97,15 +93,11 @@
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.api</artifactId>
-      <version>2.0.6</version>
-      <scope>provided</scope>
     </dependency>
     <!-- servlet -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
-      <version>2.5</version>
-      <scope>provided</scope>
     </dependency>
     <!-- osgi -->
     <dependency>
@@ -151,7 +143,6 @@
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.jcr.api</artifactId>
-      <version>2.1.0</version>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
@@ -172,12 +163,10 @@
     <dependency>
         <groupId>org.sakaiproject.nakamura</groupId>
         <artifactId>org.sakaiproject.nakamura.solr</artifactId>
-        <version>1.0</version>
-        <scope>provided</scope>
     </dependency>
     <dependency>
     	<groupId>org.sakaiproject.nakamura</groupId>
-    	<artifactId>org.sakaiproject.nakamura.profile</artifactId>
+    	<artifactId>org.sakaiproject.nakamura.profile.api</artifactId>
 	<version>1.1-SNAPSHOT</version>
     	<scope>provided</scope>
     </dependency>

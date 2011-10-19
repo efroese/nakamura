@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -280,7 +280,7 @@ public class TagServlet extends SlingSafeMethodsServlet {
     }
     final String queryString = sb.toString();
     org.sakaiproject.nakamura.api.search.solr.Query solrQuery = new org.sakaiproject.nakamura.api.search.solr.Query(
-        queryString, ImmutableMap.of("sort", "score desc"));
+        queryString, ImmutableMap.of("sort", (Object) "score desc"));
     final SolrSearchBatchResultProcessor rp = new LiteFileSearchBatchResultProcessor(
         solrSearchServiceFactory, profileService);
     final SolrSearchResultSet srs = rp.getSearchResultSet(request, solrQuery);

@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
@@ -48,6 +49,7 @@ import org.sakaiproject.nakamura.api.solr.IndexingHandler;
 import org.sakaiproject.nakamura.api.solr.RepositorySession;
 import org.sakaiproject.nakamura.api.solr.ResourceIndexingService;
 import org.sakaiproject.nakamura.api.tika.TikaService;
+import org.sakaiproject.nakamura.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,6 +143,10 @@ public class PoolContentResourceTypeHandler implements IndexingHandler {
         ContentManager contentManager = session.getContentManager();
         Content content = contentManager.get(path);
         if (content != null) {
+          boolean isPageContent = content.hasProperty("page");
+          if (isPageContent) {
+            content = contentManager.get(PathUtils.getParentReference(path));
+          }
           if (!CONTENT_TYPES.contains(content.getProperty("sling:resourceType"))) {
             return documents;
           }
@@ -165,12 +171,21 @@ public class PoolContentResourceTypeHandler implements IndexingHandler {
                 }
               }
             }
-
-            InputStream contentStream = contentManager.getInputStream(path);
-            if (contentStream != null) {
+            
+            if (isPageContent) {
+              long startIndexing = System.currentTimeMillis();
+              PageIndexingUtil.indexAllPages(content, contentManager, doc, tika);
+              long finishIndexing = System.currentTimeMillis();
+              if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Indexing all pages of {} in {} milliseconds.", content.getPath(), finishIndexing - startIndexing);
+              }
+            } else {
               try {
-                String extracted = tika.parseToString(contentStream);
-                doc.addField("content", extracted);
+                InputStream contentStream = contentManager.getInputStream(path);
+                if (contentStream != null) {
+                  String extracted = tika.parseToString(contentManager.getInputStream(path));
+                  doc.addField("content", extracted);
+                }
               } catch (TikaException e) {
                 LOGGER.warn(e.getMessage(), e);
               }
@@ -188,6 +203,8 @@ public class PoolContentResourceTypeHandler implements IndexingHandler {
         LOGGER.warn(e.getMessage(), e);
       } catch (IOException e) {
         LOGGER.warn(e.getMessage(), e);
+      } catch (PageIndexingUtil.PageIndexException e) {
+        LOGGER.warn(e.getMessage());
       }
     }
     LOGGER.debug("Got documents {} ", documents);

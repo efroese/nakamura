@@ -1,0 +1,68 @@
+{
+  "jcr:mixinTypes": [
+    "mix:language"
+  ],
+  "jcr:language": "en",
+  "sling:basename": "org.sakaiproject.nakamura.search.Resources",
+
+  "application_title": {
+    "jcr:primaryType": "sling:MessageEntry",
+    "sling:key": "application_title",
+    "sling:message": "Sakai Nakamura :: Solr Query Service"
+  },
+  "label_add_readers": {
+    "jcr:primaryType": "sling:MessageEntry",
+    "sling:key": "label_add_readers",
+    "sling:message": "Add readers to the query?"
+  },
+  "label_as_anon": {
+    "jcr:primaryType": "sling:MessageEntry",
+    "sling:key": "label_as_anon",
+    "sling:message": "Query as anonymous user?"
+  },
+  "label_indent": {
+    "jcr:primaryType": "sling:MessageEntry",
+    "sling:key": "label_indent",
+    "sling:message": "Indent output?"
+  },
+  "label_total_solr_docs": {
+    "jcr:primaryType": "sling:MessageEntry",
+    "sling:key": "label_total_solr_docs",
+    "sling:message": "Total documents in index"
+  },
+  "label_query": {
+    "jcr:primaryType": "sling:MessageEntry",
+    "sling:key": "label_query",
+    "sling:message": "Query"
+  },
+  "label_filter_query": {
+    "jcr:primaryType": "sling:MessageEntry",
+    "sling:key": "label_filter_query",
+    "sling:message": "Filter Query"
+  },
+  "label_field_list": {
+    "jcr:primaryType": "sling:MessageEntry",
+    "sling:key": "label_field_list",
+    "sling:message": "Field List"
+  },
+  "label_sort": {
+    "jcr:primaryType": "sling:MessageEntry",
+    "sling:key": "label_sort",
+    "sling:message": "Sort"
+  },
+  "label_start": {
+    "jcr:primaryType": "sling:MessageEntry",
+    "sling:key": "label_start",
+    "sling:message": "Start"
+  },
+  "label_rows": {
+    "jcr:primaryType": "sling:MessageEntry",
+    "sling:key": "label_rows",
+    "sling:message": "Rows"
+  },
+  "label_submit_query": {
+    "jcr:primaryType": "sling:MessageEntry",
+    "sling:key": "label_submit_query",
+    "sling:message": "Submit Query"
+  }
+}

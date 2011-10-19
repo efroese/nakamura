@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -114,7 +114,7 @@ public class GetRelatedContentServlet extends SlingSafeMethodsServlet {
     StringBuilder sb = new StringBuilder("resourceType:");
     sb.append(sakaiPooledContent);
     sb.append(" AND ");
-    Set<String> selectors = ImmutableSet.of(request.getRequestPathInfo().getSelectors());
+    Set<String> selectors = ImmutableSet.copyOf(request.getRequestPathInfo().getSelectors());
 
     boolean publicSearch = selectors.contains(POOLED_CONTENT_PUBLIC_RELATED_SELECTOR);
 

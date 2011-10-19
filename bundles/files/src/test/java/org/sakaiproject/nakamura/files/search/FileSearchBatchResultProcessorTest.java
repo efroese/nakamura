@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -36,7 +36,6 @@ import org.junit.Test;
 import org.sakaiproject.nakamura.api.files.FilesConstants;
 import org.sakaiproject.nakamura.api.search.SearchException;
 import org.sakaiproject.nakamura.api.search.SearchResultSet;
-import org.sakaiproject.nakamura.search.RowIteratorImpl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
@@ -65,6 +64,7 @@ public class FileSearchBatchResultProcessorTest {
     processor = new FileSearchBatchResultProcessor();
   }
 
+  // TODO - fix this test so it doesn't require RowInteratorImpl
   public void testGetResultSet() throws SearchException, RepositoryException {
     Session session = mock(Session.class);
     Row fileProperA = createRow(session, "/path/to/fileA");
@@ -82,7 +82,9 @@ public class FileSearchBatchResultProcessorTest {
     Query q = mock(Query.class);
     SingleColumnQueryResult result = mock(SingleColumnQueryResult.class);
     when(result.getTotalSize()).thenReturn(5);
-    when(result.getRows()).thenReturn(new RowIteratorImpl(rows));
+    // this test not being run and requires RowIteratorImpl from nakamura,search.impl
+    // so commenting out for now
+//    when(result.getRows()).thenReturn(new RowIteratorImpl(rows));
     when(q.execute()).thenReturn(result);
 
     SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
