@@ -28,7 +28,6 @@
 	<artifactId>org.sakaiproject.nakamura.events</artifactId>
 	<packaging>bundle</packaging>
 	<name>Sakai Nakamura :: OSGi-to-JMS Events Bridge Bundle</name>
-	<version>1.1-SNAPSHOT</version>
 	<build>
     <plugins>
       <plugin>
@@ -49,6 +48,39 @@
         </configuration>
       </plugin>
     </plugins>
+    <pluginManagement>
+      <plugins>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>
+                      maven-scr-plugin
+                    </artifactId>
+                    <versionRange>
+                      [1.7.2,)
+                    </versionRange>
+                    <goals>
+                      <goal>scr</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
   <dependencies>
     <dependency>
@@ -81,11 +113,6 @@
       <artifactId>geronimo-jms_1.1_spec</artifactId>
       <version>1.1.1</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.activemq</groupId>
-      <artifactId>activemq-core</artifactId>
-      <version>5.3.0</version>
-    </dependency>
 
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
@@ -96,6 +123,11 @@
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.cluster</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.nakamura</groupId>
+      <artifactId>org.sakaiproject.nakamura.utils</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 

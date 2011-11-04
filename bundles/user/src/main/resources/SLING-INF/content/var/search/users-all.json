@@ -3,7 +3,9 @@
   "sakai:query-template": "resourceType:authorizable",
   "sakai:query-template-options": {
       "fq": ["type:u", "resourceType:authorizable"],
-      "sort": "${sortOn} ${sortOrder}"
+      "sort": "${sortOn} ${sortOrder}",
+      "facet" : true,
+      "facet.field" : "tag"
   },
   "sortOn": "score",
   "sortOrder": "desc",

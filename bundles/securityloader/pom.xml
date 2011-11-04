@@ -21,7 +21,6 @@
   </parent>
   <artifactId>org.sakaiproject.nakamura.securityloader</artifactId>
   <packaging>bundle</packaging>
-  <version>1.1-SNAPSHOT</version>
   <name>Sakai Nakamura :: Security Loader Bundle</name>
   <description>Security Loader Bundle, watches for bundles with security configuration and
     loads them into the JCR on startup, recording the details in /var in the JCR .</description>
@@ -43,6 +42,39 @@
         </configuration>
       </plugin>
     </plugins>
+    <pluginManagement>
+      <plugins>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>
+                      maven-scr-plugin
+                    </artifactId>
+                    <versionRange>
+                      [1.7.2,)
+                    </versionRange>
+                    <goals>
+                      <goal>scr</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
   <dependencies>
     <dependency>

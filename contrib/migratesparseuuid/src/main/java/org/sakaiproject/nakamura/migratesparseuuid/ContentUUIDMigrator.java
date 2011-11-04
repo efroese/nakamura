@@ -24,7 +24,7 @@ import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
-import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -57,7 +57,7 @@ public class ContentUUIDMigrator implements PropertyMigrator {
 
 	@Activate
 	public void activate(Map<String,Object> props){
-		originalField = OsgiUtil.toString(PROP_ORIGINAL_FIELD, DEFAULT_ORIGINAL_FIELD);
+		originalField = PropertiesUtil.toString(PROP_ORIGINAL_FIELD, DEFAULT_ORIGINAL_FIELD);
 	}
 	
 

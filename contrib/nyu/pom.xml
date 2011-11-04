@@ -10,10 +10,9 @@
   <groupId>edu.nyu</groupId>
   <artifactId>edu.nyu.launchpad</artifactId>
   <name>NYU Launchpad</name>
-  <version>1.1-SNAPSHOT</version>
   <properties>
-    <nakamura.version>1.0</nakamura.version>
-    <ux.version>0.6.0-SNAPSHOT</ux.version>
+    <nakamura.version>1.1-SNAPSHOT</nakamura.version>
+    <ux.version>1.1-SNAPSHOT</ux.version>
   </properties>
   <packaging>jar</packaging>
   <build>

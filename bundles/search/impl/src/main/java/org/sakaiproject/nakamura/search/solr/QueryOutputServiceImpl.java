@@ -30,7 +30,7 @@ import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
@@ -147,7 +147,7 @@ public class QueryOutputServiceImpl implements QueryOutputService {
 
   @Activate @Modified
   protected void activate(Map<?, ?> props) {
-    helpFile = OsgiUtil.toString(props.get(HELP_FILE), DEFAULT_HELP_FILE);
+    helpFile = PropertiesUtil.toString(props.get(HELP_FILE), DEFAULT_HELP_FILE);
   }
 
   /**

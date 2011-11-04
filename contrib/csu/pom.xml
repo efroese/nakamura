@@ -10,7 +10,6 @@
   <groupId>au.edu.csu</groupId>
   <artifactId>au.edu.csu.interact2</artifactId>
   <name>CSU Interact 2</name>
-  <version>1.1-SNAPSHOT</version>
   <properties>
     <nakamura.version>1.1-SNAPSHOT</nakamura.version>
     <ux.version>1.1-SNAPSHOT</ux.version>

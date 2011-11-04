@@ -26,7 +26,6 @@
 	<artifactId>org.sakaiproject.nakamura.chat</artifactId>
 	<packaging>bundle</packaging>
 	<name>Sakai Nakamura :: Chat services bundle</name>
-	<version>1.1-SNAPSHOT</version>
 	<description>Takes care of the sakai chat services.</description>
 	<build>
 		<plugins>
@@ -47,6 +46,41 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.apache.felix
+										</groupId>
+										<artifactId>
+											maven-scr-plugin
+										</artifactId>
+										<versionRange>
+											[1.7.2,)
+										</versionRange>
+										<goals>
+											<goal>scr</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 	<dependencies>
         <dependency>
@@ -110,6 +144,14 @@
 			<groupId>org.apache.jackrabbit</groupId>
 			<artifactId>jackrabbit-api</artifactId>
 		</dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.jcr.api</artifactId>
+    </dependency>
 		<dependency>
 			<groupId>org.apache.sling</groupId>
 			<artifactId>org.apache.sling.jcr.resource</artifactId>
@@ -136,7 +178,6 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
-			<version>1.5.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

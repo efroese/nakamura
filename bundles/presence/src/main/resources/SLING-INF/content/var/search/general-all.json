@@ -2,7 +2,9 @@
   "sling:resourceType": "sakai/solr-search",
   "sakai:query-template": "(resourceType:authorizable) OR (resourceType:authorizable${_categoryAnd}) OR (resourceType:sakai/pooled-content${_taguuids})",
   "sakai:query-template-options": {
-      "sort": "${sortOn} ${sortOrder}"
+      "sort": "${sortOn} ${sortOrder}",
+      "facet" : true,
+      "facet.field" : "tag"
   },
   "sortOn": "score",
   "sortOrder": "desc",

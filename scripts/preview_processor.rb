@@ -8,7 +8,9 @@ require 'rubygems'
 require 'docsplit'
 RMAGICK_BYPASS_VERSION_TEST = true
 require 'RMagick'
+require "getopt/long"
 
+Dir.chdir(File.dirname(__FILE__))
 MAIN_DIR = Dir.getwd
 DOCS_DIR = "#{MAIN_DIR}/docs"
 PREV_DIR = "#{MAIN_DIR}/previews"
@@ -18,7 +20,7 @@ LOGS_DIR = "#{MAIN_DIR}/logs"
 # in order to properly set the referrer.
 module Net::HTTPHeader
   def initialize_http_header(initheader)
-    @header = {"Referer" => [ARGV[0]]}
+    @header = {"Referer" => [$preview_referer]}
     return unless initheader
     initheader.each do |key, value|
       warn "net/http: warning: duplicated HTTP header: #{key}" if key?(key) and $VERBOSE
@@ -120,22 +122,21 @@ def log msg, level = :info
   @loggers.each { |logger| logger.send(level, msg) }
 end
 
-# This is the main method we call at the end of the script.
-def main
+def setup(server, admin_password)
   # Setup loggers.
   Dir.mkdir LOGS_DIR unless File.directory? LOGS_DIR
   @loggers << Logger.new(STDOUT)
   @loggers << Logger.new("#{LOGS_DIR}/#{Date.today}.log", 'daily')
   @loggers.each { |logger| logger.level = Logger::INFO }
 
-  server=ARGV[0]
-  admin_password = ARGV[1] || "admin"
-  term_server = ARGV[2] + "terms"
   @s = Sling.new(server)
   admin = User.new("admin", admin_password)
   @s.switch_user(admin)
   @s.do_login
+end
 
+# This is the main method we call at the end of the script.
+def main(term_server)
   res = @s.execute_get(@s.url_for("var/search/needsprocessing.json"))
   unless res.code == '200'
     raise "Failed to retrieve list to process [#{res.code}]"
@@ -310,4 +311,38 @@ def main
   FileUtils.remove_dir DOCS_DIR
 end
 
-main
+def usage
+  puts "usage: #{$0} [-h|--help] [-s|--server] <server> [-p|--password] <adminpassword> [-t|--term] <term-extraction address> [-i|--interval] [interval]"
+  puts "example: #{$0} http://localhost:8080/ admin http://localhost:8085/ 20"
+end
+
+## Parse command line opts and call main ##
+opt = Getopt::Long.getopts(
+  ["--help", "-h", Getopt::BOOLEAN],
+  ["--server", "-s", Getopt::REQUIRED],
+  ["--password", "-p", Getopt::REQUIRED],
+  ["--term", "-t", Getopt::REQUIRED],
+  ["--interval", "-i", Getopt::REQUIRED],
+  ["--count", "-n", Getopt::REQUIRED]
+)
+
+if opt['help'] || not(opt['server'] && opt['password'] && opt['term'])
+  usage()
+else
+  setup(opt['server'], opt['password'])
+  $preview_referer = opt['server']
+  interval = opt['interval'] || 15
+  interval = Integer(interval)
+  count = opt['count'] || 0
+  count = Integer(count)
+  begin
+    main(opt['term'])
+    if opt['count']
+      if count > 1
+        count -= 1
+      else
+        break
+      end
+    end
+  end while sleep(interval)
+end

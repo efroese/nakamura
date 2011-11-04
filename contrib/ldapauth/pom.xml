@@ -26,7 +26,6 @@
   </parent>
   <artifactId>org.sakaiproject.nakamura.auth.ldap</artifactId>
   <packaging>bundle</packaging>
-  <version>1.1-SNAPSHOT</version>
   <name>Sakai Nakamura :: LDAP Authentication Bundle</name>
   <description>Allows authentication with an LDAP directory</description>
   <build>

@@ -28,13 +28,12 @@ import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
-import org.apache.felix.scr.annotations.Services;
 import org.apache.sling.api.auth.Authenticator;
 import org.apache.sling.auth.core.spi.AuthenticationFeedbackHandler;
 import org.apache.sling.auth.core.spi.AuthenticationHandler;
 import org.apache.sling.auth.core.spi.AuthenticationInfo;
 import org.apache.sling.auth.core.spi.DefaultAuthenticationFeedbackHandler;
-import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.osgi.framework.Constants;
 import org.slf4j.Logger;
@@ -70,11 +69,7 @@ import static org.apache.sling.jcr.resource.JcrResourceConstants.AUTHENTICATION_
  * support in the OSGi / Sling environment.
  */
 @Component(metatype = true)
-@Services({
-    @Service(value = CasAuthenticationHandler.class),
-    @Service(value = AuthenticationHandler.class),
-    @Service(value = AuthenticationFeedbackHandler.class)
-})
+@Service({CasAuthenticationHandler.class, AuthenticationHandler.class, AuthenticationFeedbackHandler.class})
 @Properties(value = {
     @Property(name = Constants.SERVICE_RANKING, intValue = -5),
     @Property(name = AuthenticationHandler.PATH_PROPERTY, value = "/"),
@@ -144,12 +139,12 @@ public class CasAuthenticationHandler implements AuthenticationHandler,
 
   @Modified
   protected void modified(Map<?, ?> props) {
-    loginUrl = OsgiUtil.toString(props.get(LOGIN_URL), DEFAULT_LOGIN_URL);
-    logoutUrl = OsgiUtil.toString(props.get(LOGOUT_URL), DEFAULT_LOGOUT_URL);
-    serverUrl = OsgiUtil.toString(props.get(SERVER_URL), DEFAULT_SERVER_URL);
+    loginUrl = PropertiesUtil.toString(props.get(LOGIN_URL), DEFAULT_LOGIN_URL);
+    logoutUrl = PropertiesUtil.toString(props.get(LOGOUT_URL), DEFAULT_LOGOUT_URL);
+    serverUrl = PropertiesUtil.toString(props.get(SERVER_URL), DEFAULT_SERVER_URL);
 
-    renew = OsgiUtil.toBoolean(props.get(RENEW), DEFAULT_RENEW);
-    gateway = OsgiUtil.toBoolean(props.get(GATEWAY), DEFAULT_GATEWAY);
+    renew = PropertiesUtil.toBoolean(props.get(RENEW), DEFAULT_RENEW);
+    gateway = PropertiesUtil.toBoolean(props.get(GATEWAY), DEFAULT_GATEWAY);
   }
 
   //----------- AuthenticationHandler interface ----------------------------

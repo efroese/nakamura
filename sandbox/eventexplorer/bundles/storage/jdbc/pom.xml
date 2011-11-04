@@ -10,7 +10,6 @@
   <groupId>org.sakaiproject.nakamura</groupId>
   <artifactId>org.sakaiproject.nakamura.eventexplorer.listeners.jdbc</artifactId>
   <packaging>bundle</packaging>
-  <version>1.1-SNAPSHOT</version>
   <name>Sakai Nakamura :: Sakai JDBC JMS Listener</name>
   <description>Listeners for Nakamura messages that get stored using JDBC</description>
 

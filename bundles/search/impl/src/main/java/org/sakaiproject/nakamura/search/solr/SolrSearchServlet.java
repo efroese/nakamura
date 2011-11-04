@@ -17,37 +17,12 @@
  */
 package org.sakaiproject.nakamura.search.solr;
 
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.DEFAULT_PAGED_ITEMS;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.JSON_RESULTS;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.PARAMS_ITEMS_PER_PAGE;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.PARAMS_PAGE;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.REG_BATCH_PROCESSOR_NAMES;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.REG_PROCESSOR_NAMES;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.REG_PROVIDER_NAMES;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.SAKAI_BATCHRESULTPROCESSOR;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.SAKAI_LIMIT_RESULTS;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.SAKAI_PROPERTY_PROVIDER;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.SAKAI_QUERY_TEMPLATE;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.SAKAI_QUERY_TEMPLATE_OPTIONS;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.SAKAI_RESULTPROCESSOR;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.SEARCH_BATCH_RESULT_PROCESSOR;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.SEARCH_PATH_PREFIX;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.SEARCH_PROPERTY_PROVIDER;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.SEARCH_RESULT_PROCESSOR;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.TIDY;
-import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.TOTAL;
-
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
-import org.apache.felix.scr.annotations.ReferenceCardinality;
-import org.apache.felix.scr.annotations.ReferencePolicy;
-import org.apache.felix.scr.annotations.References;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -58,10 +33,9 @@ import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
-import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.commons.osgi.PropertiesUtil;
+import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.util.ClientUtils;
-import org.osgi.framework.Constants;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
 import org.sakaiproject.nakamura.api.doc.ServiceDocumentation;
 import org.sakaiproject.nakamura.api.doc.ServiceMethod;
@@ -85,17 +59,6 @@ import org.sakaiproject.nakamura.util.LitePersonalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.PropertyIterator;
@@ -104,11 +67,30 @@ import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
-/**
- * The <code>SearchServlet</code> uses nodes from the
- *
- */
+import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.DEFAULT_PAGED_ITEMS;
+import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.FACET_FIELDS;
+import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.JSON_RESULTS;
+import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.PARAMS_ITEMS_PER_PAGE;
+import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.PARAMS_PAGE;
+import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.SAKAI_BATCHRESULTPROCESSOR;
+import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.SAKAI_PROPERTY_PROVIDER;
+import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.SAKAI_QUERY_TEMPLATE;
+import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.SAKAI_QUERY_TEMPLATE_OPTIONS;
+import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.SAKAI_RESULTPROCESSOR;
+import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.SAKAI_SEARCHRESPONSEDECORATOR;
+import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.SEARCH_PATH_PREFIX;
+import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.TIDY;
+import static org.sakaiproject.nakamura.api.search.solr.SolrSearchConstants.TOTAL;
+
 @ServiceDocumentation(name = "Solr Search Servlet", okForVersion = "0.11",
   shortDescription = "The Search servlet provides search results from a search template.",
   description = {
@@ -157,31 +139,22 @@ import javax.servlet.http.HttpServletResponse;
     @Property(name = "service.description", value = { "Performs searches based on the associated node." }),
     @Property(name = "service.vendor", value = { "The Sakai Foundation" }),
     @Property(name = "maximumResults", longValue = 2500L) })
-@References(value = {
-    @Reference(name = "SearchResultProcessor", referenceInterface = SolrSearchResultProcessor.class, bind = "bindSearchResultProcessor", unbind = "unbindSearchResultProcessor", cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE, policy = ReferencePolicy.DYNAMIC),
-    @Reference(name = "SearchBatchResultProcessor", referenceInterface = SolrSearchBatchResultProcessor.class, bind = "bindSearchBatchResultProcessor", unbind = "unbindSearchBatchResultProcessor", cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE, policy = ReferencePolicy.DYNAMIC),
-    @Reference(name = "SearchPropertyProvider", referenceInterface = SolrSearchPropertyProvider.class, bind = "bindSearchPropertyProvider", unbind = "unbindSearchPropertyProvider", cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE, policy = ReferencePolicy.DYNAMIC) })
 public class SolrSearchServlet extends SlingSafeMethodsServlet {
 
-  /**
-   *
-   */
   private static final long serialVersionUID = 4130126304725079596L;
   private static final Logger LOGGER = LoggerFactory.getLogger(SolrSearchServlet.class);
 
-  private Map<String, SolrSearchBatchResultProcessor> batchProcessors = new ConcurrentHashMap<String, SolrSearchBatchResultProcessor>();
-  private Map<Long, SolrSearchBatchResultProcessor> batchProcessorsById = new ConcurrentHashMap<Long, SolrSearchBatchResultProcessor>();
+  @Reference
+  private SearchResultProcessorTracker searchResultProcessorTracker;
 
-  private Map<String, SolrSearchResultProcessor> processors = new ConcurrentHashMap<String, SolrSearchResultProcessor>();
-  private Map<Long, SolrSearchResultProcessor> processorsById = new ConcurrentHashMap<Long, SolrSearchResultProcessor>();
+  @Reference
+  private SearchBatchResultProcessorTracker searchBatchResultProcessorTracker;
 
-  private Map<String, SolrSearchPropertyProvider> propertyProvider = new ConcurrentHashMap<String, SolrSearchPropertyProvider>();
-  private Map<Long, SolrSearchPropertyProvider> propertyProviderById = new ConcurrentHashMap<Long, SolrSearchPropertyProvider>();
+  @Reference
+  private SolrSearchPropertyProviderTracker searchPropertyProviderTracker;
 
-  private transient ComponentContext osgiComponentContext;
-  private List<ServiceReference> delayedReferences = new ArrayList<ServiceReference>();
-  private List<ServiceReference> delayedPropertyReferences = new ArrayList<ServiceReference>();
-  private List<ServiceReference> delayedBatchReferences = new ArrayList<ServiceReference>();
+  @Reference
+  private SearchResponseDecoratorTracker searchResponseDecoratorTracker;
 
   protected long maximumResults = 100;
 
@@ -197,7 +170,7 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
 
   /**
    * Reference uses property set on NodeSearchResultProcessor. Other processors can become
-   * the default by setting {@link SearchResultProcessor.DEFAULT_PROCESOR_PROP} to true.
+   * the default by setting {@link SearchResultProcessor.DEFAULT_PROCESSOR_PROP} to true.
    */
   private static final String DEFAULT_SEARCH_PROC_TARGET = "(&("
       + SolrSearchResultProcessor.DEFAULT_PROCESSOR_PROP + "=true))";
@@ -221,15 +194,8 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
 
       Node node = resource.adaptTo(Node.class);
       if (node != null && node.hasProperty(SAKAI_QUERY_TEMPLATE)) {
-        // TODO: we might want to use this ?
-        @SuppressWarnings("unused")
-        boolean limitResults = true;
-        if (node.hasProperty(SAKAI_LIMIT_RESULTS)) {
-          limitResults = node.getProperty(SAKAI_LIMIT_RESULTS).getBoolean();
-        }
-
         // KERN-1147 Respond better when all parameters haven't been provided for a query
-        Query query = null;
+        Query query;
         try {
           query = processQuery(request, node);
         } catch (MissingParameterException e) {
@@ -250,9 +216,7 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
           query.getOptions().put(PARAMS_ITEMS_PER_PAGE, Long.toString(nitems));
         }
 
-        if (query.getOptions().containsKey(PARAMS_PAGE)) {
-          page = Long.valueOf(String.valueOf(query.getOptions().get(PARAMS_PAGE)));
-        } else {
+        if (!query.getOptions().containsKey(PARAMS_PAGE)) {
           // add this to the options so that all queries are constrained to a limited
           // number of returns per page.
           query.getOptions().put(PARAMS_PAGE, Long.toString(page));
@@ -262,7 +226,7 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
         // Get the
         SolrSearchBatchResultProcessor searchBatchProcessor = defaultSearchBatchProcessor;
         if (node.hasProperty(SAKAI_BATCHRESULTPROCESSOR)) {
-          searchBatchProcessor = batchProcessors.get(node.getProperty(
+          searchBatchProcessor = searchBatchResultProcessorTracker.getByName(node.getProperty(
               SAKAI_BATCHRESULTPROCESSOR).getString());
           useBatch = true;
           if (searchBatchProcessor == null) {
@@ -272,14 +236,14 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
 
         SolrSearchResultProcessor searchProcessor = defaultSearchProcessor;
         if (node.hasProperty(SAKAI_RESULTPROCESSOR)) {
-          searchProcessor = processors.get(node.getProperty(SAKAI_RESULTPROCESSOR)
+          searchProcessor = searchResultProcessorTracker.getByName(node.getProperty(SAKAI_RESULTPROCESSOR)
               .getString());
           if (searchProcessor == null) {
             searchProcessor = defaultSearchProcessor;
           }
         }
 
-        SolrSearchResultSet rs = null;
+        SolrSearchResultSet rs;
         try {
           // Prepare the result set.
           // This allows a processor to do other queries and manipulate the results.
@@ -324,16 +288,22 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
         }
         write.endArray();
 
+        // write the solr facets out if they exist
+        writeFacetFields(rs, write);
+
         // write the total out after processing the list to give the underlying iterator
         // a chance to walk the results then report how many there were.
         write.key(TOTAL);
         write.value(rs.getSize());
 
-        // additional search feed output can be applied here
-        if (useBatch && searchBatchProcessor instanceof SearchResponseDecorator) {
-          ((SearchResponseDecorator)searchBatchProcessor).decorateSearchResponse(request, write);
-        } else if (searchProcessor instanceof SearchResponseDecorator) {
-          ((SearchResponseDecorator)searchProcessor).decorateSearchResponse(request, write);
+        if ( node.hasProperty(SAKAI_SEARCHRESPONSEDECORATOR)) {
+          String[] decoratorNames = getStringArrayProp(node, SAKAI_SEARCHRESPONSEDECORATOR);
+          for ( String name : decoratorNames ) {
+            SearchResponseDecorator decorator = searchResponseDecoratorTracker.getByName(name);
+            if ( decorator != null ) {
+              decorator.decorateSearchResponse(request, write);
+            }
+          }
         }
 
         write.endObject();
@@ -364,7 +334,7 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
     // check the resource type and set the query type appropriately
     // default to using solr for queries
     javax.jcr.Property resourceType = queryNode.getProperty("sling:resourceType");
-    String queryType = null;
+    String queryType;
     if ("sakai/sparse-search".equals(resourceType.getString())) {
       queryType = Query.SPARSE;
     } else {
@@ -373,18 +343,7 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
 
     String[] propertyProviderNames = null;
     if (queryNode.hasProperty(SAKAI_PROPERTY_PROVIDER)) {
-      javax.jcr.Property propProv = queryNode.getProperty(SAKAI_PROPERTY_PROVIDER);
-      if (propProv.isMultiple()) {
-        Value[] propProvVals = propProv.getValues();
-        propertyProviderNames = new String[propProvVals.length];
-
-        for (int i = 0; i < propProvVals.length; i++) {
-          propertyProviderNames[i] = propProvVals[i].getString();
-        }
-      } else {
-        propertyProviderNames = new String[1];
-        propertyProviderNames[0] = propProv.getString();
-      }
+      propertyProviderNames = getStringArrayProp(queryNode, SAKAI_PROPERTY_PROVIDER);
     }
     Map<String, String> propertiesMap = loadProperties(request,
         propertyProviderNames, queryNode.getProperties(), queryType);
@@ -412,8 +371,7 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
     // process the options as templates and check for missing params
     Map<String, Object> options = processOptions(propertiesMap, queryOptions, queryType);
 
-    Query query = new Query(queryNode.getPath(), queryType, queryString, options);
-    return query;
+    return new Query(queryNode.getPath(), queryType, queryString, options);
   }
 
   /**
@@ -492,8 +450,7 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
    * @throws JSONException
    */
   private JSONObject accumulateQueryOptions(Node queryNode)
-      throws RepositoryException, ValueFormatException, PathNotFoundException,
-      JSONException {
+      throws RepositoryException, JSONException {
     JSONObject queryOptions = null;
     if (queryNode.hasProperty(SAKAI_QUERY_TEMPLATE_OPTIONS)) {
       // process the options as JSON string
@@ -534,7 +491,7 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
    *
    * This ordering allows the query node to set defaults, the request to override those
    * defaults but the property provider to have the final say in what value is set.
-   * 
+   *
    * @param request
    * @param propertyProviderName
    * @return
@@ -585,7 +542,7 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
     if (propertyProviderNames != null) {
       for (String propertyProviderName : propertyProviderNames) {
         LOGGER.debug("Trying Provider Name {} ", propertyProviderName);
-        SolrSearchPropertyProvider provider = propertyProvider.get(propertyProviderName);
+        SolrSearchPropertyProvider provider = searchPropertyProviderTracker.getByName(propertyProviderName);
         if (provider != null) {
           LOGGER.debug("Trying Provider {} ", provider);
           provider.loadUserProperties(request, propertiesMap);
@@ -600,273 +557,9 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
     return propertiesMap;
   }
 
-  protected void bindSearchResultProcessor(ServiceReference serviceReference) {
-    synchronized (delayedReferences) {
-      if (osgiComponentContext == null) {
-        delayedReferences.add(serviceReference);
-      } else {
-        addProcessor(serviceReference);
-      }
-    }
-
-  }
-
-  protected void unbindSearchResultProcessor(ServiceReference serviceReference) {
-    synchronized (delayedReferences) {
-      if (osgiComponentContext == null) {
-        delayedReferences.remove(serviceReference);
-      } else {
-        removeProcessor(serviceReference);
-      }
-    }
-
-  }
-
-  protected void bindSearchBatchResultProcessor(ServiceReference serviceReference) {
-    synchronized (delayedBatchReferences) {
-      if (osgiComponentContext == null) {
-        delayedBatchReferences.add(serviceReference);
-      } else {
-        addBatchProcessor(serviceReference);
-      }
-    }
-
-  }
-
-  protected void unbindSearchBatchResultProcessor(ServiceReference serviceReference) {
-    synchronized (delayedBatchReferences) {
-      if (osgiComponentContext == null) {
-        delayedBatchReferences.remove(serviceReference);
-      } else {
-        removeBatchProcessor(serviceReference);
-      }
-    }
-
-  }
-
-  protected void bindSearchPropertyProvider(ServiceReference serviceReference) {
-    synchronized (delayedReferences) {
-      if (osgiComponentContext == null) {
-        delayedPropertyReferences.add(serviceReference);
-      } else {
-        addProvider(serviceReference);
-      }
-    }
-
-  }
-
-  protected void unbindSearchPropertyProvider(ServiceReference serviceReference) {
-    synchronized (delayedReferences) {
-      if (osgiComponentContext == null) {
-        delayedPropertyReferences.remove(serviceReference);
-      } else {
-        removeProvider(serviceReference);
-      }
-    }
-
-  }
-
-  /**
-   * @param serviceReference
-   */
-  private void removeProcessor(ServiceReference serviceReference) {
-    Long serviceId = (Long) serviceReference.getProperty(Constants.SERVICE_ID);
-    SolrSearchResultProcessor processor = processorsById.remove(serviceId);
-    if (processor != null) {
-      List<String> toRemove = new ArrayList<String>();
-      for (Entry<String, SolrSearchResultProcessor> e : processors.entrySet()) {
-        if (processor.equals(e.getValue())) {
-          toRemove.add(e.getKey());
-        }
-      }
-      for (String r : toRemove) {
-        processors.remove(r);
-      }
-
-      // bit of a kludge until I can figure out why felix doesn't wire up the default
-      // processor even though it finds a matching service.
-      boolean defaultProcessor = getSetting(
-          serviceReference.getProperty(SolrSearchResultProcessor.DEFAULT_PROCESSOR_PROP),
-          false);
-      if (defaultProcessor) {
-        defaultSearchProcessor = null;
-      }
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  private <T> T getSetting(Object o, T defaultValue) {
-    if (o == null) {
-      return defaultValue;
-    }
-    return (T) o;
-  }
-
-  private String[] getSetting(Object o, String[] defaultValue) {
-    if (o == null) {
-      return defaultValue;
-    }
-    if (o.getClass().isArray()) {
-      return (String[]) o;
-    }
-    return new String[]{(String) o};
-  }
-
-  /**
-   * @param serviceReference
-   */
-  private void addProcessor(ServiceReference serviceReference) {
-    SolrSearchResultProcessor processor = (SolrSearchResultProcessor) osgiComponentContext
-        .locateService(SEARCH_RESULT_PROCESSOR, serviceReference);
-    if (processor == null) {
-      LOGGER.warn("Retrieved null processor [{}]", serviceReference);
-      return;
-    }
-
-    Long serviceId = (Long) serviceReference.getProperty(Constants.SERVICE_ID);
-
-    processorsById.put(serviceId, processor);
-    String[] processorNames = getSetting(
-        serviceReference.getProperty(REG_PROCESSOR_NAMES), new String[0]);
-
-    for (String processorName : processorNames) {
-      processors.put(processorName, processor);
-    }
-
-    // bit of a kludge until I can figure out why felix doesn't wire up the default
-    // processor even though it finds a matching service.
-    boolean defaultProcessor = getSetting(
-        serviceReference.getProperty(SolrSearchResultProcessor.DEFAULT_PROCESSOR_PROP),
-        false);
-    if (defaultProcessor) {
-      defaultSearchProcessor = processor;
-    }
-  }
-
-  /**
-   * @param serviceReference
-   */
-  private void removeBatchProcessor(ServiceReference serviceReference) {
-    Long serviceId = (Long) serviceReference.getProperty(Constants.SERVICE_ID);
-    SolrSearchResultProcessor processor = processorsById.remove(serviceId);
-    if (processor != null) {
-      List<String> toRemove = new ArrayList<String>();
-      for (Entry<String, SolrSearchResultProcessor> e : processors.entrySet()) {
-        if (processor.equals(e.getValue())) {
-          toRemove.add(e.getKey());
-        }
-      }
-      for (String r : toRemove) {
-        processors.remove(r);
-      }
-
-      // bit of a kludge until I can figure out why felix doesn't wire up the default
-      // processor even though it finds a matching service.
-      boolean defaultBatchProcessor = getSetting(serviceReference
-          .getProperty(SolrSearchBatchResultProcessor.DEFAULT_BATCH_PROCESSOR_PROP),
-          false);
-      if (defaultBatchProcessor) {
-        defaultSearchBatchProcessor = null;
-      }
-    }
-  }
-
-  /**
-   * @param serviceReference
-   */
-  private void addBatchProcessor(ServiceReference serviceReference) {
-    SolrSearchBatchResultProcessor processor = (SolrSearchBatchResultProcessor) osgiComponentContext
-        .locateService(SEARCH_BATCH_RESULT_PROCESSOR, serviceReference);
-    if (processor == null) {
-      LOGGER.warn("Retrieved null processor [{}]", serviceReference);
-      return;
-    }
-    Long serviceId = (Long) serviceReference.getProperty(Constants.SERVICE_ID);
-
-    batchProcessorsById.put(serviceId, processor);
-    String[] processorNames = getSetting(serviceReference
-        .getProperty(REG_BATCH_PROCESSOR_NAMES), new String[0]);
-
-    if (processorNames != null) {
-      for (String processorName : processorNames) {
-        batchProcessors.put(processorName, processor);
-      }
-    }
-
-    // bit of a kludge until I can figure out why felix doesn't wire up the default
-    // processor even though it finds a matching service.
-    boolean defaultBatchProcessor = getSetting(serviceReference
-        .getProperty(SolrSearchBatchResultProcessor.DEFAULT_BATCH_PROCESSOR_PROP), false);
-    if (defaultBatchProcessor) {
-      defaultSearchBatchProcessor = processor;
-    }
-  }
-
-  /**
-   * @param serviceReference
-   */
-  private void removeProvider(ServiceReference serviceReference) {
-    Long serviceId = (Long) serviceReference.getProperty(Constants.SERVICE_ID);
-    SolrSearchPropertyProvider provider = propertyProviderById.remove(serviceId);
-    if (provider != null) {
-      List<String> toRemove = new ArrayList<String>();
-      for (Entry<String, SolrSearchPropertyProvider> e : propertyProvider.entrySet()) {
-        if (provider.equals(e.getValue())) {
-          toRemove.add(e.getKey());
-        }
-      }
-      for (String r : toRemove) {
-        propertyProvider.remove(r);
-      }
-    }
-  }
-
-  /**
-   * @param serviceReference
-   */
-  private void addProvider(ServiceReference serviceReference) {
-    SolrSearchPropertyProvider provider = (SolrSearchPropertyProvider) osgiComponentContext
-        .locateService(SEARCH_PROPERTY_PROVIDER, serviceReference);
-    if (provider == null) {
-      LOGGER.warn("Retrieved null provider [{}]", serviceReference);
-      return;
-    }
-    Long serviceId = (Long) serviceReference.getProperty(Constants.SERVICE_ID);
-
-    propertyProviderById.put(serviceId, provider);
-    String[] processorNames = getSetting(serviceReference
-        .getProperty(REG_PROVIDER_NAMES), new String[0]);
-
-    for (String processorName : processorNames) {
-      propertyProvider.put(processorName, provider);
-    }
-  }
-
+  @SuppressWarnings({"UnusedDeclaration"})
   protected void activate(ComponentContext componentContext) {
-
-    synchronized (delayedReferences) {
-      osgiComponentContext = componentContext;
-      for (ServiceReference ref : delayedReferences) {
-        addProcessor(ref);
-      }
-      delayedReferences.clear();
-    }
-    synchronized (delayedBatchReferences) {
-      osgiComponentContext = componentContext;
-      for (ServiceReference ref : delayedBatchReferences) {
-        addBatchProcessor(ref);
-      }
-      delayedBatchReferences.clear();
-    }
-    synchronized (delayedPropertyReferences) {
-      osgiComponentContext = componentContext;
-      for (ServiceReference ref : delayedPropertyReferences) {
-        addProvider(ref);
-      }
-      delayedPropertyReferences.clear();
-    }
-
-    maximumResults = OsgiUtil.toLong(componentContext.getProperties().get("maximumResults"), 100);
+    maximumResults = PropertiesUtil.toLong(componentContext.getProperties().get("maximumResults"), 100);
   }
 
   /**
@@ -880,5 +573,45 @@ public class SolrSearchServlet extends SlingSafeMethodsServlet {
       }
     }
     return false;
+  }
+
+  private String[] getStringArrayProp(Node queryNode, String propName) throws RepositoryException {
+    String[] propertyProviderNames;
+    javax.jcr.Property propProv = queryNode.getProperty(propName);
+    if (propProv.isMultiple()) {
+      Value[] propProvVals = propProv.getValues();
+      propertyProviderNames = new String[propProvVals.length];
+
+      for (int i = 0; i < propProvVals.length; i++) {
+        propertyProviderNames[i] = propProvVals[i].getString();
+      }
+    } else {
+      propertyProviderNames = new String[1];
+      propertyProviderNames[0] = propProv.getString();
+    }
+    return propertyProviderNames;
+  }
+
+  private void writeFacetFields(SolrSearchResultSet rs, ExtendedJSONWriter writer) throws JSONException {
+    if (rs.getFacetFields() != null) {
+      List<FacetField> fields = rs.getFacetFields();
+      writer.key(FACET_FIELDS);
+      writer.array();
+      for (FacetField field : fields) {
+        writer.object();
+        writer.key(field.getName());
+        writer.array();
+        List<FacetField.Count> values = field.getValues();
+        for ( FacetField.Count value : values ) {
+          writer.object();
+          writer.key(value.getName());
+          writer.value(value.getCount());
+          writer.endObject();
+        }
+        writer.endArray();
+        writer.endObject();
+      }
+      writer.endArray();
+    }
   }
 }

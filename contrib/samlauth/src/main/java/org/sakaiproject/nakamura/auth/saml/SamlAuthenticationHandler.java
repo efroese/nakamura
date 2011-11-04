@@ -35,7 +35,7 @@ import org.apache.sling.auth.core.spi.AuthenticationFeedbackHandler;
 import org.apache.sling.auth.core.spi.AuthenticationHandler;
 import org.apache.sling.auth.core.spi.AuthenticationInfo;
 import org.apache.sling.auth.core.spi.DefaultAuthenticationFeedbackHandler;
-import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.sling.jcr.resource.JcrResourceConstants;
 import org.apache.sling.servlets.post.ModificationType;
 import org.joda.time.DateTime;
@@ -270,16 +270,16 @@ public class SamlAuthenticationHandler implements AuthenticationHandler,
   // ----------- OSGi integration ----------------------------
   @Activate @Modified
   protected void activate(Map<?, ?> props) throws Exception {
-    serverUrl = OsgiUtil.toString(props.get(SERVER_URL), null);
-    entityIdLabel = OsgiUtil.toString(props.get(ENTITY_ID_LABEL), DEFAULT_ENTITY_ID_LABEL);
-    entityId = OsgiUtil.toString(props.get(ENTITY_ID), DEFAULT_ENTITY_ID);
-    logoutUrl = OsgiUtil.toString(props.get(LOGOUT_URL), null);
-    missingLocalUserUrl = OsgiUtil.toString(props.get(MISSING_LOCAL_USER_URL),
+    serverUrl = PropertiesUtil.toString(props.get(SERVER_URL), null);
+    entityIdLabel = PropertiesUtil.toString(props.get(ENTITY_ID_LABEL), DEFAULT_ENTITY_ID_LABEL);
+    entityId = PropertiesUtil.toString(props.get(ENTITY_ID), DEFAULT_ENTITY_ID);
+    logoutUrl = PropertiesUtil.toString(props.get(LOGOUT_URL), null);
+    missingLocalUserUrl = PropertiesUtil.toString(props.get(MISSING_LOCAL_USER_URL),
         DEFAULT_MISSING_LOCAL_USER_URL);
-    autoCreateUser = OsgiUtil.toBoolean(props.get(SSO_AUTOCREATE_USER), DEFAULT_SSO_AUTOCREATE_USER);
-    updateAttrsOnLogin = OsgiUtil.toBoolean(props.get(UPDATE_ATTRS_ON_LOGIN), DEFAULT_UPDATE_ATTRS_ON_LOGIN);
-    signatureLocation = OsgiUtil.toString(props.get(SIGNATURE_LOCATION), DEFAULT_SIGNATURE_LOCATION);
-    String certPath = OsgiUtil.toString(props.get(CERTIFICATE), null);
+    autoCreateUser = PropertiesUtil.toBoolean(props.get(SSO_AUTOCREATE_USER), DEFAULT_SSO_AUTOCREATE_USER);
+    updateAttrsOnLogin = PropertiesUtil.toBoolean(props.get(UPDATE_ATTRS_ON_LOGIN), DEFAULT_UPDATE_ATTRS_ON_LOGIN);
+    signatureLocation = PropertiesUtil.toString(props.get(SIGNATURE_LOCATION), DEFAULT_SIGNATURE_LOCATION);
+    String certPath = PropertiesUtil.toString(props.get(CERTIFICATE), null);
 
     loginUrl = serverUrl;
     if (!serverUrl.endsWith("&")) {
@@ -291,7 +291,7 @@ public class SamlAuthenticationHandler implements AuthenticationHandler,
     }
     loginUrl += entityIdLabel + "=" + entityId;
 
-    matchDestination = OsgiUtil.toString(props.get(MATCH_DESTINATION), DEFAULT_MATCH_DESTINATION);
+    matchDestination = PropertiesUtil.toString(props.get(MATCH_DESTINATION), DEFAULT_MATCH_DESTINATION);
     if (MATCH_DESTINATION_NONE.equals(matchDestination)) {
       uriComparator = TRUE_URI_COMPARATOR;
     } else if (MATCH_DESTINATION_SIMPLE.equals(matchDestination)) {

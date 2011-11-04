@@ -64,6 +64,9 @@ public interface SolrSearchConstants {
    *
    */
   public static final String REG_PROVIDER_NAMES = "sakai.search.provider";
+
+  public static final String REG_SEARCH_DECORATOR_NAMES = "sakai.search.responsedecorator";
+
   /**
   *
   */
@@ -88,6 +91,9 @@ public interface SolrSearchConstants {
    *
    */
   public static final String SAKAI_RESULTPROCESSOR = "sakai:resultprocessor";
+
+  public static final String SAKAI_SEARCHRESPONSEDECORATOR = "sakai:searchresponsedecorator";
+
   /**
    *
    */
@@ -120,4 +126,7 @@ public interface SolrSearchConstants {
    *
    */
   public static final String INFINITY = "infinity";
+
+  public static final String FACET_FIELDS = "facet_fields";
+
 }

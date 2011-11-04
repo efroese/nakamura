@@ -42,6 +42,7 @@ import org.sakaiproject.nakamura.api.lite.authorizable.AuthorizableManager;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import org.sakaiproject.nakamura.api.message.MessageConstants;
+import org.sakaiproject.nakamura.api.solr.ImmediateIndexingHandler;
 import org.sakaiproject.nakamura.api.solr.IndexingHandler;
 import org.sakaiproject.nakamura.api.solr.RepositorySession;
 import org.sakaiproject.nakamura.api.solr.ResourceIndexingService;
@@ -53,6 +54,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -60,12 +62,25 @@ import java.util.Set;
  * searching.
  */
 @Component(immediate = true)
-public class MessageIndexingHandler implements IndexingHandler {
+public class MessageIndexingHandler implements IndexingHandler, ImmediateIndexingHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(MessageIndexingHandler.class);
+
+  private static final Map<String, String> QUICK_INDEX;
+  static {
+    Builder<String, String> propBuilder = ImmutableMap.builder();
+    propBuilder.put("sakai:messagestore", "messagestore");
+    propBuilder.put("sakai:type", "type");
+    propBuilder.put(Content.CREATED_FIELD, Content.CREATED_FIELD);
+    propBuilder.put("sakai:marker", "marker");
+    propBuilder.put("sakai:category", "category");
+    propBuilder.put("sakai:messagebox", "messagebox");
+    QUICK_INDEX = propBuilder.build();
+  }
 
   private static final Map<String, String> WHITELISTED_PROPS;
   static {
     Builder<String,String> propBuilder = ImmutableMap.builder();
+    propBuilder.put("sakai:messagestore", "messagestore");
     propBuilder.put("sakai:messagebox", "messagebox");
     propBuilder.put("sakai:type", "type");
     propBuilder.put(Content.CREATED_FIELD, Content.CREATED_FIELD);
@@ -95,6 +110,7 @@ public class MessageIndexingHandler implements IndexingHandler {
   @Activate
   public void activate(Map<String, Object> properties) throws Exception {
     for (String type : CONTENT_TYPES) {
+      resourceIndexingService.addImmediateHandler(type, this);
       resourceIndexingService.addHandler(type, this);
     }
   }
@@ -102,8 +118,14 @@ public class MessageIndexingHandler implements IndexingHandler {
   @Deactivate
   public void deactivate(Map<String, Object> properties) {
     for (String type : CONTENT_TYPES) {
+      resourceIndexingService.removeImmediateHandler(type, this);
       resourceIndexingService.removeHandler(type, this);
     }
+  }
+
+  public Collection<SolrInputDocument> getDocuments(RepositorySession repositorySession,
+      Event event) {
+    return getDocuments(repositorySession, event, false);
   }
 
   /**
@@ -112,9 +134,14 @@ public class MessageIndexingHandler implements IndexingHandler {
    * @see org.sakaiproject.nakamura.api.solr.IndexingHandler#getDocuments(org.sakaiproject.nakamura.api.solr.RepositorySession,
    *      org.osgi.service.event.Event)
    */
-  public Collection<SolrInputDocument> getDocuments(RepositorySession repositorySession,
+  public Collection<SolrInputDocument> getImmediateDocuments(RepositorySession repositorySession,
       Event event) {
-    String path = (String) event.getProperty(FIELD_PATH);
+    return getDocuments(repositorySession, event, true);
+  }
+
+  private Collection<SolrInputDocument> getDocuments(RepositorySession repositorySession,
+      Event event, boolean quickIndex) {
+    String path = (String) event.getProperty(IndexingHandler.FIELD_PATH);
 
     List<SolrInputDocument> documents = Lists.newArrayList();
     if (!StringUtils.isBlank(path)) {
@@ -130,40 +157,53 @@ public class MessageIndexingHandler implements IndexingHandler {
 
           // index as autonomous message
           SolrInputDocument doc = new SolrInputDocument();
-          for (String prop : WHITELISTED_PROPS.keySet()) {
-            Object value = content.getProperty(prop);
-            doc.addField(WHITELISTED_PROPS.get(prop), value);
-          }
-          doc.addField(_DOC_SOURCE_OBJECT, content);
-          documents.add(doc);
-
-          // index for user,group searching
-          String authId = PathUtils.getAuthorizableId(content.getPath());
-          AuthorizableManager am = session.getAuthorizableManager();
-          Authorizable auth = am.findAuthorizable(authId);
-          if (auth == null) {
-            LOGGER.warn("Unable to find auth (user,group) container for message [{}]; not indexing message for user,group searching", path);
-          } else {
-            doc = new SolrInputDocument();
-            doc.addField("title", content.getProperty("sakai:subject"));
-            doc.addField("content", content.getProperty("sakai:body"));
-
-            if (auth.isGroup()) {
-              doc.setField("type", "g");
-            } else {
-              doc.setField("type", "u");
+          if (quickIndex) {
+            for (Entry<String, String> prop : QUICK_INDEX.entrySet()) {
+              Object value = content.getProperty(prop.getKey());
+              if (value != null) {
+                doc.addField(prop.getValue(), value);
+              }
             }
-            doc.addField(_DOC_SOURCE_OBJECT, content);
-
-            // set the path here so that it's the first path found when rendering to the
-            // client. the resource indexing service will add all nodes of the path and
-            // we want this one to return first in the result processor.
-            doc.setField(FIELD_PATH, authId);
-            doc.addField(FIELD_ID, path + AUTH_SUFFIX);
-
-            // set the return to a single value field so we can group it
-            doc.setField("returnpath", authId);
+            doc.addField(IndexingHandler._DOC_SOURCE_OBJECT, content);
             documents.add(doc);
+          } else {
+            for (String prop : WHITELISTED_PROPS.keySet()) {
+              Object value = content.getProperty(prop);
+              if (value != null) {
+                doc.addField(WHITELISTED_PROPS.get(prop), value);
+              }
+            }
+            doc.addField(IndexingHandler._DOC_SOURCE_OBJECT, content);
+            documents.add(doc);
+
+            // index for user,group searching
+            String authId = PathUtils.getAuthorizableId(content.getPath());
+            AuthorizableManager am = session.getAuthorizableManager();
+            Authorizable auth = am.findAuthorizable(authId);
+            if (auth == null) {
+              LOGGER.warn("Unable to find auth (user,group) container for message [{}]; not indexing message for user,group searching", path);
+            } else {
+              doc = new SolrInputDocument();
+              doc.addField("title", content.getProperty("sakai:subject"));
+              doc.addField("content", content.getProperty("sakai:body"));
+
+              if (auth.isGroup()) {
+                doc.setField("type", "g");
+              } else {
+                doc.setField("type", "u");
+              }
+              doc.addField(IndexingHandler._DOC_SOURCE_OBJECT, content);
+
+              // set the path here so that it's the first path found when rendering to the
+              // client. the resource indexing service will add all nodes of the path and
+              // we want this one to return first in the result processor.
+              doc.setField(IndexingHandler.FIELD_PATH, authId);
+              doc.addField(IndexingHandler.FIELD_ID, path + AUTH_SUFFIX);
+
+              // set the return to a single value field so we can group it
+              doc.setField("returnpath", authId);
+              documents.add(doc);
+            }
           }
         }
       } catch (StorageClientException e) {
@@ -184,9 +224,14 @@ public class MessageIndexingHandler implements IndexingHandler {
    */
   public Collection<String> getDeleteQueries(RepositorySession repositorySession,
       Event event) {
+    return null;
+  }
+
+  public Collection<String> getImmediateDeleteQueries(RepositorySession repositorySession,
+      Event event) {
     List<String> retval = Collections.emptyList();
     logger.debug("GetDelete for {} ", event);
-    String path = (String) event.getProperty(FIELD_PATH);
+    String path = (String) event.getProperty(IndexingHandler.FIELD_PATH);
     String resourceType = (String) event.getProperty("resourceType");
     if (CONTENT_TYPES.contains(resourceType)) {
       retval = ImmutableList.of("id:(" + ClientUtils.escapeQueryChars(path) + " OR "

@@ -39,6 +39,7 @@ import org.sakaiproject.nakamura.api.lite.authorizable.Authorizable;
 import org.sakaiproject.nakamura.api.lite.authorizable.AuthorizableManager;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
+import org.sakaiproject.nakamura.api.solr.ImmediateIndexingHandler;
 import org.sakaiproject.nakamura.api.solr.IndexingHandler;
 import org.sakaiproject.nakamura.api.solr.RepositorySession;
 import org.sakaiproject.nakamura.api.solr.ResourceIndexingService;
@@ -64,13 +65,13 @@ import java.util.Set;
  * </ul>
  */
 @Component(immediate = true)
-public class ConnectionIndexingHandler implements IndexingHandler {
+public class ConnectionIndexingHandler implements ImmediateIndexingHandler {
 
   private static final Logger logger = LoggerFactory
       .getLogger(ConnectionIndexingHandler.class);
 
   private static final Map<String, String> WHITELISTED_PROPS = ImmutableMap.of(
-      "sakai:state", "state");
+      "sakai:contactstorepath", "contactstorepath", "sakai:state", "state");
   private static final Set<String> FLATTENED_PROPS = ImmutableSet.of("name", "firstName",
       "lastName", "email");
   private static final Set<String> CONTENT_TYPES = Sets
@@ -82,26 +83,26 @@ public class ConnectionIndexingHandler implements IndexingHandler {
   @Activate
   public void activate(Map<String, Object> properties) throws Exception {
     for (String type : CONTENT_TYPES) {
-      resourceIndexingService.addHandler(type, this);
+      resourceIndexingService.addImmediateHandler(type, this);
     }
   }
 
   @Deactivate
   public void deactivate(Map<String, Object> properties) {
     for (String type : CONTENT_TYPES) {
-      resourceIndexingService.removeHandler(type, this);
+      resourceIndexingService.removeImmediateHandler(type, this);
     }
   }
 
   /**
    * {@inheritDoc}
-   *
-   * @see org.sakaiproject.nakamura.api.solr.IndexingHandler#getDocuments(org.sakaiproject.nakamura.api.solr.RepositorySession,
+   * 
+   * @see org.sakaiproject.nakamura.api.solr.ImmediateIndexingHandler#getImmediateDocuments(org.sakaiproject.nakamura.api.solr.RepositorySession,
    *      org.osgi.service.event.Event)
    */
-  public Collection<SolrInputDocument> getDocuments(RepositorySession repositorySession,
+  public Collection<SolrInputDocument> getImmediateDocuments(RepositorySession repositorySession,
       Event event) {
-    String path = (String) event.getProperty(FIELD_PATH);
+    String path = (String) event.getProperty(IndexingHandler.FIELD_PATH);
 
     logger.info("Indexing connections at path {}", path);
     List<SolrInputDocument> documents = Lists.newArrayList();
@@ -140,7 +141,7 @@ public class ConnectionIndexingHandler implements IndexingHandler {
             }
           }
 
-          doc.addField(_DOC_SOURCE_OBJECT, content);
+          doc.addField(IndexingHandler._DOC_SOURCE_OBJECT, content);
           documents.add(doc);
         } else {
           logger.debug("Did not index {}: Content == {}; Contact Auth == {}",
@@ -159,14 +160,34 @@ public class ConnectionIndexingHandler implements IndexingHandler {
   /**
    * {@inheritDoc}
    *
+   * @see org.sakaiproject.nakamura.api.solr.IndexingHandler#getDocuments(org.sakaiproject.nakamura.api.solr.RepositorySession, org.osgi.service.event.Event)
+   */
+  public Collection<SolrInputDocument> getDocuments(RepositorySession repoSession, Event event) {
+    // return null for delayed indexing since everything is handled during immediate indexing
+    return null;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
    * @see org.sakaiproject.nakamura.api.solr.IndexingHandler#getDeleteQueries(org.sakaiproject.nakamura.api.solr.RepositorySession,
    *      org.osgi.service.event.Event)
    */
   public Collection<String> getDeleteQueries(RepositorySession repositorySession,
       Event event) {
+    return null;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.sakaiproject.nakamura.api.solr.ImmediateIndexingHandler#getImmediateDeleteQueries(org.sakaiproject.nakamura.api.solr.RepositorySession, org.osgi.service.event.Event)
+   */
+  public Collection<String> getImmediateDeleteQueries(RepositorySession repositorySession,
+      Event event) {
     List<String> retval = Collections.emptyList();
     logger.debug("GetDelete for {} ", event);
-    String path = (String) event.getProperty(FIELD_PATH);
+    String path = (String) event.getProperty(IndexingHandler.FIELD_PATH);
     String resourceType = (String) event.getProperty("resourceType");
     if (CONTENT_TYPES.contains(resourceType)) {
       retval = ImmutableList.of("id:" + ClientUtils.escapeQueryChars(path));

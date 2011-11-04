@@ -22,9 +22,6 @@ class TC_Kern2196 < Test::Unit::TestCase
 
   def test_long_string_with_short_limit
     set_long_string_size(1000)
-    # sleep so the stack can restart
-    sleep(10)
-
     u = create_test_user("2196_short_limit")
     @s.switch_user(u)
 
@@ -39,9 +36,6 @@ class TC_Kern2196 < Test::Unit::TestCase
 
   def test_long_string_with_long_limit
     set_long_string_size(200000)
-    # sleep so the stack can restart
-    sleep(10)
-
     u = create_test_user("2196_larger_limit")
     @s.switch_user(u)
 
@@ -63,6 +57,8 @@ class TC_Kern2196 < Test::Unit::TestCase
     }
     @s.switch_user(User.admin_user)
     @s.execute_post(@s.url_for(@config_url), params)
+    # sleep 10 seconds so the stack can restart
+    sleep(10)
   end
 
   def get_config

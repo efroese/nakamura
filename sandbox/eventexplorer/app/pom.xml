@@ -22,7 +22,6 @@
 
     <artifactId>org.sakaiproject.nakamura.eventexplorer.app</artifactId>
     <packaging>jar</packaging>
-    <version>1.1-SNAPSHOT</version>
 
     <name>Sakai Nakamura :: Event explorer Standalone Java Application</name>
     <description> Standalone Java Application. When executed this will bring up a JMS listener that 

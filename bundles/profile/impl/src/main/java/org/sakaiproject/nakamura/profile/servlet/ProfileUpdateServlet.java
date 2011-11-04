@@ -34,7 +34,7 @@ import org.apache.sling.api.servlets.HtmlResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
-import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
@@ -147,10 +147,10 @@ public class ProfileUpdateServlet extends SlingAllMethodsServlet {
       
       // defaults were chosen based on the original values used before getting
       // these from the request
-      boolean replace = OsgiUtil.toBoolean(request.getParameter(":replace"), true);
-      boolean replaceProperties = OsgiUtil.toBoolean(
+      boolean replace = PropertiesUtil.toBoolean(request.getParameter(":replace"), true);
+      boolean replaceProperties = PropertiesUtil.toBoolean(
           request.getParameter(":replaceProperties"), true);
-      boolean removeTree = OsgiUtil.toBoolean(request.getParameter(":removeTree"),
+      boolean removeTree = PropertiesUtil.toBoolean(request.getParameter(":removeTree"),
           false);
 
       LOGGER.info("Got profile update {} ", json);

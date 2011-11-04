@@ -60,7 +60,7 @@ import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.apache.sling.commons.json.JSONException;
-import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.sling.jcr.base.util.AccessControlUtil;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
@@ -805,7 +805,7 @@ public class SearchServlet extends SlingSafeMethodsServlet {
 
       // bit of a kludge until I can figure out why felix doesn't wire up the default
       // processor even though it finds a matching service.
-      boolean defaultProcessor = OsgiUtil.toBoolean(
+      boolean defaultProcessor = PropertiesUtil.toBoolean(
           serviceReference.getProperty(SearchResultProcessor.DEFAULT_PROCESSOR_PROP),
           false);
       if (defaultProcessor) {
@@ -823,7 +823,7 @@ public class SearchServlet extends SlingSafeMethodsServlet {
     Long serviceId = (Long) serviceReference.getProperty(Constants.SERVICE_ID);
 
     processorsById.put(serviceId, processor);
-    String[] processorNames = OsgiUtil.toStringArray(serviceReference
+    String[] processorNames = PropertiesUtil.toStringArray(serviceReference
         .getProperty(REG_PROCESSOR_NAMES));
 
     for (String processorName : processorNames) {
@@ -832,7 +832,7 @@ public class SearchServlet extends SlingSafeMethodsServlet {
 
     // bit of a kludge until I can figure out why felix doesn't wire up the default
     // processor even though it finds a matching service.
-    boolean defaultProcessor = OsgiUtil.toBoolean(
+    boolean defaultProcessor = PropertiesUtil.toBoolean(
             serviceReference.getProperty(SearchResultProcessor.DEFAULT_PROCESSOR_PROP),
             false);
     if (defaultProcessor) {
@@ -859,7 +859,7 @@ public class SearchServlet extends SlingSafeMethodsServlet {
 
       // bit of a kludge until I can figure out why felix doesn't wire up the default
       // processor even though it finds a matching service.
-      boolean defaultBatchProcessor = OsgiUtil.toBoolean(serviceReference
+      boolean defaultBatchProcessor = PropertiesUtil.toBoolean(serviceReference
           .getProperty(SearchBatchResultProcessor.DEFAULT_BATCH_PROCESSOR_PROP), false);
       if (defaultBatchProcessor) {
         defaultSearchBatchProcessor = null;
@@ -876,7 +876,7 @@ public class SearchServlet extends SlingSafeMethodsServlet {
     Long serviceId = (Long) serviceReference.getProperty(Constants.SERVICE_ID);
 
     batchProcessorsById.put(serviceId, processor);
-    String[] processorNames = OsgiUtil.toStringArray(serviceReference
+    String[] processorNames = PropertiesUtil.toStringArray(serviceReference
         .getProperty(REG_BATCH_PROCESSOR_NAMES));
 
     if (processorNames != null) {
@@ -887,7 +887,7 @@ public class SearchServlet extends SlingSafeMethodsServlet {
 
     // bit of a kludge until I can figure out why felix doesn't wire up the default
     // processor even though it finds a matching service.
-    boolean defaultBatchProcessor = OsgiUtil.toBoolean(serviceReference
+    boolean defaultBatchProcessor = PropertiesUtil.toBoolean(serviceReference
         .getProperty(SearchBatchResultProcessor.DEFAULT_BATCH_PROCESSOR_PROP), false);
     if (defaultBatchProcessor) {
       defaultSearchBatchProcessor = processor;
@@ -922,7 +922,7 @@ public class SearchServlet extends SlingSafeMethodsServlet {
     Long serviceId = (Long) serviceReference.getProperty(Constants.SERVICE_ID);
 
     propertyProviderById.put(serviceId, provider);
-    String[] processorNames = OsgiUtil.toStringArray(serviceReference
+    String[] processorNames = PropertiesUtil.toStringArray(serviceReference
         .getProperty(REG_PROVIDER_NAMES));
 
     for (String processorName : processorNames) {
@@ -954,7 +954,7 @@ public class SearchServlet extends SlingSafeMethodsServlet {
       delayedPropertyReferences.clear();
     }
 
-    maximumResults = OsgiUtil.toLong(componentContext.getProperties().get("maximumResults"), 100);
+    maximumResults = PropertiesUtil.toLong(componentContext.getProperties().get("maximumResults"), 100);
   }
 
   /**

@@ -35,7 +35,7 @@ import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
-import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
 import org.sakaiproject.nakamura.api.lite.StorageClientUtils;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessControlManager;
@@ -89,7 +89,7 @@ public class ProfileServiceImpl implements ProfileService {
 
   @Activate @Modified
   protected void activate(Map<?, ?> props) {
-    emailLocation = OsgiUtil.toString(props.get(EMAIL_LOCATION), null);
+    emailLocation = PropertiesUtil.toString(props.get(EMAIL_LOCATION), null);
   }
 
   public String getEmailLocation() {

@@ -18,7 +18,7 @@
 package org.sakaiproject.nakamura.search.solr;
 
 import com.google.common.collect.UnmodifiableIterator;
-
+import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -26,17 +26,17 @@ import org.apache.solr.common.util.NamedList;
 import org.sakaiproject.nakamura.api.search.solr.Result;
 import org.sakaiproject.nakamura.api.search.solr.SolrQueryResponseWrapper;
 import org.sakaiproject.nakamura.api.search.solr.SolrSearchResultSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.SortedMap;
 
 
 public class SolrSearchResultSetImpl implements SolrSearchResultSet, SolrQueryResponseWrapper {
@@ -45,6 +45,7 @@ public class SolrSearchResultSetImpl implements SolrSearchResultSet, SolrQueryRe
 
   private final QueryResponse queryResponse;
   private SolrDocumentList responseList;
+  private SortedMap<Long, String> tagCloud;
 
   public SolrSearchResultSetImpl(QueryResponse queryResponse) {
     LOGGER.debug("new SolrSearchResultSetImpl(QueryResponse {})", queryResponse);
@@ -68,6 +69,9 @@ public class SolrSearchResultSetImpl implements SolrSearchResultSet, SolrQueryRe
     };
   }
 
+  public List<FacetField> getFacetFields() {
+    return this.queryResponse.getFacetFields();
+  }
 
   public long getSize() {
     loadResponse();

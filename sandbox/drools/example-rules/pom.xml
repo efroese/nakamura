@@ -9,7 +9,6 @@
 	<groupId>org.sakaiproject.nakamura.rules</groupId>
 	<artifactId>org.sakaiproject.nakamura.rules.example</artifactId>
 	<packaging>jar</packaging>
-	<version>1.1-SNAPSHOT</version>
 	<name>Sakai Nakamura :: Example Rule Set</name>
 	<url>http://fubar.com</url>
 	<repositories>

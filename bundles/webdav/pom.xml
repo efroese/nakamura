@@ -22,7 +22,6 @@
 
 	<artifactId>org.sakaiproject.nakamura.webdav</artifactId>
 	<packaging>bundle</packaging>
-	<version>1.1-SNAPSHOT</version>
 
 	<name>Sakai Nakamura :: Apache Sling Simple WebDAV Access to repositories</name>
 	<description>

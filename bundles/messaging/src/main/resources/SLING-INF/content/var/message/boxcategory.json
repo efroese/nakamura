@@ -7,6 +7,7 @@
   "sling:resourceType": "sakai/solr-search",
   "sakai:propertyprovider" : "MessageSparse",
   "sakai:batchresultprocessor": "MessageContacts",
+  "sakai:searchresponsedecorator":"Message",
   "sakai:title": "Messaging - User - Box and category with query term.",
   "sakai:shortDescription": "Get all the messages for a specified box and category.",
   "sakai:parameters" : [

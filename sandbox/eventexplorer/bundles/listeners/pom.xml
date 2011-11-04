@@ -10,7 +10,6 @@
   <groupId>org.sakaiproject.nakamura</groupId>
   <artifactId>org.sakaiproject.nakamura.eventexplorer.listeners</artifactId>
   <packaging>bundle</packaging>
-  <version>1.1-SNAPSHOT</version>
   <name>Sakai Nakamura :: Sakai Cassandra JMS Listeners</name>
   <description>Listeners for Nakamura messages that get stored in Cassandra</description>
 

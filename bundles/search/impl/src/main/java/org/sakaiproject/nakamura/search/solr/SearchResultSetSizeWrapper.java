@@ -17,10 +17,12 @@
  */
 package org.sakaiproject.nakamura.search.solr;
 
+import org.apache.solr.client.solrj.response.FacetField;
 import org.sakaiproject.nakamura.api.search.solr.Result;
 import org.sakaiproject.nakamura.api.search.solr.SolrSearchResultSet;
 
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Wrap raw search results from query engines (i.e., Sparse or SQL) which do not provide
@@ -52,4 +54,7 @@ public class SearchResultSetSizeWrapper implements SolrSearchResultSet {
     return size;
   }
 
+  public List<FacetField> getFacetFields() {
+    return wrappedSearchResultSet.getFacetFields();
+  }
 }

@@ -20,9 +20,10 @@ package org.sakaiproject.nakamura.api.tika;
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Service;
-import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.tika.Tika;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
@@ -47,6 +48,10 @@ import java.util.Map;
  * URL configUrl = bundleContext.getBundle().getResource("/org/apache/tika/tika-config.xml");
  * Tika tika = new Tika(new TikaConfig(configUrl));
  * </code>
+ *
+ * The annotations on this class are used only to generate the serviceComponents.xml file
+ * but the maven bundle plugin is not used since we copy the manifest from the tika-bundle
+ * artifact, so don't change these annotations and expect the changes to magically appear.
  */
 @Component
 @Service(value = TikaService.class)
@@ -60,11 +65,11 @@ public class TikaService {
   private int maxStringLength;
 
   // ---------- SCR integration ----------
-  @Activate
+  @Activate @Modified
   protected void activate(BundleContext bundleContext, Map<?, ?> props) throws Exception {
     URL configUrl = bundleContext.getBundle().getResource(
-        "/org/apache/tika/tika-config.xml");
-    maxStringLength = OsgiUtil.toInteger(props.get(MAX_STRING_LENGTH), DEFAULT_MAX_STRING_LENGTH);
+        "/org/sakaiproject/nakamura/tika/tika-config.xml");
+    maxStringLength = PropertiesUtil.toInteger(props.get(MAX_STRING_LENGTH), DEFAULT_MAX_STRING_LENGTH);
     tika = new Tika(new TikaConfig(configUrl));
     tika.setMaxStringLength(maxStringLength);
   }

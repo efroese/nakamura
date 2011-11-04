@@ -28,7 +28,7 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
-import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -162,7 +162,7 @@ public class LiteUserExistsServlet extends SlingSafeMethodsServlet {
 
   @Activate @Modified
   protected void modified(Map<?, ?> props) {
-    delayMs = OsgiUtil.toLong(props.get(USER_EXISTS_DELAY_MS_PROPERTY),
+    delayMs = PropertiesUtil.toLong(props.get(USER_EXISTS_DELAY_MS_PROPERTY),
         USER_EXISTS_DELAY_MS_DEFAULT);
   }
 }

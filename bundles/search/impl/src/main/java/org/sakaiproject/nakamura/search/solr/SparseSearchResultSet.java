@@ -21,12 +21,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
 
+import org.apache.solr.client.solrj.response.FacetField;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.search.solr.Result;
 import org.sakaiproject.nakamura.api.search.solr.SolrSearchResultSet;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -74,4 +76,7 @@ public class SparseSearchResultSet implements SolrSearchResultSet {
     return iterator.getSize();
   }
 
+  public List<FacetField> getFacetFields() {
+    return null;
+  }
 }

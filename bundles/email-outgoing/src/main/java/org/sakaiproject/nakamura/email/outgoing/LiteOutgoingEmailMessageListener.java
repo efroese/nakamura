@@ -28,7 +28,7 @@ import org.apache.felix.scr.annotations.Deactivate;
 import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
-import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.sling.commons.scheduler.Job;
 import org.apache.sling.commons.scheduler.JobContext;
 import org.apache.sling.commons.scheduler.Scheduler;
@@ -493,7 +493,7 @@ public class LiteOutgoingEmailMessageListener implements MessageListener {
             Properties eventProps = new Properties();
             eventProps.put(NODE_PATH_PROPERTY, config.get(NODE_PATH_PROPERTY));
 
-            Event retryEvent = new Event(QUEUE_NAME, eventProps);
+            Event retryEvent = new Event(QUEUE_NAME, (Map) eventProps);
             eventAdmin.postEvent(retryEvent);
 
           }
@@ -524,7 +524,7 @@ public class LiteOutgoingEmailMessageListener implements MessageListener {
     @SuppressWarnings("rawtypes")
     Dictionary props = ctx.getProperties();
 
-    Integer _maxRetries = OsgiUtil.toInteger(props.get(MAX_RETRIES), -1);
+    Integer _maxRetries = PropertiesUtil.toInteger(props.get(MAX_RETRIES), -1);
     if (_maxRetries > -1 ) {
       if (diff(maxRetries, _maxRetries)) {
         maxRetries = _maxRetries;
@@ -533,7 +533,7 @@ public class LiteOutgoingEmailMessageListener implements MessageListener {
       LOGGER.error("Maximum times to retry messages not set.");
     }
 
-    Integer _retryInterval = OsgiUtil.toInteger(props.get(RETRY_INTERVAL), -1);
+    Integer _retryInterval = PropertiesUtil.toInteger(props.get(RETRY_INTERVAL), -1);
     if (_retryInterval > -1 ) {
       if (diff(_retryInterval, retryInterval)) {
         retryInterval = _retryInterval;
@@ -546,7 +546,7 @@ public class LiteOutgoingEmailMessageListener implements MessageListener {
       LOGGER.warn("SMTP retry window is very short.");
     }
 
-    Integer _smtpPort = OsgiUtil.toInteger(props.get(SMTP_PORT), -1);
+    Integer _smtpPort = PropertiesUtil.toInteger(props.get(SMTP_PORT), -1);
     boolean validPort = _smtpPort != null && _smtpPort >= 0 && _smtpPort <= 65535;
     if (validPort) {
       if (diff(smtpPort, _smtpPort)) {
@@ -556,7 +556,7 @@ public class LiteOutgoingEmailMessageListener implements MessageListener {
       LOGGER.error("Invalid port set for SMTP");
     }
 
-    String _smtpServer = OsgiUtil.toString(props.get(SMTP_SERVER), "");
+    String _smtpServer = PropertiesUtil.toString(props.get(SMTP_SERVER), "");
     if (!StringUtils.isBlank(_smtpServer)) {
       if (diff(smtpServer, _smtpServer)) {
         smtpServer = _smtpServer;
@@ -565,7 +565,7 @@ public class LiteOutgoingEmailMessageListener implements MessageListener {
       LOGGER.error("No SMTP server set");
     }
 
-    String _replyAsAddress = OsgiUtil.toString(props.get(REPLY_AS_ADDRESS), "");
+    String _replyAsAddress = PropertiesUtil.toString(props.get(REPLY_AS_ADDRESS), "");
     if (!StringUtils.isBlank(_replyAsAddress)) {
       if (diff(replyAsAddress, _replyAsAddress)) {
         replyAsAddress = _replyAsAddress;
@@ -574,7 +574,7 @@ public class LiteOutgoingEmailMessageListener implements MessageListener {
       LOGGER.error("No reply-as email address set");
     }
 
-    String _replyAsName = OsgiUtil.toString(props.get(REPLY_AS_NAME), "");
+    String _replyAsName = PropertiesUtil.toString(props.get(REPLY_AS_NAME), "");
     if (!StringUtils.isBlank(_replyAsName)) {
       if (diff(replyAsName, _replyAsName)) {
         replyAsName = _replyAsName;
@@ -583,10 +583,10 @@ public class LiteOutgoingEmailMessageListener implements MessageListener {
       LOGGER.error("No reply-as email name set");
     }
 
-    useTls = OsgiUtil.toBoolean(props.get(SMTP_USE_TLS), false);
-    useSsl = OsgiUtil.toBoolean(props.get(SMTP_USE_SSL), false);
-    authUser = OsgiUtil.toString(props.get(SMTP_AUTH_USER), "");
-    authPass = OsgiUtil.toString(props.get(SMTP_AUTH_PASS), "");
+    useTls = PropertiesUtil.toBoolean(props.get(SMTP_USE_TLS), false);
+    useSsl = PropertiesUtil.toBoolean(props.get(SMTP_USE_SSL), false);
+    authUser = PropertiesUtil.toString(props.get(SMTP_AUTH_USER), "");
+    authPass = PropertiesUtil.toString(props.get(SMTP_AUTH_PASS), "");
 
     try {
       connection = connFactoryService.getDefaultConnectionFactory().createConnection();

@@ -41,8 +41,7 @@ SCRIPTS_DIR=`dirname $0`
 pushd $SCRIPTS_DIR > /dev/null
 while [[ 1 -eq 1 ]]
 do
-   ./preview_processor.rb $1 $2 $3
-   sleep $INTERVAL
+   ./preview_processor.rb -s $1 -p $2 -t $3 -i $INTERVAL
 done
 # This will probably never be reached but its a good idea to pop what you push.
 popd > /dev/null

@@ -5,7 +5,9 @@
       "fq": ["type:u", "resourceType:authorizable"],
       "sort": "${sortOn} ${sortOrder}",
       "group": true,
-      "group.field": "returnpath"
+      "group.field": "returnpath",
+      "facet" : true,
+      "facet.field" : "tag"
   },
   "sortOn": "score",
   "sortOrder": "desc",

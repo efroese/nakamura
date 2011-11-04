@@ -70,7 +70,7 @@ import org.apache.sling.api.request.RequestParameterMap;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.commons.json.JSONException;
-import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.apache.sling.jcr.base.util.AccessControlUtil;
 import org.imsglobal.basiclti.BasicLTIConstants;
@@ -248,13 +248,13 @@ public class LiteBasicLTIConsumerServlet extends SlingAllMethodsServlet {
   protected void activate(ComponentContext componentContext) throws Exception {
     LOG.debug("activate(ComponentContext componentContext)");
     Dictionary<?, ?> properties = componentContext.getProperties();
-    instanceContactEmail = OsgiUtil.toString(properties.get(INSTANCE_CONTACT_EMAIL),
+    instanceContactEmail = PropertiesUtil.toString(properties.get(INSTANCE_CONTACT_EMAIL),
         "admin@sakaiproject.org");
-    instanceDescription = OsgiUtil.toString(properties.get(INSTANCE_DESCRIPTION),
+    instanceDescription = PropertiesUtil.toString(properties.get(INSTANCE_DESCRIPTION),
         "The Sakai Project");
-    instanceGuid = OsgiUtil.toString(properties.get(INSTANCE_GUID), "sakaiproject.org");
-    instanceName = OsgiUtil.toString(properties.get(INSTANCE_NAME), "Sakai Development");
-    instanceUrl = OsgiUtil.toString(properties.get(INSTANCE_URL),
+    instanceGuid = PropertiesUtil.toString(properties.get(INSTANCE_GUID), "sakaiproject.org");
+    instanceName = PropertiesUtil.toString(properties.get(INSTANCE_NAME), "Sakai Development");
+    instanceUrl = PropertiesUtil.toString(properties.get(INSTANCE_URL),
         "http://sakaiproject.org");
 
     applicationSettings = new HashMap<String, String>(8);

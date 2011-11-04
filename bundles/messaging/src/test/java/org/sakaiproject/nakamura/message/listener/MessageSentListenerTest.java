@@ -34,6 +34,7 @@ import org.sakaiproject.nakamura.api.message.MessageRouterManager;
 import org.sakaiproject.nakamura.api.message.MessageRoutes;
 import org.sakaiproject.nakamura.api.message.MessageTransport;
 
+import java.util.Map;
 import java.util.Properties;
 
 import javax.jcr.Node;
@@ -91,7 +92,7 @@ public class MessageSentListenerTest {
 
     Properties eventProps = new Properties();
     eventProps.put(MessageConstants.EVENT_LOCATION, PATH);
-    Event event = new Event("myTopic", eventProps);
+    Event event = new Event("myTopic", (Map) eventProps);
 
     MessageTransport transport = createMock(MessageTransport.class);
     transport.send(isA(MessageRoutes.class), eq(event), eq(msgNode));

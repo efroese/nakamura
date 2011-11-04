@@ -29,7 +29,7 @@ import org.apache.felix.scr.annotations.sling.SlingServlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
-import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.osgi.framework.Constants;
 import org.sakaiproject.nakamura.api.doc.BindingType;
@@ -103,7 +103,7 @@ public class QueryServlet extends SlingAllMethodsServlet {
 
   @Activate @Modified
   protected void activate(Map<?, ?> props) {
-    queryTemplate = OsgiUtil.toString(props.get(QUERY_TEMPLATE), DEFAULT_QUERY_TEMPLATE);
+    queryTemplate = PropertiesUtil.toString(props.get(QUERY_TEMPLATE), DEFAULT_QUERY_TEMPLATE);
   }
 
   /**

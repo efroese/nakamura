@@ -104,4 +104,14 @@ class TC_Kern2210Test < Test::Unit::TestCase
     assert_equal(true, invited_user_found, "Expected to find @user2 in feed")
   end
   
+  def test_auth_profile_feed
+    response = @s.execute_get(@s.url_for("~#{@user2.name}/public/authprofile.profile.json"))
+    assert_equal("200", response.code)
+    response_json = JSON response.body
+    connection_state = response_json["sakai:state"]
+    assert_equal("ACCEPTED", connection_state, "expected @user2 to have accepted invitation")
+    connection_types = response_json["sakai:types"]
+    assert_equal(["Colleague"], connection_types, "expected conntection types to be ['Colleague']")
+  end
+  
 end

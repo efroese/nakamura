@@ -17,7 +17,11 @@
  */
 package org.sakaiproject.nakamura.api.search.solr;
 
+import org.apache.solr.client.solrj.response.FacetField;
+
 import java.util.Iterator;
+import java.util.List;
+import java.util.SortedMap;
 
 
 public interface SolrSearchResultSet {
@@ -25,5 +29,7 @@ public interface SolrSearchResultSet {
   Iterator<Result> getResultSetIterator();
 
   long getSize();
+
+  List<FacetField> getFacetFields();
 
 }
