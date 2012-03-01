@@ -85,37 +85,32 @@ public class LiteDefaultContextIdResolver implements LiteBasicLTIContextIdResolv
 
     String contextId = null;
     if (groupId != null) {
+
+      // by default, just use the groupID that was submitted - NOTE there is
       contextId = groupId;
+
+      // obtaining the group causes a security check; also the group is used later to check the sakai:cle-site prop.
       Group group = (Group) authManager.findAuthorizable(groupId);
       LOG.debug("group = {}", group);
+
+      // check the alternate key for a context ID
+      if (node.hasProperty(key)) {
+        // we have a special context_id we can use
+        contextId = (String) node.getProperty(key);
+      }
       // If we are using a Group, we check the group's node to see if it has the optional
       // cle-site property which will correspond to a concrete site on the CLE installs that
       // we wish to use for the context on Sakai2Tools widgets. 
-      // After that we also check to see if the current vtoolid is actually a Sakai2Tool
-      // ( it could be from a completely seperate location, etherpad etc. ). If it is
-      // a Sakai 2 Tool, then we use the cle-site property as the context for that BLTI
-      // launch.
-      if (group != null) {
+      else if (group != null) {
         final String sakaiSite = (String) group.getProperty("sakai:cle-site");
         if (sakaiSite != null) {
-          // Check and see if this is a Sakai Site
-          // Right now the only virtualtoolprovider is for Sakai CLE.
-          final String vtoolid = (String) node.getProperty(LTI_VTOOL_ID);
-          if (vtoolid != null &&
-              virtualToolDataProvider.getSupportedVirtualToolIds().contains(vtoolid)) {
             contextId = sakaiSite;
-          }
         }
       }
     }
     else {
-      if (node.hasProperty(key)) {
-        // we have a special context_id we can use
-        contextId = (String) node.getProperty(key);
-      } else {
-        // just use the path
-        contextId = node.getPath();
-      }
+      // just use the path
+      contextId = node.getPath();
     }
     return contextId;
   }
