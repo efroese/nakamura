@@ -18,7 +18,9 @@
 package org.sakaiproject.nakamura.jetty;
 
 import org.apache.felix.http.api.ExtHttpService;
+import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
 import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
@@ -67,6 +69,7 @@ public class OSGiGZipFilter extends GzipFilter {
   private boolean enabled = false;
 
   @SuppressWarnings("rawtypes")
+  @Activate
   public void activate(Map<String, Object> properties) throws ServletException {
     enabled = PropertiesUtil.toBoolean(properties.get("enabled"), false);
     if (enabled) {
@@ -82,6 +85,7 @@ public class OSGiGZipFilter extends GzipFilter {
     super.doFilter(arg0, arg1, arg2);
   }
 
+  @Deactivate
   public void deactivate(Map<String, Object> properties) {
     if (enabled) {
       extHttpService.unregisterFilter(this);

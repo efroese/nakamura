@@ -27,6 +27,8 @@
       Enable this only when you are making specific changes to an annotated service.
       The files generated will need to be copied to src/main/resources/OSGI-INF and
       the build run again.
+      -->
+      <!--
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-scr-plugin</artifactId>
