@@ -460,7 +460,7 @@ public class LiteBasicLTIConsumerServlet extends SlingAllMethodsServlet {
           launchProps.put(CONTEXT_LABEL,
               (String) groupProfileNode.getProperty("sakai:group-id"));
           if (groupProfileNode.getProperty("sakai:external-course-id") != null) {
-            launchProps.put(BasicLTIConstants.CUSTOM_PREFIX+ EXTERNAL_COURSE_ID,
+            launchProps.put(BasicLTIConstants.CUSTOM_PREFIX + EXTERNAL_COURSE_ID,
                 (String) groupProfileNode.getProperty("sakai:external-course-id"));
           }
         } else {
