@@ -9,7 +9,6 @@
 	</parent>
 	<groupId>org.sakaiproject.nakamura</groupId>
 	<artifactId>org.sakaiproject.nakamura.mysqljdbc</artifactId>
-	<version>1.1.2-rsmart</version>
 	<packaging>bundle</packaging>
 	<name>Sakai Nakamura :: MySQL JDBC Bundle</name>
 	<description>
