@@ -83,8 +83,8 @@
         <module>bundles/lom</module>
         <module>bundles/content-packaging</module>
         <module>testscripts</module>
-        <!-- <module>contrib/mysql-jdbc</module>
-        <module>contrib/postgresql-jdbc</module> -->
+        <module>contrib/mysql-jdbc</module>
+        <module>contrib/postgresql-jdbc</module>
       </modules>
     </profile>
     <profile>
