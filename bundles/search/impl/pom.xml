@@ -15,7 +15,7 @@
   <parent>
     <groupId>org.sakaiproject.nakamura</groupId>
     <artifactId>base</artifactId>
-    <version>1.1.2-rsmart-SNAPSHOT</version>
+    <version>1.1.2-rsmart</version>
     <relativePath>../../../pom.xml</relativePath>
   </parent>
   <artifactId>org.sakaiproject.nakamura.search.impl</artifactId>
@@ -97,36 +97,36 @@
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.search.api</artifactId>
-      <version>1.1.2-rsmart-SNAPSHOT</version>
+      <version>1.1.2-rsmart</version>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.utils</artifactId>
-      <version>1.1.2-rsmart-SNAPSHOT</version>
+      <version>1.1.2-rsmart</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.memory</artifactId>
-      <version>1.1.2-rsmart-SNAPSHOT</version>
+      <version>1.1.2-rsmart</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.cluster</artifactId>
-      <version>1.1.2-rsmart-SNAPSHOT</version>
+      <version>1.1.2-rsmart</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.personal</artifactId>
-      <version>1.1.2-rsmart-SNAPSHOT</version>
+      <version>1.1.2-rsmart</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
         <groupId>org.sakaiproject.nakamura</groupId>
         <artifactId>org.sakaiproject.nakamura.profile.api</artifactId>
-        <version>1.1.2-rsmart-SNAPSHOT</version>
+        <version>1.1.2-rsmart</version>
         <scope>provided</scope>
     </dependency>
     <dependency>
@@ -136,13 +136,13 @@
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.resource</artifactId>
-      <version>1.1.2-rsmart-SNAPSHOT</version>
+      <version>1.1.2-rsmart</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.templates</artifactId>
-      <version>1.1.2-rsmart-SNAPSHOT</version>
+      <version>1.1.2-rsmart</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -154,7 +154,7 @@
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.doc</artifactId>
-      <version>1.1.2-rsmart-SNAPSHOT</version>
+      <version>1.1.2-rsmart</version>
     </dependency>
     <dependency>
       <groupId>org.apache.jackrabbit</groupId>
@@ -212,7 +212,7 @@
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.testutils</artifactId>
-      <version>1.1.2-rsmart-SNAPSHOT</version>
+      <version>1.1.2-rsmart</version>
       <scope>test</scope>
     </dependency>
     <dependency>
