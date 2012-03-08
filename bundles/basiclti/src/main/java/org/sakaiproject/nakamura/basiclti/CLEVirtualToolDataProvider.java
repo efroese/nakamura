@@ -98,7 +98,8 @@ public class CLEVirtualToolDataProvider implements VirtualToolDataProvider {
       "sakai.profile2", "sakai.profile", "sakai.chat", "sakai.resources",
       "sakai.dropbox", "sakai.rwiki", "sakai.forums", "sakai.gradebook.tool",
       "sakai.mailbox", "sakai.singleuser", "sakai.messages", "sakai.site.roster",
-      "sakai.news", "sakai.summary.calendar", "sakai.poll", "sakai.syllabus" }, name = "sakai.cle.basiclti.tool.list", description = "")
+      "sakai.news", "sakai.summary.calendar", "sakai.poll", "sakai.syllabus",
+      "sakai.blogwow", "sakai.sitestats", "sakai.sections" }, name = "sakai.cle.basiclti.tool.list", description = "")
   protected static final String TOOL_LIST = "sakai.cle.basiclti.tool.list";
 
   private String cleUrl;
