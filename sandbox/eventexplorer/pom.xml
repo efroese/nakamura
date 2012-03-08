@@ -5,7 +5,7 @@
   <parent>
     <artifactId>base</artifactId>
     <groupId>org.sakaiproject.nakamura</groupId>
-    <version>1.1.3-rsmart-SNAPSHOT-SNAPSHOT</version>
+    <version>1.1.3-rsmart-SNAPSHOT</version>
   </parent>
   <packaging>pom</packaging>
   <name>Sakai Nakamura :: Event Explorer</name>
