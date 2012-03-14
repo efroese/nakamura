@@ -318,6 +318,119 @@ class TC_BasicLTI < Test::Unit::TestCase
     validateHtml(launch.body, @groupJcrPath);
   end
   
+  def test_basiclti_import_semantics
+    # TODO this hack works around my setup method not being called
+    # when run in a test suite (i.e. tools/runalltests.rb)
+    if @creator == nil then
+      hackzzz();
+    end
+    # hackzzz();
+
+    prepare_group()
+    @ltiurl = "http://dr-chuck.com/ims/php-simple/tool.php";
+    @ltikey = "12345";
+    ltisecret = "secret";
+    postData = {
+      ":operation" => "basiclti",
+      ":replaceProperties" => "true",
+      ":replace" => "true",
+      "_charset_" => "utf-8",
+      ":contentType" => "json",
+      ":content" => '{' + "\"ltiurl\":\"#{@ltiurl}\"," + "\"ltikey\":\"#{@ltikey}\"," +
+        "\"ltisecret\":\"#{ltisecret}\"," + '"release_names":true,' +
+        '"release_principal_name":true,' + '"release_email":true,' +
+        '"border_size":0,' + '"border_color":"ccc",' + '"width":100,' +
+        '"width_unit":"%",' + '"isSakai2Tool":false,' + '"defined":"",' +
+        '"sling:resourceType":"sakai/basiclti",' + '"debug@TypeHint":"Boolean",' +
+        '"debug":false,' + '"release_names@TypeHint":"Boolean",' +
+        '"release_principal_name@TypeHint":"Boolean",' +
+        '"release_email@TypeHint":"Boolean",' +
+        '"launchDataUrl":"",' + '"tuidFrame":""' + '}'
+    };
+    resp = @s.execute_post(@s.url_for("#{@saveUrl}"), postData);
+    assert_equal(200, resp.code.to_i, "Expected to be able to create a sakai/basiclti node.");
+
+    # verify the creator can read all the properties
+    resp = @s.execute_get(@s.url_for("#{@saveUrl}"));
+    assert_equal(200, resp.code.to_i, "Expected to be able to retrieve sakai/basiclti node.");
+    props = JSON.parse(resp.body);
+    assert_equal("sakai/basiclti", props["sling:resourceType"]);
+    assert_equal(false, props.empty?);
+    assert_equal(@ltiurl, props["ltiurl"]);
+    assert_equal(@ltikey, props["ltikey"]);
+    assert_equal(ltisecret, props["ltisecret"]);
+    assert_equal(false, props["debug"]);
+    assert_equal(true, props["release_names"]);
+    assert_equal(true, props["release_principal_name"]);
+    assert_equal(true, props["release_email"]);
+
+    # expect normal launch from creator
+    launch = @s.execute_get(@s.url_for("#{@saveUrl}.launch.html"));
+    assert_equal(200, launch.code.to_i, "200 Expected on launch.");
+    assert_equal(false, launch.body.empty?);
+    validateHtml(launch.body, @groupJcrPath);
+
+    # verify creator cannot access data contained in sensitive node
+    sensitive = @s.execute_get(@s.url_for("#{@saveUrl}/ltiKeys.json"));
+    assert_equal(404, sensitive.code.to_i, "404 Expected on sensitive node.");
+
+    # switch to regular user
+    @s.switch_user(@user);
+    resp = @s.execute_get(@s.url_for("#{@saveUrl}"));
+    assert_equal(200, resp.code.to_i, "Expected to be able to retrieve sakai/basiclti node.");
+    props = JSON.parse(resp.body);
+    assert_equal("sakai/basiclti", props["sling:resourceType"]);
+    assert_equal(false, props.empty?);
+    assert_equal(@ltiurl, props["ltiurl"]);
+    # normal user should not be able to read ltiurl value
+    assert_equal(nil, props["ltikey"]);
+    # normal user should not be able to read ltikey value
+    assert_equal(nil, props["ltisecret"]);
+    assert_equal(false, props["debug"]);
+    assert_equal(true, props["release_names"]);
+    assert_equal(true, props["release_principal_name"]);
+    assert_equal(true, props["release_email"]);
+
+    # expect normal launch from user
+    launch = @s.execute_get(@s.url_for("#{@saveUrl}.launch.html"));
+    assert_equal(200, launch.code.to_i, "200 Expected on launch.");
+    assert_equal(false, launch.body.empty?);
+    validateHtml(launch.body, @groupJcrPath);
+
+    # verify user cannot access data contained in sensitive node
+    sensitive = @s.execute_get(@s.url_for("#{@saveUrl}/ltiKeys.json"));
+    assert_equal(404, sensitive.code.to_i, "404 Expected on sensitive node.");
+
+    # switch to admin user
+    @s.switch_user(@admin);
+    resp = @s.execute_get(@s.url_for("#{@saveUrl}"));
+    assert_equal(200, resp.code.to_i, "Expected to be able to retrieve sakai/basiclti node.");
+    props = JSON.parse(resp.body);
+    assert_equal("sakai/basiclti", props["sling:resourceType"]);
+    assert_equal(false, props.empty?);
+    assert_equal(@ltiurl, props["ltiurl"]);
+    assert_equal(@ltikey, props["ltikey"]);
+    assert_equal(ltisecret, props["ltisecret"]);
+    assert_equal(false, props["debug"]);
+    assert_equal(true, props["release_names"]);
+    assert_equal(true, props["release_principal_name"]);
+    assert_equal(true, props["release_email"]);
+
+    # verify admin *can* access data contained in sensitive node
+    sensitive = @s.execute_get(@s.url_for("#{@saveUrl}/ltiKeys.json"));
+    assert_equal(200, sensitive.code.to_i, "200 Expected on sensitive node.");
+    sprops = JSON.parse(sensitive.body);
+    assert_equal(false, sprops.empty?);
+    assert_equal(@ltikey, sprops["ltikey"]);
+    assert_equal(ltisecret, sprops["ltisecret"]);
+
+    # expect normal launch from admin
+    launch = @s.execute_get(@s.url_for("#{@saveUrl}.launch.html"));
+    assert_equal(200, launch.code.to_i, "200 Expected on launch.");
+    assert_equal(false, launch.body.empty?);
+    validateHtml(launch.body, @groupJcrPath);
+  end
+
   def validateHtml(html, context_id)
     listener = Listener.new;
     parser = Parsers::StreamParser.new(html, listener);
