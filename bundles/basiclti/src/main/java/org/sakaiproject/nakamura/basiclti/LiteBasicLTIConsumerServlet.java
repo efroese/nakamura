@@ -179,6 +179,7 @@ import javax.servlet.http.HttpServletResponse;
 @SlingServlet(methods = { "GET", "POST", "PUT", "DELETE" }, resourceTypes = { "sakai/basiclti" })
 public class LiteBasicLTIConsumerServlet extends SlingAllMethodsServlet {
   private static final long serialVersionUID = 5985490994324951127L;
+  private static final String SAKAI_EXTERNAL_COURSE_ID = "sakai:external-course-id";
   private static final Logger LOG = LoggerFactory
       .getLogger(LiteBasicLTIConsumerServlet.class);
   /**
@@ -459,10 +460,6 @@ public class LiteBasicLTIConsumerServlet extends SlingAllMethodsServlet {
               (String) groupProfileNode.getProperty("sakai:group-title"));
           launchProps.put(CONTEXT_LABEL,
               (String) groupProfileNode.getProperty("sakai:group-id"));
-          if (groupProfileNode.getProperty("sakai:external-course-id") != null) {
-            launchProps.put(BasicLTIConstants.CUSTOM_PREFIX + EXTERNAL_COURSE_ID,
-                (String) groupProfileNode.getProperty("sakai:external-course-id"));
-          }
         } else {
           // cannot find group profile data
           launchProps.put(CONTEXT_TITLE, (String) pooledContentNode.getProperty("_path"));
@@ -534,6 +531,20 @@ public class LiteBasicLTIConsumerServlet extends SlingAllMethodsServlet {
 
       // we will always launch in an iframe for the time being
       launchProps.put(LAUNCH_PRESENTATION_DOCUMENT_TARGET, "iframe");
+
+      // pass external SIS course ID if we have one
+      if (groupId != null) {
+        // obtaining the group causes a security check
+        Group group = (Group) userManager.findAuthorizable(groupId);
+        LOG.debug("group = {}", group);
+
+        if (group.hasProperty(SAKAI_EXTERNAL_COURSE_ID)) {
+          final String externalCourseId = (String) group
+              .getProperty(SAKAI_EXTERNAL_COURSE_ID);
+          LOG.debug("sakai:external-course-id={}", externalCourseId);
+          launchProps.put(EXTERNAL_COURSE_ID, externalCourseId);
+        }
+      }
 
       final boolean debug = (Boolean) effectiveSettings.get(DEBUG);
       // might be useful for the remote end to know if debug is enabled...
