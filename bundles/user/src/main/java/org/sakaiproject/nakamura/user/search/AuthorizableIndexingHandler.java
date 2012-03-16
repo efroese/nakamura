@@ -68,7 +68,7 @@ import java.util.Set;
  *
  */
 @Component(immediate = true)
-@Reference(name="authorizablePostProcessor",
+@Reference(name="authorizableIndexingWorker",
 		cardinality= ReferenceCardinality.OPTIONAL_MULTIPLE,
 		policy= ReferencePolicy.DYNAMIC,
 		strategy= ReferenceStrategy.EVENT,
