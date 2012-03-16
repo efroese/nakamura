@@ -73,12 +73,12 @@ import org.sakaiproject.nakamura.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  *
@@ -139,7 +139,7 @@ public class AuthorizableIndexingHandler implements IndexingHandler {
   @Reference
   protected BasicUserInfoService basicInfo;
 
-  private List<AuthorizableIndexingWorker> indexingWorkers = new ArrayList<AuthorizableIndexingWorker>();
+  private List<AuthorizableIndexingWorker> indexingWorkers = new CopyOnWriteArrayList<AuthorizableIndexingWorker>();
 
   // ---------- SCR integration ------------------------------------------------
   @Activate
