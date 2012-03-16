@@ -1,6 +1,6 @@
 package org.sakaiproject.nakamura.api.user.indexing;
 
-import org.apache.jackrabbit.api.security.user.Authorizable;
+import org.sakaiproject.nakamura.api.lite.authorizable.Authorizable;
 import org.apache.solr.common.SolrInputDocument;
 import org.osgi.service.event.Event;
 import org.sakaiproject.nakamura.api.solr.RepositorySession;
