@@ -200,7 +200,6 @@ public class AuthorizableIndexingHandler implements IndexingHandler {
 
           logger.info("{} authorizable for searching: {}", topic, authName);
         }
->>>>>>> e7519c4... Merge branch 'feature/ACAD-855' into develop
       }
     }
     logger.debug("Got documents {} ", documents);
