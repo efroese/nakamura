@@ -86,7 +86,7 @@ public class LiteDefaultContextIdResolver implements LiteBasicLTIContextIdResolv
     String contextId = null;
     if (groupId != null) {
 
-      // by default, just use the groupID that was submitted - NOTE there is
+      // by default, just use the groupID that was submitted
       contextId = groupId;
 
       // obtaining the group causes a security check; also the group is used later to check the sakai:cle-site prop.
