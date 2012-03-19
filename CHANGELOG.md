@@ -1,8 +1,106 @@
 rSmart Nakamura Changelog
 =========================
 
+base-1.1.3-rsmart
+-----------------
+* KERN-2683 corrected merge error df4deff
+* KERN-2683 style compliance 69b1943
+* KERN-2683 moved a bracket :) 94ecfc1
+* KERN-2683 addressed PR feedback: threadsafe CopyOnWriteArrayList used, licenses added, code style confomance, and added Exception construc
+* KERN-2683 removed diff artifact left over from merge dbc5f3e
+* KERN-2683 merged authorizable index worker framework Conflicts: 85734aa
+* ACAD-855 renamed binding for indexing workers to authorizableIndexingWorker f2f1ce3
+* ACAD-855 exported new .indexing api package 5d8ee6e
+* ACAD-855 wired AuthorizableIndexingWorkers into AuthorizableIndexingHandler e784e58
+* ACAD-855 created interfaces for plugin framework bcb8a71
+* ACAD-790 repaired logic to grab external course id from world 79c724e
+* ACAD-826 Enable sakai.blogwow, sakai.sitestats, and sakai.sections by default in Sakai 2 Tools Widget d3a7b99
+* NOJIRA post release pooch clean up 6d6a83d
+* NOJIRA fix release post clean up 908209a
+* release_post_process: Moving config files from 1.1.2-rsmart to 1.1.3-rsmart-SNAPSHOT-SNAPSHOT 259dce3
+* NOJIRA revert release issues da2108c
+* Revert "NOJIRA working through more release issues" 4855775
+* Revert "NOJIRA working through release issues" 54cb2da
+* [maven-release-plugin] prepare for next development iteration 29da64f
+
+base-1.1.2-rsmart
+-----------------
+* [maven-release-plugin] prepare release base-1.1.2-rsmart c9fceef
+* NOJIRA more release issues try a strong arm d0d2d97
+* NOJIRA working through more release issues 7375d2e
+* Revert "NOJIRA working through release issues" 7c32148
+* [maven-release-plugin] prepare release org.sakaiproject.nakamura.mysqljdbc-1.1.2-rsmart 753fc90
+* NOJIRA working through release issues 0838045
+* NOJIRA prepare for release 3d7248e
+* release_pre_process: Moving config files from 1.1.2-rsmart-SNAPSHOT to 1.1.2-rsmart 49d7e40
+* NOJIRA small syntax fix b078c2e
+* KERN-1989 Add activate/deactivate methods. (cherry picked from commit 2a0f8075bdbd565c5e91394723b0d9e785f2a54d) 4499304
+* KERN-1989 Add property to allow gzip filter to be disabled using configuration since this isn't an OSGi feature. Add annotations that can be used to generate the osgi files. Add metatype files for console configuring. (cherry picked from commit 60969f434b80c8354341878c8843319f2ec218a3) e850f24
+* ACAD-791 altered logic for generating LTI context ID. Can now be set on a group via sakai:cle-site, or on an 'area' or document with lti_context_id 8f2192a
+* ACAD-790 fix build... added group property "sakai:external-course-id" to payload as "custom_external_course_id" for sis integration ce63a3b
+* ACAD-790 added group property "sakai:external-course-id" to payload as "custom_external_course_id" for sis integration e5aca8a
+* NOJIRA bind user bundle to sparse@1.3.3-rsmart-SNAPSHOT 1714536
+* NOJIRA switch sparse and solr to SNAPSHOT versions d558a4b
+* NOJIRA rev release plugin to 2.2.2 0b52b1a
+* Revert "ACAD-783 skip gpg signing" 29a32e2
+* ACAD-65 Remove the SparseUserFinderImpl and remove the reference constraint. d52bcc1
+* ACAD-783 skip gpg signing 8c86ade
+* Revert "ACAD-783 remove gpg signing of artifacts" 7986c34
+* ACAD-783 remove gpg signing of artifacts ec9e5fa
+* NOJIRA bundle install --without preview_processor 6eaa587
+* NOJIRA add rsmart-dev nexus repo ff255be
+* ACAD-783 Add support for Maven Release plugin 4d53d40
+* KERN-2599 Improve log output from release_*_process.sh scripts (cherry picked from commit e552760386bfd3a83a15797063ea415c18755314) 1ed6378
+* Merge pull request #563 from thecarlhall/fix-gemfile-lock 3a1af8c
+* ACAD-781 Rejigger maven pom versions of build artifacts to reflect that they are SNAPSHOT builds cc917fd
+* switching from version to next SNAPSHOT in config files d62fb4d
+* KERN-2598 When creating a members-only world, the main group should be a viewer of subgroups (cherry picked from commit 29abd7ccca7ec98b57e88c07204c82fddf710b5e) c2639ba
+* ACAD-65 Bind to core 1.3.2-rsmart 3aed07a
+* ACAD-65 Move OverridenRequest to its own file. Test it Test the CaseInsensitiveAuthFilter. bb9e132
+* ACAD-65 Add test. Fix a bug in ci lookup. a79490f
+* ACAD-96 created a debug checkbox in the CAPTCHA config. When checked CAPTCHA verification is ignored. 7bda45e
+* NOJIRA rev version number for 1.1.2 sprint 06f6b92
+* ACAD-772 merge automated integration test 95107a0
+* [#ACAD-772] test commit 48825e6
+* ACAD-772 test 123 ffa76ec
+* KERN-2316 properly require rubygems and bundler everywhere (cherry picked from commit 257af45384994cf2ae0773f509f9e01ea6bc3a08) d0063dc
+* KERN-2316 properly require rubygems and bundler everywhere (cherry picked from commit 61dee212eb4cc300ac3860583566931b3d1dbb86) 11a3574
+* KERN-2520 remove curb from dependencies and doc (cherry picked from commit 201a240617898eec38a2dc6fe0842aabc0b3ffbe) f311854
+* NOJIRA make the ruby tests quiet, so we don't get output we don't want while running all tests. (cherry picked from commit d5d5ddc02d6b0127df26a37dccd17c7c66f55646) c024b77
+* KERN-2487 Standardize uniqueness mechanism. Eliminate use of Time.now.to_i. Fix some scripting bugs. (cherry picked from commit 1861ae2406a7c64e018663e69ac28056aa6da8c5) a0031d9
+* add some ant tasks for checking port 8080 and ensuring nakamura shuts down (cherry picked from commit 63778c3913f186ee4fa9cc91adb8beab1175e620) 376c008
+* fix a couple of typos in the README file (cherry picked from commit be4f76b9876fc59d934ed3cabe5ba38d14aa8a61) 84faed1
+* add a README file for the integration module (cherry picked from commit 0722d16394d83b9bd74a106099547a49e60be4b4) 6d1edc2
+* give shutdown the correct sling.home setting. Add timeout capability to wait_for_startup script. (cherry picked from commit 27d967c33681c0396c0720aa650d42cd635b22cb) 939d479
+* adding the integration module I overlooked before (cherry picked from commit ea106c81d4df8e9143597f21c7d87cc2ce8e6f1a) 8dc6589
+* add maven project to automate integration testing (cherry picked from commit 6b233511fb28dc069f1d7c042290c10e5ea19c5b) c6c374e
+* NOJIRA testing campfire integration e957ce0
+* ACAD-65 Users can authenticate with their email address. b5c8845
+* ACAD-65 Case-insensitive auth via a Filter and UserFinder 26b3f45
+
+acad-1.1.1
+----------
+* ACAD-751 Add sparse index fields to build (as opposed to using sparseconfig) 3fddcbd
+* ACAD-749 escaped tag names to filter out non-JCR characters that were causing sparseupgrade to fail on tag migration 03a6ba4
+* ACAD-715 rev'ed our version of upgrade bundle to reflect our inclusion of a cherry-picked fix for https://jira.sakaiproject.org/browse/SAK
+* NOJIRA rev dep version for solr f4e4c80
+* NOJIRA merge Erik's fixes for preview processor 612ec7e
+* Squashed commit of the following: 02d489f
+* KERN-2569 LiteDefaultContextIdResolver missing NPE check (cherry picked from commit 0a93d16452b625bc9f366b39b74d2db5a14d8855) c22f94c
+* ACAD-667 KERN-2566 jackrabbit content loader race condition (cherry picked from commit 7c5e6db581e31dd0db53a3651e49ad24d6d2f08f) 4400e36
+* ACAD-667 KERN-2566 jackrabbit content loader race condition 14bca74
+* ACAD-667 KERN-2566 jackrabbit content loader race condition (cherry picked from commit cc4bd7e0a0c4f9d3548869cc6c117ba5aeeacc5a) e41a6fc
+* ACAD-145 fixed some merge isses and case insensitive email addresses cf422ce
+* NOJIRA update artifact version number to 1.1.1-SNAPSHOT 07a8681
+* ACAD-713 reverted name of sakaiproject app back to community's 435bdce
+* ACAD-713 remove nakamura-extensions bundles from app; these will be added by nakamura-extensions/app efa1fed
+* ACAD-114 changed version numbers for nakamura-extenions dependencies dffc88f
+* ACAD-707 changed refereces to solr and sparse to match rsmart revisions 71146fa
+* Squashed commit of the following: e6139b8
+* fixed csv process to work with empty fields 4f40132
+
 1.1.0-M1-20120130
--------------------------
+-----------------
 * NOJIRA release/1.1.0-M1-20120130 7e65741
 * NOJIRA fix usage message (cherry picked from commit 38fd866f2d86af4e2bfd4a6bcdc66f8f65260735) fa30807
 * KERN-2482 Fix backwards compatibility to ruby 1.8.7 (cherry picked from commit c786146101f18d839f416770cafaa3f599192c5b) 63614d3
