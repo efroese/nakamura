@@ -340,14 +340,12 @@ public class AuthorizableIndexingHandler implements IndexingHandler {
     return authorizable;
   }
 
-  protected void bindAuthorizableIndexingWorker(AuthorizableIndexingWorker worker,
-      Map<String, Object> properties) {
+  protected void bindAuthorizableIndexingWorker(AuthorizableIndexingWorker worker, Map<String, Object> properties) {
     logger.debug("About to add indexing worker " + worker);
     indexingWorkers.add(worker);
   }
 
-  protected void unbindAuthorizableIndexingWorker(AuthorizableIndexingWorker worker,
-      Map<String, Object> properties) {
+  protected void unbindAuthorizableIndexingWorker(AuthorizableIndexingWorker worker, Map<String, Object> properties) {
     indexingWorkers.remove(worker);
   }
 

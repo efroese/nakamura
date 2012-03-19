@@ -18,19 +18,19 @@
 package org.sakaiproject.nakamura.api.user.indexing;
 
 public class AuthorizableIndexingException extends Exception {
-  public AuthorizableIndexingException() {
-    super();
-  }
+    public AuthorizableIndexingException() {
+        super();
+    }
 
-  public AuthorizableIndexingException(String s) {
-    super(s);
-  }
+    public AuthorizableIndexingException(String s) {
+        super(s);
+    }
 
-  public AuthorizableIndexingException(String s, Throwable throwable) {
-    super(s, throwable);
-  }
+    public AuthorizableIndexingException(String s, Throwable throwable) {
+        super(s, throwable);
+    }
 
-  public AuthorizableIndexingException(Throwable throwable) {
-    super(throwable);
-  }
+    public AuthorizableIndexingException(Throwable throwable) {
+        super(throwable);
+    }
 }

@@ -23,7 +23,6 @@ import org.osgi.service.event.Event;
 import org.sakaiproject.nakamura.api.solr.RepositorySession;
 
 public interface AuthorizableIndexingWorker {
-  public void decorateSolrInputDocument (SolrInputDocument indexDoc, Event osgiEvent,
-       Authorizable authorizable, RepositorySession repositorySession) throws
-       AuthorizableIndexingException;
+    public void decorateSolrInputDocument (SolrInputDocument indexDoc, Event osgiEvent, Authorizable authorizable,
+        RepositorySession repositorySession) throws AuthorizableIndexingException;
 }
