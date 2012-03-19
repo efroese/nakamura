@@ -4,15 +4,15 @@
   <parent>
     <groupId>org.sakaiproject.nakamura</groupId>
     <artifactId>base</artifactId>
-    <version>1.1.3-rsmart-SNAPSHOT</version>
+    <version>1.1.3-rsmart</version>
   </parent>
 
   <groupId>edu.nyu</groupId>
   <artifactId>edu.nyu.launchpad</artifactId>
   <name>NYU Launchpad</name>
   <properties>
-    <nakamura.version>1.1.3-rsmart-SNAPSHOT</nakamura.version>
-    <ux.version>1.1.3-rsmart-SNAPSHOT</ux.version>
+    <nakamura.version>1.1.3-rsmart</nakamura.version>
+    <ux.version>1.1.3-rsmart</ux.version>
   </properties>
   <packaging>jar</packaging>
   <build>
