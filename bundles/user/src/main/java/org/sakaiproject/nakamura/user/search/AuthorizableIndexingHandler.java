@@ -182,17 +182,24 @@ public class AuthorizableIndexingHandler implements IndexingHandler {
       Authorizable authorizable = getAuthorizable(authName, repositorySession);
       SolrInputDocument doc = createAuthDoc(authorizable, repositorySession);
       if (doc != null) {
-        for (AuthorizableIndexingWorker worker : indexingWorkers) {
-          try {
-            worker.decorateSolrInputDocument(doc, event, authorizable, repositorySession);
-          } catch (AuthorizableIndexingException e) {
-            logger.error("indexing worker [{}] failed to decorate Solr index for [{}]",
-              worker.getClass().getName(), authName);
-          }
-        }
         documents.add(doc);
 
         logger.info("{} authorizable for searching: {}", topic, authName);
+
+        SolrInputDocument doc = createAuthDoc(authorizable, repositorySession);
+        if (doc != null) {
+          for (AuthorizableIndexingWorker worker : indexingWorkers) {
+            try {
+              worker.decorateSolrInputDocument(doc, event, authorizable, repositorySession);
+            } catch (AuthorizableIndexingException e) {
+              logger.error("indexing worker [{}] failed to decorate Solr index for [{}]",
+                      worker.getClass().getName(), authName);
+            }
+          }
+          documents.add(doc);
+
+          logger.info("{} authorizable for searching: {}", topic, authName);
+        }
       }
     }
     logger.debug("Got documents {} ", documents);
