@@ -16,11 +16,11 @@
     <parent>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>base</artifactId>
-      <version>1.1.3-rsmart-SNAPSHOT</version>
+      <version>1.1.3-rsmart</version>
     </parent>
 
     <artifactId>org.sakaiproject.nakamura.app</artifactId>
-    <version>1.1.3-rsmart-SNAPSHOT</version>
+    <version>1.1.3-rsmart</version>
     <packaging>jar</packaging>
 
     <name>Sakai Nakamura :: Launchpad Standalone Java Application</name>
