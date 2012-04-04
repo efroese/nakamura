@@ -85,6 +85,7 @@
         <module>testscripts</module>
         <module>contrib/mysql-jdbc</module>
         <module>contrib/postgresql-jdbc</module>
+        <module>bundles/dynamicconfig</module>
       </modules>
     </profile>
     <profile>
