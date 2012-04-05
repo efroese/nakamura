@@ -732,7 +732,7 @@
     <repository>
       <id>rsmart-dev</id>
       <name>rsmart-dev</name>
-      <url>http://nexus.rsmart.com:8080/nexus/content/groups/public/</url>
+      <url>https://nexus.rsmart.com/nexus/content/groups/public/</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
