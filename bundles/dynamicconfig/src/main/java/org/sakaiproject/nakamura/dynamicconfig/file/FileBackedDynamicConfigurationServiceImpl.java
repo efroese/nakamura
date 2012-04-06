@@ -27,11 +27,6 @@ import java.util.Dictionary;
 import java.util.Iterator;
 import java.util.UUID;
 
-/**
- * User: duffy
- * Date: Apr 4, 2012
- * Time: 10:13:16 AM
- */
 @Service
 @Component(immediate = true, metatype=true)
 @Properties(value = {
@@ -49,22 +44,33 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
    */
   private final Logger log = LoggerFactory.getLogger(getClass());
 
-  private static final int CHUNK_SIZE = 8192;
+  /**
+   * size of file read chunks
+   */
+  private static final int CHUNK_SIZE               = 8192;
 
-  public static final String CONFIG_DIR = "config.dir";
-  public static final String CONFIG_FILENAME = "config.filename";
-  public static final String CUSTOM_DIR = "custom.dir";
-  public static final String DFT_CONFIG_DIR = "var/dynamicconfig";
-  public static final String DFT_CUSTOM_DIR = "var/dynamicconfig/custom";
-  public static final String DFT_CONFIG_FILENAME = "config.json";
+  // parameter names for configuration
+  public static final String CONFIG_DIR             = "config.dir";
+  public static final String CONFIG_FILENAME        = "config.filename";
+  public static final String CUSTOM_DIR             = "custom.dir";
 
+  // default configuration values
+  public static final String DFT_CONFIG_DIR         = "var/dynamicconfig";
+  public static final String DFT_CUSTOM_DIR         = "var/dynamicconfig/custom";
+  public static final String DFT_CONFIG_FILENAME    = "config.json";
+
+  // directory containing the configuration files
   protected String configurationDir;
+  // main configuration file
   protected String configurationFilename;
+  // directory containing configuration overrides
   protected String customDir;
 
   protected static MessageDigest MD5;
 
   public FileBackedDynamicConfigurationServiceImpl () {
+
+    // create a new MD5 digester
     try {
       MD5 = MessageDigest.getInstance("MD5");
     } catch (NoSuchAlgorithmException e) {
@@ -78,6 +84,10 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
     }
   }
 
+  /**
+   * gets the main configuration file
+   * @return File
+   */
   private final File getConfigurationFile() {
     final StringBuilder computedPath = new StringBuilder();
 
@@ -93,6 +103,10 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
     return new File(computedPath.toString());
   }
 
+  /**
+   * gets the overrides directory.
+   * @return File
+   */
   private final File getCustomDir() {
     if (customDir == null) {
       return null;
@@ -101,6 +115,11 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
     return new File(customDir);
   }
 
+  /**
+   * process the configuration of this component
+   * @param componentContext
+   * @throws Exception
+   */
   protected void activate (ComponentContext componentContext) throws Exception {
     @SuppressWarnings("unchecked")
     final Dictionary<String, Object> props = componentContext.getProperties();
@@ -109,12 +128,15 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
     configurationFilename = OsgiUtil.toString(props.get(CONFIG_FILENAME), DFT_CONFIG_FILENAME);
     customDir = OsgiUtil.toString(props.get(CUSTOM_DIR), DFT_CUSTOM_DIR);
 
+    // sanity check - can we read the configuration? if not it's an error
     final File configFile = getConfigurationFile();
 
     if (!(configFile.exists() && configFile.canRead())) {
       log.error ("config file is unreadable: [" + configFile.getAbsolutePath() + "]");
+      throw new DynamicConfigurationServiceException ("config file is unreadable: " + configFile.getAbsolutePath());
     }
 
+    // sanity check - can we read configuration overrides? if not - warn
     final File customDir = getCustomDir();
 
     if (customDir != null && customDir.exists()) {
@@ -132,6 +154,15 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
     customDir = null;
   }
 
+  /**
+   * Produce a JSON object from the supplied JSON file.
+   *
+   * @param jsonFile
+   * @return JSONObject representation of the file content
+   * @throws IOException
+   * @throws FileNotFoundException
+   * @throws JSONException
+   */
   protected final JSONObject collectConfiguration (File jsonFile)
      throws IOException, FileNotFoundException, JSONException {
 
@@ -147,6 +178,7 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
       return new JSONObject();
     }
 
+    // read the file
     final FileReader reader = new FileReader(jsonFile);
 
     final StringBuffer buffer = new StringBuffer();
@@ -168,9 +200,20 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
       }
     }
 
+    // return a JSON object built from the file content
     return new JSONObject(buffer.toString());
   }
 
+  /**
+   * Process all configuration files into a single JSONObject. The master/default configuration file
+   * is read first. Overrides are read (any *.json file in the custom directory) and are written into
+   * the JSONObject in order to override configuration.
+   *
+   * @return
+   * @throws IOException
+   * @throws JSONException
+   * @throws DynamicConfigurationServiceException
+   */
   protected final JSONObject collectConfiguration ()
      throws IOException, JSONException, DynamicConfigurationServiceException {
     final JSONObject config;
@@ -185,10 +228,11 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
 
     config = collectConfiguration(masterConfigFile);
 
-    //process the custom configuration
+    // process the custom configuration
     final File customConfigDir = getCustomDir();
     File[] files = null;
 
+    // find files ending in .json in the custom directory
     if (customDir != null){
       files = customConfigDir.listFiles(
         new FilenameFilter() {
@@ -200,9 +244,12 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
       );
     }
 
+    // if there is no custom config return the master config unaltered
     if (files == null || files.length == 0) {
       return config;
     }
+
+    log.info("processing " + files.length + " custom configuration files");
 
     JSONObject nextConfig;
 
@@ -211,6 +258,7 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
       try {
         nextConfig = collectConfiguration(file);
 
+        // step through the JSON from the next configuration file - add each item to the master config
         Iterator<String> keyIt = nextConfig.keys();
         while (keyIt.hasNext()) {
           final String key = keyIt.next();
@@ -224,6 +272,19 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
     return config;
   }
 
+  /**
+   * Produces a unique cache key representing the state of the configuration. This key may be used in the
+   * GET request like the following:
+   *
+   *  /system/dynamic-config/config.[configurationCacheKey].json
+   *
+   * As long as the key remains the same the browser and/or load balancer will be able to preserve a cached
+   * copy of the config. If the config changes, the configurationCacheKey will change and the browser/load
+   * balancer will be forced to pass the GET request to the GetConfigurationServlet to get the new config.
+   *
+   * @return
+   * @throws DynamicConfigurationServiceException
+   */
   @Override
   public String getConfigurationCacheKey() throws DynamicConfigurationServiceException {
 
@@ -235,15 +296,19 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
       throw new DynamicConfigurationServiceException("error calculating cache key", e);
     }
 
+    // calculate an MD5 sum of the JSON string. Because this implementation happens to preserve
+    //  the order of elements in the JSON that MD5 sum will remain constant for unchanged content
     String key = null;
 
     if (MD5 != null) {
+      MD5.reset();
       MD5.update(config.toString().getBytes());
       byte[] md5sum = MD5.digest();
       BigInteger bigInt = new BigInteger(1, md5sum);
       key = bigInt.toString(16);
     }
 
+    // if the MD5 message digest object is unavailable send a random UUID - no caching will work
     if (key == null) {
       key = UUID.randomUUID().toString();
       log.warn ("error creating cache key - using random UUID");
@@ -254,6 +319,12 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
     return key;
   }
 
+  /**
+   * write the configuration JSON to the out stream
+   *
+   * @param out
+   * @throws DynamicConfigurationServiceException
+   */
   @Override
   public void writeConfigurationJSON(OutputStream out) throws DynamicConfigurationServiceException {
     try {
@@ -265,11 +336,22 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
     }
   }
 
+  /**
+   * This file backed instance is not writeable
+   *
+   * @return always returns false
+   */
   @Override
   public boolean isWriteable() {
     return false;
   }
 
+  /**
+   * This file backed instance is not writeable - this always throws an error.
+   *
+   * @param json
+   * @throws DynamicConfigurationServiceException
+   */
   @Override
   public void mergeConfigurationJSON(final String json) throws DynamicConfigurationServiceException {
     throw new DynamicConfigurationServiceException("configuration is not writeable");

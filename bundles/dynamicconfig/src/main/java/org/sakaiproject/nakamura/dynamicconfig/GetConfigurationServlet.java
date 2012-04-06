@@ -27,24 +27,21 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * User: duffy
- * Date: Apr 3, 2012
- * Time: 4:27:47 PM
- */
 @SlingServlet(paths={"/system/dynamic-config/config"},resourceTypes={"oae/configuration"},
    methods={"GET"},extensions={"json","js"})
 @ServiceDocumentation(name="Get Configuration Servlet", okForVersion = "1.1",
     description="Returns the server configuration as either a require.js module, or as a JSON object " +
-        "based on the extension provided in the GET request (eg. '.js' or '.json)",
-    shortDescription="Get the server configuration as json or js",
+        "based on the extension provided in the GET request (eg. '.js' or '.json). Also returns a " +
+        "configuration cache key which can be used to determine if the content of the configuration has changed.",
+    shortDescription="Get the server configuration, or the configuration cache key as json or js",
     bindings=@ServiceBinding(type= BindingType.TYPE,bindings={"oae/configuration"},
         extensions=@ServiceExtension(name="json", description="")),
     methods=@ServiceMethod(name="GET",
-        description={"Get the configuration as a require.js module or as json.",
+        description={"Get the configuration or the configuration cache key as a require.js module or as json.",
             "Examples:<br>" +
-            "<pre>curl http://localhost:8080/system/config.json</pre><br>" +
-            "<pre>curl http://localhost:8080/system/config.js</pre>"},
+            "<pre>curl http://localhost:8080/system/config.configurationCacheKey.json</pre> - retrieves the cache key<br>" +
+            "<pre>curl http://localhost:8080/system/config.[configurationCacheKey.]json</pre> - cache key is optional<br>" +
+            "<pre>curl http://localhost:8080/system/config.[configurationCacheKey.]js</pre> - cache key is optional"},
         response={
           @ServiceResponse(code=200,description="Success"),
           @ServiceResponse(code=500,description="Failure with HTML explanation.")}
