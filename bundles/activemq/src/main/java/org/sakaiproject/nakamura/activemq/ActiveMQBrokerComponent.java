@@ -43,6 +43,9 @@ public class ActiveMQBrokerComponent {
   @Property(value = "tcp://localhost:61616")
   protected static final String ACTIVEMQ_BROKER_URL = "broker.url";
 
+  @Property(value = "stomp://localhost:61613")
+  protected static final String ACTIVEMQ_STOMP_BROKER_URL = "stomp.broker.url";
+
   @Property(boolValue = true)
   protected static final String ACTIVEMQ_BROKER_ENABLED = "broker.enabled";
 
@@ -76,6 +79,9 @@ public class ActiveMQBrokerComponent {
           NetworkConnector connector = broker.addNetworkConnector(federatedBrokerUrl);
           connector.setDuplex(true);
         }
+
+        String stompUrl = PropertiesUtil.toString(properties.get(ACTIVEMQ_STOMP_BROKER_URL), "stomp://localhost:61613");
+        broker.addConnector(stompUrl);
 
         // configure the broker
         LOG.info("Adding ActiveMQ connector [" + brokerUrl + "]");
