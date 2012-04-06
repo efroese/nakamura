@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<components xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0">
+    <scr:component enabled="true" name="org.sakaiproject.nakamura.termextract.TaggerImpl" activate="activate">
+        <implementation class="org.sakaiproject.nakamura.termextract.TaggerImpl"/>
+        <service servicefactory="false">
+            <provide interface="org.sakaiproject.nakamura.api.termextract.Tagger"/>
+        </service>
+        <property name="service.pid" value="org.sakaiproject.nakamura.termextract.TaggerImpl"/>
+    </scr:component>
+    <scr:component enabled="true" name="org.sakaiproject.nakamura.termextract.TermExtractorImpl">
+        <implementation class="org.sakaiproject.nakamura.termextract.TermExtractorImpl"/>
+        <service servicefactory="false">
+            <provide interface="org.sakaiproject.nakamura.api.termextract.TermExtractor"/>
+        </service>
+        <property name="service.pid" value="org.sakaiproject.nakamura.termextract.TermExtractorImpl"/>
+        <reference name="tagger" interface="org.sakaiproject.nakamura.api.termextract.Tagger" cardinality="1..1" policy="static" bind="bindTagger" unbind="unbindTagger"/>
+    </scr:component>
+</components>
