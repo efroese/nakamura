@@ -52,6 +52,10 @@ public class TaggerTest {
         return collator.compare(o1.getTerm(), o2.getTerm());
       }
     });
+<<<<<<< HEAD
     System.out.println("tagged: " + terms);
+=======
+    System.out.println(terms);
+>>>>>>> Port of the topia termextractor from Python.
   }
 }

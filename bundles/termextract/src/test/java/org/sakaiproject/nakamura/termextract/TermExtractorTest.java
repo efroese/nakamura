@@ -44,6 +44,10 @@ public class TermExtractorTest {
   public void testExtraction() throws Exception {
     String txt = TermExtractUtil.readExampleText();
     List<ExtractedTerm> terms = extractor.process(txt);
+<<<<<<< HEAD
     System.out.println("extracted: " + terms);
+=======
+    System.out.println(terms);
+>>>>>>> Port of the topia termextractor from Python.
   }
 }
