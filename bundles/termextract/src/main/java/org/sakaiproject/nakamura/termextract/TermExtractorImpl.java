@@ -115,10 +115,14 @@ private static final int SEARCH = 0;
       String word = term.getKey();
       int occurences = term.getValue();
 <<<<<<< HEAD
+<<<<<<< HEAD
       int strength = term.getKey().split("\\s").length;
 =======
       int strength = StringUtils.split(term.getKey()).length;
 >>>>>>> Port of the topia termextractor from Python.
+=======
+      int strength = term.getKey().split("\\s").length;
+>>>>>>> Add fixes from github repo (https://github.com/turian/topia.termextract)
       if (filter.filter(word, state, strength)) {
         retTerms.add(new ExtractedTerm(word.trim(), occurences, strength));
       }

@@ -53,9 +53,13 @@ public class TaggerTest {
       }
     });
 <<<<<<< HEAD
+<<<<<<< HEAD
     System.out.println("tagged: " + terms);
 =======
     System.out.println(terms);
 >>>>>>> Port of the topia termextractor from Python.
+=======
+    System.out.println("tagged: " + terms);
+>>>>>>> Add fixes from github repo (https://github.com/turian/topia.termextract)
   }
 }

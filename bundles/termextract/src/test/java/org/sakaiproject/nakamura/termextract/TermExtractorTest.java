@@ -45,9 +45,13 @@ public class TermExtractorTest {
     String txt = TermExtractUtil.readExampleText();
     List<ExtractedTerm> terms = extractor.process(txt);
 <<<<<<< HEAD
+<<<<<<< HEAD
     System.out.println("extracted: " + terms);
 =======
     System.out.println(terms);
 >>>>>>> Port of the topia termextractor from Python.
+=======
+    System.out.println("extracted: " + terms);
+>>>>>>> Add fixes from github repo (https://github.com/turian/topia.termextract)
   }
 }
