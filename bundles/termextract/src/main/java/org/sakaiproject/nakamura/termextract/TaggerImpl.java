@@ -25,10 +25,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,8 +50,12 @@ import org.slf4j.LoggerFactory;
  */
 public class TaggerImpl implements Tagger {
   private static final Logger LOGGER = LoggerFactory.getLogger(TaggerImpl.class);
-  private static final Pattern TERM_SPEC = Pattern
-      .compile("([^a-zA-Z]*)([a-zA-Z-\\.]*[a-zA-Z])([^a-zA-Z]*[a-zA-Z]*)");
+  // the original term spec
+//  private static final Pattern TERM_SPEC = Pattern.compile("([^a-zA-Z]*)([a-zA-Z-\\.]*[a-zA-Z])([^a-zA-Z]*[a-zA-Z]*)");
+  // change original term spec to use character classes
+//  private static final Pattern TERM_SPEC = Pattern.compile("([\\W\\d_]*)(([^\\W\\d_]*[-\\.]*)*[^\\W\\d_])([\\W\\d_]*[^\\W\\d_]*)");
+  // add some fixes to the term spec
+  private static final Pattern TERM_SPEC = Pattern.compile("([\\W\\d_]*)(([^\\W\\d_]?[-\\.]?)*[^\\W\\d_])([\\W\\d_]*[^\\W\\d_]*)");
 
   private TermExtractRule[] rules;
   private Map<String, String> tagsByTerm;
@@ -80,7 +82,7 @@ public class TaggerImpl implements Tagger {
 
       // Read File Line By Line
       while ((strLine = br.readLine()) != null) {
-        String[] termAndTag = StringUtils.split(strLine, " ", 3);
+        String[] termAndTag = StringUtils.split(strLine, " ", 3); // split on " " since we control the file
         if (termAndTag.length >= 2) {
           tagsByTerm.put(termAndTag[0], termAndTag[1]);
         } else {
@@ -106,9 +108,9 @@ public class TaggerImpl implements Tagger {
    * 
    * @see org.sakaiproject.nakamura.api.termextract.Tagger#tokenize(java.lang.String)
    */
-  public Set<String> tokenize(String text) {
-    HashSet<String> terms = new HashSet<String>();
-    for (String term : StringUtils.split(text)) {
+  public List<String> tokenize(String text) {
+    ArrayList<String> terms = new ArrayList<String>();
+    for (String term : text.split("\\s")) {
       // If the term is empty, skip it, since we probably just have
       // multiple whitespace characters.
       if (StringUtils.isBlank(term) || term.trim().length() <= 2) {
@@ -167,7 +169,7 @@ public class TaggerImpl implements Tagger {
    * @see org.sakaiproject.nakamura.api.termextract.Tagger#process(java.lang.String)
    */
   public List<TaggedTerm> process(String text) {
-    Set<String> terms = tokenize(text);
+    List<String> terms = tokenize(text);
     List<TaggedTerm> tags = tag(terms);
     return tags;
   }

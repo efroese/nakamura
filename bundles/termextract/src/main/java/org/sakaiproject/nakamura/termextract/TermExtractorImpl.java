@@ -114,7 +114,7 @@ private static final int SEARCH = 0;
     for (Entry<String, Integer> term : terms.entrySet()) {
       String word = term.getKey();
       int occurences = term.getValue();
-      int strength = StringUtils.split(term.getKey()).length;
+      int strength = term.getKey().split("\\s").length;
       if (filter.filter(word, state, strength)) {
         retTerms.add(new ExtractedTerm(word.trim(), occurences, strength));
       }

@@ -20,7 +20,6 @@ package org.sakaiproject.nakamura.api.termextract;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * A utility to provide POS tag extractions from a given text.
@@ -31,7 +30,7 @@ public interface Tagger {
    * 
    * @param text
    */
-  Set<String> tokenize(String text);
+  List<String> tokenize(String text);
 
   /**
    * Returns the tagged list of terms.

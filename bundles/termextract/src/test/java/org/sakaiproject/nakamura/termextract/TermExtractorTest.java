@@ -44,6 +44,6 @@ public class TermExtractorTest {
   public void testExtraction() throws Exception {
     String txt = TermExtractUtil.readExampleText();
     List<ExtractedTerm> terms = extractor.process(txt);
-    System.out.println(terms);
+    System.out.println("extracted: " + terms);
   }
 }

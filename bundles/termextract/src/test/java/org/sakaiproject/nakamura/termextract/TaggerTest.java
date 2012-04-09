@@ -52,6 +52,6 @@ public class TaggerTest {
         return collator.compare(o1.getTerm(), o2.getTerm());
       }
     });
-    System.out.println(terms);
+    System.out.println("tagged: " + terms);
   }
 }
