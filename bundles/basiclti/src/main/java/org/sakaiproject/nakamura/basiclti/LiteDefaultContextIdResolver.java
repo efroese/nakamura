@@ -17,16 +17,15 @@
  */
 package org.sakaiproject.nakamura.basiclti;
 
-import static org.sakaiproject.nakamura.api.basiclti.BasicLTIAppConstants.LTI_VTOOL_ID;
-
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Property;
-import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.osgi.service.component.ComponentContext;
 import org.sakaiproject.nakamura.api.basiclti.LiteBasicLTIContextIdResolver;
-import org.sakaiproject.nakamura.api.basiclti.VirtualToolDataProvider;
+import org.sakaiproject.nakamura.api.lite.Session;
+import org.sakaiproject.nakamura.api.lite.StorageClientException;
+import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.authorizable.AuthorizableManager;
 import org.sakaiproject.nakamura.api.lite.authorizable.Group;
 import org.sakaiproject.nakamura.api.lite.content.Content;
@@ -52,10 +51,6 @@ public class LiteDefaultContextIdResolver implements LiteBasicLTIContextIdResolv
   private static final Logger LOG = LoggerFactory
       .getLogger(LiteDefaultContextIdResolver.class);
 
-  //TODO eventually needs to be a list of providers not just a single provider.
-  @Reference
-  protected transient VirtualToolDataProvider virtualToolDataProvider;
-  
   /**
    * The {@link Content} property key used to store an LTI context_id.
    */
@@ -69,8 +64,8 @@ public class LiteDefaultContextIdResolver implements LiteBasicLTIContextIdResolv
    * 
    * @see {@link LiteBasicLTIContextIdResolver#resolveContextId(Content)}
    */
-  public String resolveContextId(final Content node, String groupId, Session session)
-      throws AccessDeniedException, StorageClientException {
+  public String resolveContextId(final Content node, final String groupId,
+      final Session session) throws AccessDeniedException, StorageClientException {
     LOG.debug("resolveContextId(Content {}, String {}, Session session)", node, groupId);
     if (node == null) {
       throw new IllegalArgumentException("Content cannot be null");
@@ -83,35 +78,49 @@ public class LiteDefaultContextIdResolver implements LiteBasicLTIContextIdResolv
     final org.sakaiproject.nakamura.api.lite.authorizable.Authorizable az = authManager
         .findAuthorizable(session.getUserId());
 
-    String contextId = null;
-    if (groupId != null) {
+    // default return value
+    String contextId = node.getPath();
 
-      // by default, just use the groupID that was submitted
-      contextId = groupId;
+    // check the alternate key for a context ID
+    if (node.hasProperty(key)) {
+      // we have a special context_id we can use
+      contextId = (String) node.getProperty(key);
+    } else {
+      if (groupId != null) {
+        // by default, just use the groupID that was submitted
+        contextId = groupId;
 
-      // obtaining the group causes a security check; also the group is used later to check the sakai:cle-site prop.
-      Group group = (Group) authManager.findAuthorizable(groupId);
-      LOG.debug("group = {}", group);
+        // obtaining the group causes a security check; also the group is used later to
+        // check the sakai:cle-site prop.
+        final Group group = (Group) authManager.findAuthorizable(groupId);
+        LOG.debug("group = {}", group);
 
-      // check the alternate key for a context ID
-      if (node.hasProperty(key)) {
-        // we have a special context_id we can use
-        contextId = (String) node.getProperty(key);
-      }
-      // If we are using a Group, we check the group's node to see if it has the optional
-      // cle-site property which will correspond to a concrete site on the CLE installs that
-      // we wish to use for the context on Sakai2Tools widgets. 
-      else if (group != null) {
-        final String sakaiSite = (String) group.getProperty("sakai:cle-site");
-        if (sakaiSite != null) {
-            contextId = sakaiSite;
+        /*
+         * If we are using a Group, we check the group's node to see if it has one of the
+         * optional properties that control LTI_CONTEXT_ID: "lti_context_id" or
+         * "sakai:cle-site". The property "lti_context_id" will take precedence over
+         * "sakai:cle-site". They are used to manually control LTI mapping to particular
+         * contexts and are passed straight through verbatim.
+         */
+        if (group != null) {
+          // LTI_CONTEXT_ID takes precedence over "sakai:cle-site" property
+          if (group.hasProperty(key)) {
+            // we have a special context_id we can use
+            final String groupContextId = (String) group.getProperty(key);
+            if (groupContextId != null && !"".equals(groupContextId)) {
+              contextId = groupContextId;
+            }
+          } else {
+            // try "sakai:cle-site" property next
+            final String sakaiSite = (String) group.getProperty("sakai:cle-site");
+            if (sakaiSite != null && !"".equals(sakaiSite)) {
+              contextId = sakaiSite;
+            }
+          }
         }
       }
     }
-    else {
-      // just use the path
-      contextId = node.getPath();
-    }
+    LOG.debug("Using context id '{}' for node: {}", contextId, node.getPath());
     return contextId;
   }
 

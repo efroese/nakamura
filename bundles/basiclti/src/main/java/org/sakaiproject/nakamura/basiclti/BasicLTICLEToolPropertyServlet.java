@@ -29,9 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
 
 import javax.servlet.ServletException;
 
@@ -56,10 +53,8 @@ public class BasicLTICLEToolPropertyServlet extends SlingSafeMethodsServlet {
       ejw.key("toolList").value(virtualToolDataProvider.getSupportedVirtualToolIds().toArray());
       ejw.endObject();
     } catch (JSONException e) {
-      final Writer trace = new StringWriter();
-      final PrintWriter pw = new PrintWriter(trace);
-      e.printStackTrace(pw);
-      response.sendError(500, trace.toString());
+      LOG.error(e.getLocalizedMessage(), e);
+      response.sendError(500, e.getLocalizedMessage());
     }
   }
 
