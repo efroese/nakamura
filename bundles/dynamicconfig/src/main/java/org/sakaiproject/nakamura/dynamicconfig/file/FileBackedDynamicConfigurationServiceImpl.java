@@ -3,22 +3,27 @@ package org.sakaiproject.nakamura.dynamicconfig.file;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.jcr.api.SlingRepository;
 import org.osgi.service.component.ComponentContext;
 import org.sakaiproject.nakamura.api.dynamicconfig.DynamicConfigurationService;
 import org.sakaiproject.nakamura.api.dynamicconfig.DynamicConfigurationServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -58,6 +63,12 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
   public static final String DFT_CONFIG_DIR         = "var/dynamicconfig";
   public static final String DFT_CUSTOM_DIR         = "var/dynamicconfig/custom";
   public static final String DFT_CONFIG_FILENAME    = "config.json";
+
+  // fallback source of config is not provided on filesystem
+  public static final String FALLBACK_SLING_CONFIG = "/dev/configuration/config.json";
+
+  @Reference
+  protected SlingRepository repository;
 
   // directory containing the configuration files
   protected String configurationDir;
@@ -132,8 +143,8 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
     final File configFile = getConfigurationFile();
 
     if (!(configFile.exists() && configFile.canRead())) {
-      log.error ("config file is unreadable: [" + configFile.getAbsolutePath() + "]");
-      throw new DynamicConfigurationServiceException ("config file is unreadable: " + configFile.getAbsolutePath());
+      log.info ("no master config file: [" + configFile.getAbsolutePath() + "], JCR content [" +
+         FALLBACK_SLING_CONFIG + "] will be used instead");
     }
 
     // sanity check - can we read configuration overrides? if not - warn
@@ -168,14 +179,12 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
 
     if (jsonFile == null) {
       log.error("attempt to process null configuration file aborted");
-      //return an empty JSONObject
-      return new JSONObject();
+      return null;
     }
 
     if (!jsonFile.canRead()) {
       log.error("attempt to process empty configuration file aborted");
-      //return an empty JSONObject
-      return new JSONObject();
+      return null;
     }
 
     // read the file
@@ -204,6 +213,56 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
     return new JSONObject(buffer.toString());
   }
 
+  protected final JSONObject collectConfigurationFromJCR() throws IOException, JSONException,
+     DynamicConfigurationServiceException {
+
+    Session session = null;
+
+    try {
+      session = repository.login();
+      final Node node = session.getNode(FALLBACK_SLING_CONFIG);
+
+      if (node == null) {
+        throw new DynamicConfigurationServiceException("Configuration is not installed in JCR repository at " +
+           FALLBACK_SLING_CONFIG);
+      }
+
+      final Node jcrContent = node.getNode("jcr:content");
+      final InputStream content = jcrContent.getProperty("jcr:data").getBinary().getStream();
+      final StringBuffer buffer = new StringBuffer();
+      byte[] chunk = new byte[CHUNK_SIZE];
+      int read = 0;
+
+      try {
+        while ( (read = content.read(chunk)) > 0) {
+          buffer.append(new String (chunk, 0, read));
+        }
+      }
+      finally {
+        if (content != null) {
+          try {
+            content.close();
+          } catch (Exception e) {
+            log.error("error closing JCR input stream [" + FALLBACK_SLING_CONFIG + "]", e);
+          }
+        }
+      }
+
+      // return a JSON object built from the file content
+      return new JSONObject(buffer.toString());
+
+    } catch (RepositoryException e) {
+      throw new DynamicConfigurationServiceException("Could not login to JCR repository", e);
+    }
+    finally {
+      if (session != null)
+      {
+        session.logout();
+      }
+    }
+
+  }
+
   /**
    * Process all configuration files into a single JSONObject. The master/default configuration file
    * is read first. Overrides are read (any *.json file in the custom directory) and are written into
@@ -216,17 +275,27 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
    */
   protected final JSONObject collectConfiguration ()
      throws IOException, JSONException, DynamicConfigurationServiceException {
-    final JSONObject config;
+    JSONObject config = null;
 
     //first read the main configuration
     final File masterConfigFile = getConfigurationFile();
 
-    if (masterConfigFile == null) {
-      log.error("no master configuration file supplied - aborting configuration");
-      throw new DynamicConfigurationServiceException("Configuration file is null");
+    if (masterConfigFile != null) {
+      try {
+        config = collectConfiguration(masterConfigFile);
+      } catch (Exception e) {
+        log.error ("error processing master configuration file", e);
+      }
     }
 
-    config = collectConfiguration(masterConfigFile);
+    if (masterConfigFile == null || config == null) {
+      log.info("no master configuration file supplied - trying JCR");
+      config = collectConfigurationFromJCR();
+
+      if (config == null) {
+        throw new DynamicConfigurationServiceException("could not retrieve master configuration from filesystem or JCR");
+      }
+    }
 
     // process the custom configuration
     final File customConfigDir = getCustomDir();

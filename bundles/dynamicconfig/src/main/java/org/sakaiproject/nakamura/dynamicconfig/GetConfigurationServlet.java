@@ -8,6 +8,7 @@ import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.request.RequestPathInfo;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 
+import org.apache.sling.commons.json.JSONException;
 import org.sakaiproject.nakamura.api.doc.BindingType;
 import org.sakaiproject.nakamura.api.doc.ServiceBinding;
 import org.sakaiproject.nakamura.api.doc.ServiceDocumentation;
@@ -137,7 +138,11 @@ public class GetConfigurationServlet extends SlingAllMethodsServlet {
       Map<String, Object> valueMap = new HashMap<String, Object>();
       valueMap.put("success", "true");
       ExtendedJSONWriter writer = new ExtendedJSONWriter(response.getWriter());
-      writer.valueMap(valueMap);
+      try {
+        writer.valueMap(valueMap);
+      } catch (JSONException e) {
+        log.error("exception while writing JSON to response", e);
+      }
     }
   }
 
