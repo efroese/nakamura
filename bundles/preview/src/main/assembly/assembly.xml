@@ -1,0 +1,16 @@
+<assembly>
+    <id>jar-with-dependencies</id>
+
+    <formats>
+        <format>jar</format>
+    </formats>
+
+    <!-- Adds dependencies to zip package under lib directory -->
+    <dependencySets>
+        <dependencySet>
+            <useProjectArtifact>true</useProjectArtifact>
+            <outputDirectory>lib</outputDirectory>
+            <unpack>false</unpack>
+        </dependencySet>
+    </dependencySets>
+</assembly>
