@@ -143,7 +143,7 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
     final File configFile = getConfigurationFile();
 
     if (!(configFile.exists() && configFile.canRead())) {
-      log.info ("no master config file: [" + configFile.getAbsolutePath() + "], JCR content [" +
+      log.info("no master config file: [" + configFile.getAbsolutePath() + "], JCR content [" +
          FALLBACK_SLING_CONFIG + "] will be used instead");
     }
 
@@ -349,7 +349,7 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
    *
    * As long as the key remains the same the browser and/or load balancer will be able to preserve a cached
    * copy of the config. If the config changes, the configurationCacheKey will change and the browser/load
-   * balancer will be forced to pass the GET request to the GetConfigurationServlet to get the new config.
+   * balancer will be forced to pass the GET request to the DynamicGlobalConfigurationServlet to get the new config.
    *
    * @return
    * @throws DynamicConfigurationServiceException

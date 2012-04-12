@@ -47,7 +47,7 @@ import java.util.Map;
           @ServiceResponse(code=200,description="Success"),
           @ServiceResponse(code=500,description="Failure with HTML explanation.")}
    ))
-public class GetConfigurationServlet extends SlingAllMethodsServlet {
+public class DynamicGlobalConfigurationServlet extends SlingAllMethodsServlet {
 
   /**
    * default log
