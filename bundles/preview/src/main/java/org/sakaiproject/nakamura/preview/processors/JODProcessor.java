@@ -42,13 +42,12 @@ public class JODProcessor {
 	public void process(String inputPath, String outputPath) throws ProcessingException {
 		try {
 			// connect to an OpenOffice.org instance running on port 8100
+			// TODO make the host and configurable
 			OpenOfficeConnection connection = new SocketOpenOfficeConnection(8100);
 			connection.connect();
-			// convert
 			DocumentConverter converter = new OpenOfficeDocumentConverter(connection);
 			converter.convert(new File(inputPath), new File(outputPath));
 			log.info("Converted {} to {}", inputPath, outputPath);
-			// close the connection
 			connection.disconnect();
 		}
 		catch (ConnectException e){

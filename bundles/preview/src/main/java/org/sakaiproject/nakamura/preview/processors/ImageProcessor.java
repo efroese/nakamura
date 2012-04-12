@@ -21,15 +21,12 @@ import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.sanselan.ImageInfo;
 import org.apache.sanselan.ImageReadException;
 import org.apache.sanselan.ImageWriteException;
 import org.apache.sanselan.Sanselan;
 import org.apache.sanselan.util.IOUtils;
-
 import org.sakaiproject.nakamura.preview.ImageUtils;
 import org.sakaiproject.nakamura.preview.ProcessingException;
 import org.slf4j.Logger;
@@ -47,9 +44,8 @@ public class ImageProcessor {
 	 * @param maxHeight the maximum height of the resized image (in pixels)
 	 * @throws ProcessingException
 	 */
-	public List<String> resize(String inputPath, String outputPath, Double maxWidth, Double maxHeight)
+	public void resize(String inputPath, String outputPath, Double maxWidth, Double maxHeight)
 	throws ProcessingException {
-		List<String> previewPaths = new ArrayList<String>();
 		File input = new File(inputPath);
 		File dst = new File(outputPath);
 		
@@ -77,7 +73,6 @@ public class ImageProcessor {
 			int targetWidth = (int)(width * scaleRatio);
 			int targetHeight = (int)(height * scaleRatio);
 			ImageUtils.write(ImageUtils.getScaledInstance(image, targetWidth, targetHeight), info, dst);
-			previewPaths.add(outputPath);
 			
 			log.debug("Wrote image {}h x {}w to {}",
 					new Object[] { Integer.toString(targetHeight), Integer.toString(targetWidth), dst.getAbsolutePath()});
@@ -91,6 +86,5 @@ public class ImageProcessor {
 			log.error("Error writing image at {}, {}", inputPath, e);
 			throw new ProcessingException("Error writing image " + inputPath, e);
 		}
-		return previewPaths;
 	}
 }
