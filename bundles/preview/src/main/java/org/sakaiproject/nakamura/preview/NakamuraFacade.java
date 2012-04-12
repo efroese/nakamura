@@ -108,9 +108,9 @@ public class NakamuraFacade {
 		http(getHttpClient(server, "admin", password), post);
 	}
 
-	public void uploadPreviewFile(String id, int page, String size, File preview) throws FileNotFoundException {
+	public void uploadFile(String id, File content, String page, String size) throws FileNotFoundException {
 		PostMethod post = new PostMethod("/system/pool/createfile/" + id + ".page" + page + "-" + size);
-		Part part = new FilePart("thumbnail", preview);
+		Part part = new FilePart("thumbnail", content);
 		MultipartRequestEntity entity = new MultipartRequestEntity(new Part[]{ part }, post.getParams());
 		post.setRequestEntity(entity);
 		http(getHttpClient(server, "admin", password), post);

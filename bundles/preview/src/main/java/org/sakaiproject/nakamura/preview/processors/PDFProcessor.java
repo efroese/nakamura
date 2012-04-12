@@ -40,18 +40,13 @@ public class PDFProcessor {
 	 * @param inputPath
 	 * @throws ProcessingException
 	 */
-	public List<String> process(String inputPath) throws ProcessingException {
+	public List<String> process(String inputPath, String outputPrefix) throws ProcessingException {
 		List<String> previewPaths = new ArrayList<String>();
-		// example: 
+		// example:
 		// inputPath        = /var/sakaioae/pp/docs/s0m3grOssId
 		// ppBase           = /var/sakaioae/pp
 		// outputPathPrefix = /var/sakaioae/pp/previews/s0m3grOssId.page.
 		File input = new File(inputPath);
-		String contentId = StringUtils.substringBeforeLast(input.getName(), ".");
-		String ppBase = input.getParentFile().getParent();
-		String outputPathPrefix = StringUtils.join(
-				new String[]{ ppBase, "previews", contentId, "page." },
-				File.separator);
 
 		// Guess what this does? I'll give you $5
 		PDFImageWriter imageWriter = new PDFImageWriter();
@@ -63,16 +58,17 @@ public class PDFProcessor {
 			for (PDDocument page: pages){
 				pageNum++;
 				// example: /var/sakaioae/pp/previews/s0m3grOssId.page.1
-				boolean success = imageWriter.writeImage(page, 
+				boolean success = imageWriter.writeImage(page,
 						ImageFormat.IMAGE_FORMAT_JPEG.name, null,
-						1, 1, outputPathPrefix);
+						1, 1, outputPrefix);
 				if (success){
-					String previewPath = outputPathPrefix + pageNum + 
+					String previewPath = output
+					Prefix + pageNum +
 						"." + ImageFormat.IMAGE_FORMAT_JPEG.name;
 					log.debug("Wrote page image {}", previewPath);
 					previewPaths.add(previewPath);
 				}
-				else {					
+				else {
 					log.error("PDFBox was unable to save an image for page {} ", page);
 				}
 			}

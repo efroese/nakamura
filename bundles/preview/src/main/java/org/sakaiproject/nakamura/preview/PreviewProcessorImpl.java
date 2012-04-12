@@ -18,6 +18,7 @@
 package org.sakaiproject.nakamura.preview;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -53,7 +54,7 @@ public class PreviewProcessorImpl {
 	protected String password;
 	protected String name;
 	protected String basePath;
-	
+
 	protected Set<String> ignoreTypes;
 	protected Set<String> mimeTypes;
 
@@ -64,7 +65,10 @@ public class PreviewProcessorImpl {
 	protected JODProcessor jodProcessor;
 	protected PDFProcessor pdfProcessor;
 	protected TikaTextExtractor textExtractor;
-	
+
+	protected String previewsDir;
+	protected String docsDir;
+
 	public PreviewProcessorImpl() {
 		this.name = ManagementFactory.getRuntimeMXBean().getName();
 		init();
@@ -76,11 +80,14 @@ public class PreviewProcessorImpl {
 		this.pdfProcessor = new PDFProcessor();
 		this.textExtractor = new TikaTextExtractor();
 		this.nakamura = new NakamuraFacade(server, password);
+
+		this.previewsDir = StringUtils.join(new String[] { basePath, "previews" } );
+		this.docsDir = StringUtils.join(new String[] { basePath, "docs" } );
 	}
 
 	public void process() throws IOException{
 		createDirectories();
-		
+
 		List<Map<String,Object>> content = contentFetcher.getContentForProcessing(server.toString(), "admin", password);
 		List<Map<String,Object>> ignored = new LinkedList<Map<String,Object>>();
 		List<Map<String,Object>> failed  = new LinkedList<Map<String,Object>>();
@@ -90,26 +97,27 @@ public class PreviewProcessorImpl {
 			return;
 		}
 		nakamura.claimContent(content, name);
-		
+
 		for (Map<String,Object> result : content){
-			
+
 			if (ignore(result)){
 				ignored.add(result);
 				continue;
 			}
 			String id = (String)result.get("_path");
+			String contentFilePath = null;
 
 			try {
 				// Fetch the full content meta
 				Map<String,Object> item = nakamura.getContentMeta(id);
-				
+
 				// example: /var/sakaioae/pp/previews/s0meGr0SsId/
 				String previewDirPath = StringUtils.join(
-						new String[]{ basePath, "previews", id }, File.separator);
+						new String[]{ previewsDir, id }, File.separator);
 				File previewDir = new File(previewDirPath);
 				previewDir.mkdirs();
-				
-				// Determine the correct file extension 
+
+				// Determine the correct file extension
 				String extension = null;
 				if (item.containsKey(PreviewProcessor.FILE_EXTENSION)){
 					extension = (String)item.get(PreviewProcessor.FILE_EXTENSION);
@@ -120,62 +128,105 @@ public class PreviewProcessorImpl {
 				}
 				extension = determineFileExtensionWithMimeType(mimetype, extension);
 
-				String contentFilePath = StringUtils.join(
-						new String[] { basePath, "docs", id + "." + extension }, File.separator);
+				contentFilePath = StringUtils.join(
+						new String[] { docsDir, id + "." + extension }, File.separator);
 				download(server + "/p/" + id, contentFilePath);
-				
-				if (PreviewProcessor.PDF_EXTENSIONS.contains(extension)){
-					// Split the PDF and snap images of the pages
-					// Images are saved to ${basePath}/previews/${id}/${id}.page.[1...n].JPEG
-					pdfProcessor.process(contentFilePath);
+
+				if (PreviewProcessor.IMAGE_EXTENSIONS.contains(extension)){
+					processImage(contentFilePath, item);
 				}
-				else if (PreviewProcessor.IMAGE_EXTENSIONS.contains(extension)){
-					// Just copy it to the preview area
-					FileUtils.copyFile(new File(contentFilePath),
-						new File(StringUtils.join(
-							new String[]{ previewDirPath, id + "." + extension}, File.separator)));
-				}
-				else { 
-					// Not an image and not a PDF
-					// Convert it to a pdf
-					String convertedPDFPath = StringUtils.join(
-							new String[] { basePath, "previews", id, id + ".pdf" }, File.separator);
-					jodProcessor.process(contentFilePath, convertedPDFPath);
-					// Split the PDF and snap images of the pages
-					// Images are saved to ${basePath}/previews/${id}/${id}.page.[1...n].JPEG
-					pdfProcessor.process(convertedPDFPath);
-					new File(contentFilePath).delete();
+				else {
+					processDocument(contentFilePath, item, extension);
 				}
 
-				File[] previewFiles = FileListUtils.listFilesSortedName(previewDirPath);
-
-				for (File preview: previewFiles){
-					imageProcessor.resize(preview.getAbsolutePath(),
-							previewDir.getAbsolutePath() + File.separator + id + ".normal.jpg",
-							new Double(700.0), null);
-					imageProcessor.resize(preview.getAbsolutePath(),
-							previewDir.getAbsolutePath() + File.separator + id + ".small.jpg",
-							new Double(180.0), new Double(225.0));
-				}
-
-				if (item.containsKey("sakai:pool-content-created-for")){
-					String userId = (String)item.get("sakai:pool-content-created-for");
-					if (nakamura.doAutoTaggingForUser(userId)){
-						TermExtractor te = new TermExtractorImpl();
-						List<ExtractedTerm> terms = te.process(textExtractor.getText(contentFilePath));
-						List<String> tags = new ArrayList<String>();
-						for (ExtractedTerm term : terms){
-							tags.add(term.getTerm());
-						}
-						nakamura.tagContent(id, tags);
-					}
-				}
 			}
 			catch (Exception e){
 				log.error("There was an error generating a preview for {}: {}", id, e);
 				failed.add(result);
 			}
+			finally {
+				new File(contentFilePath).delete();
+			}
 		}
+
+
+	}
+
+	protected void processDocument(String contentFilePath, Map<String,Object> item, String extension)
+	throws ProcessingException, FileNotFoundException{
+		String id = (String)item.get("_path");
+
+		String outputPrefix = StringUtils.join(
+				new String[]{ previewsDir, id, "page." }, File.separator);
+		if (PreviewProcessor.PDF_EXTENSIONS.contains(extension)){
+			// Split the PDF and snap images of the pages
+			// Images are saved to ${basePath}/previews/${id}/${id}.page.[1...n].JPEG
+			pdfProcessor.process(contentFilePath, outputPrefix);
+		}
+		else {
+			// Not an image and not a PDF
+			// Convert it to a pdf
+			String convertedPDFPath = StringUtils.join(
+					new String[] { previewsDir, id, id + ".pdf" }, File.separator);
+			jodProcessor.process(contentFilePath, convertedPDFPath);
+			// Split the PDF and snap images of the pages
+			// Images are saved to ${basePath}/previews/${id}/${id}.page.[1...n].JPEG
+			pdfProcessor.process(convertedPDFPath, outputPrefix);
+		}
+
+		if (item.containsKey("sakai:pool-content-created-for")){
+			String userId = (String)item.get("sakai:pool-content-created-for");
+			if (nakamura.doAutoTaggingForUser(userId)){
+				TermExtractor te = new TermExtractorImpl();
+				List<ExtractedTerm> terms = te.process(textExtractor.getText(contentFilePath));
+				List<String> tags = new ArrayList<String>();
+				for (ExtractedTerm term : terms){
+					tags.add(term.getTerm());
+				}
+				nakamura.tagContent(id, tags);
+			}
+		}
+
+		String contentPreviewDirectory = StringUtils.join(new String[] { previewsDir, id }, File.separator);
+		File[] previewFiles = FileListUtils.listFilesSortedName(contentPreviewDirectory);
+
+		int i = 1;
+		for (File preview: previewFiles){
+			try {
+				imageProcessor.resize(preview.getAbsolutePath(),
+						contentPreviewDirectory + File.separator + id + ".large",
+						new Double(700.0), null);
+				nakamura.uploadFile(id, preview, Integer.toString(i), "large");
+
+				imageProcessor.resize(preview.getAbsolutePath(),
+						contentPreviewDirectory + File.separator + id + ".normal.jpg",
+						new Double(700.0), null);
+
+				nakamura.uploadFile(id, preview, Integer.toString(i), "normal");
+
+				imageProcessor.resize(preview.getAbsolutePath(),
+						contentPreviewDirectory + File.separator + id + ".small.jpg",
+						new Double(180.0), new Double(225.0));
+				nakamura.uploadFile(id, preview, Integer.toString(i), "small");
+			}
+			catch (ProcessingException e) {
+				log.error("Error uploading content preview.", e);
+			}
+		}
+
+	}
+
+	protected void processImage(String contentFilePath, Map<String,Object> item)
+	throws ProcessingException, FileNotFoundException {
+		String id = (String)item.get("_path");
+		String normalPath = previewsDir + File.separator + id + File.separator + id + ".normal.jpg";
+		imageProcessor.resize(contentFilePath, normalPath, new Double(700.0), null);
+		nakamura.uploadFile(id, new File(normalPath), "1", "normal");
+
+		imageProcessor.resize(contentFilePath,
+		previewsDir + File.separator + id + File.separator + id + ".small.jpg",
+		new Double(180.0), new Double(225.0));
+		nakamura.uploadFile(id, new File(normalPath), "1", "small");
 	}
 
 	/**
@@ -191,11 +242,11 @@ public class PreviewProcessorImpl {
 		}
 		if (mimetype == null){
 			ignore = true;
-			log.info("Ignoring {}, no mimeType", (String)item.get("_path"));
+			log.info("Ignoring {}, no mimeType", item.get("_path"));
 		}
 		else if (ignoreTypes.contains(mimetype)){
 			ignore = true;
-			log.info("Ignoring {}, mimeType {} is not supported.", (String)item.get("_path"), mimetype);
+			log.info("Ignoring {}, mimeType {} is not supported.", item.get("_path"), mimetype);
 		}
 		return ignore;
 	}
@@ -237,8 +288,8 @@ public class PreviewProcessorImpl {
 	protected List<Map<String,Object>> filterAlreadyProcessed(List<Map<String,Object>> content){
 		List<Map<String,Object>> unprocessed = new LinkedList<Map<String,Object>>();
 		for (Map<String,Object> item : content){
-			// No one else has claimed this 
-			if ( !item.containsKey(PreviewProcessor.PROCESSED_BY) || 
+			// No one else has claimed this
+			if ( !item.containsKey(PreviewProcessor.PROCESSED_BY) ||
 					(item.containsKey(PreviewProcessor.PROCESSED_BY) &&
 						!name.equals(item.get(PreviewProcessor.PROCESSED_BY)))){
 				unprocessed.add(item);

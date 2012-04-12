@@ -65,6 +65,7 @@ public class PreviewProcessorMain {
 		pp.ignoreTypes = loadResourceSet("ignore.types");
 		pp.mimeTypes = loadResourceSet("mime.types");
 		pp.contentFetcher = new SearchContentFetcher();
+		pp.nakamura = new NakamuraFacade(server, password);
 		pp.process();
 	}
 }
