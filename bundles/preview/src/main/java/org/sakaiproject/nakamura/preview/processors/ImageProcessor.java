@@ -27,7 +27,7 @@ import org.apache.sanselan.ImageReadException;
 import org.apache.sanselan.ImageWriteException;
 import org.apache.sanselan.Sanselan;
 import org.apache.sanselan.util.IOUtils;
-import org.sakaiproject.nakamura.preview.ImageUtils;
+import org.sakaiproject.nakamura.preview.util.ImageUtils;
 import org.sakaiproject.nakamura.preview.ProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

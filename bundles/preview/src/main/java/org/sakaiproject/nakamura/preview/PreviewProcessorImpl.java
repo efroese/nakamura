@@ -24,18 +24,11 @@ import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -47,11 +40,10 @@ import org.sakaiproject.nakamura.preview.processors.ImageProcessor;
 import org.sakaiproject.nakamura.preview.processors.JODProcessor;
 import org.sakaiproject.nakamura.preview.processors.PDFProcessor;
 import org.sakaiproject.nakamura.preview.processors.TikaTextExtractor;
+import org.sakaiproject.nakamura.preview.util.FileListUtils;
 import org.sakaiproject.nakamura.termextract.TermExtractorImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableMap;
 
 public class PreviewProcessorImpl {
 
@@ -65,6 +57,7 @@ public class PreviewProcessorImpl {
 	protected Set<String> ignoreTypes;
 	protected Set<String> mimeTypes;
 
+	protected NakamuraFacade nakamura;
 	protected ContentFetcher contentFetcher;
 
 	protected ImageProcessor imageProcessor;
@@ -82,6 +75,7 @@ public class PreviewProcessorImpl {
 		this.jodProcessor = new JODProcessor();
 		this.pdfProcessor = new PDFProcessor();
 		this.textExtractor = new TikaTextExtractor();
+		this.nakamura = new NakamuraFacade(server, password);
 	}
 
 	public void process() throws IOException{
@@ -95,7 +89,7 @@ public class PreviewProcessorImpl {
 		if (content.isEmpty()){
 			return;
 		}
-		claimContent(content);
+		nakamura.claimContent(content, name);
 		
 		for (Map<String,Object> result : content){
 			
@@ -107,7 +101,7 @@ public class PreviewProcessorImpl {
 
 			try {
 				// Fetch the full content meta
-				Map<String,Object> item = getContentMeta(id);
+				Map<String,Object> item = nakamura.getContentMeta(id);
 				
 				// example: /var/sakaioae/pp/previews/s0meGr0SsId/
 				String previewDirPath = StringUtils.join(
@@ -131,47 +125,49 @@ public class PreviewProcessorImpl {
 				download(server + "/p/" + id, contentFilePath);
 				
 				if (PreviewProcessor.PDF_EXTENSIONS.contains(extension)){
+					// Split the PDF and snap images of the pages
+					// Images are saved to ${basePath}/previews/${id}/${id}.page.[1...n].JPEG
 					pdfProcessor.process(contentFilePath);
 				}
-				else if (!PreviewProcessor.IMAGE_EXTENSIONS.contains(extension)){
+				else if (PreviewProcessor.IMAGE_EXTENSIONS.contains(extension)){
+					// Just copy it to the preview area
+					FileUtils.copyFile(new File(contentFilePath),
+						new File(StringUtils.join(
+							new String[]{ previewDirPath, id + "." + extension}, File.separator)));
+				}
+				else { 
 					// Not an image and not a PDF
 					// Convert it to a pdf
 					String convertedPDFPath = StringUtils.join(
 							new String[] { basePath, "previews", id, id + ".pdf" }, File.separator);
 					jodProcessor.process(contentFilePath, convertedPDFPath);
 					// Split the PDF and snap images of the pages
-					// They get saved to ${basePath}/previews/${id}/${id}.page.[1...n].JPEG
+					// Images are saved to ${basePath}/previews/${id}/${id}.page.[1...n].JPEG
 					pdfProcessor.process(convertedPDFPath);
-					new File(convertedPDFPath).delete();
+					new File(contentFilePath).delete();
 				}
 
-				File[] previewFiles = previewDir.listFiles();
-				Arrays.sort(previewFiles,
-					new Comparator<File>(){
-						public int compare(final File f1, final File f2) {
-							return f1.getName().compareTo(f2.getName());
-						}
-					});
+				File[] previewFiles = FileListUtils.listFilesSortedName(previewDirPath);
 
-				if (previewFiles.length > 0){
-					imageProcessor.resize(previewFiles[0].getAbsolutePath(),
+				for (File preview: previewFiles){
+					imageProcessor.resize(preview.getAbsolutePath(),
 							previewDir.getAbsolutePath() + File.separator + id + ".normal.jpg",
 							new Double(700.0), null);
-					imageProcessor.resize(previewFiles[0].getAbsolutePath(),
+					imageProcessor.resize(preview.getAbsolutePath(),
 							previewDir.getAbsolutePath() + File.separator + id + ".small.jpg",
 							new Double(180.0), new Double(225.0));
 				}
 
 				if (item.containsKey("sakai:pool-content-created-for")){
 					String userId = (String)item.get("sakai:pool-content-created-for");
-					if (generateTags(userId)){
+					if (nakamura.doAutoTaggingForUser(userId)){
 						TermExtractor te = new TermExtractorImpl();
 						List<ExtractedTerm> terms = te.process(textExtractor.getText(contentFilePath));
 						List<String> tags = new ArrayList<String>();
 						for (ExtractedTerm term : terms){
 							tags.add(term.getTerm());
 						}
-						tagContent(id, tags);
+						nakamura.tagContent(id, tags);
 					}
 				}
 			}
@@ -180,38 +176,6 @@ public class PreviewProcessorImpl {
 				failed.add(result);
 			}
 		}
-	}
-
-	/**
-	 * Get the user.properties.isAutogagging values 
-	 * @param userId
-	 * @return
-	 */
-	protected boolean generateTags(String userId){
-		boolean generateTags = false;
-		String userMetaUrl = server + "/system/me?uid=" + userId;
-		log.debug("Fetching user metadata from {}", userMetaUrl);
-		GetMethod get = new GetMethod(userMetaUrl);
-		JSONObject userMeta = HttpUtils.http(HttpUtils.getHttpClient(server, "admin", password), get);
-		JSONObject props = userMeta.getJSONObject("user").getJSONObject("properties");
-		if (props.has("isAutoTagging") && props.getBoolean("isAutoTagging")){
-			generateTags = true;
-		}
-		return generateTags;
-	}
-
-	/**
-	 * Tag a doc in OAE
-	 * @param contentId
-	 * @param tags
-	 */
-	protected void tagContent(String contentId, List<String> tags){
-		PostMethod post = new PostMethod(server + "/p/" + contentId);
-		post.addParameter(":operation", "tag");
-		for (String tag: tags){
-			post.addParameter("key", "/tags/" + tag);
-		}
-		HttpUtils.http(HttpUtils.getHttpClient(server, "admin", password), post);
 	}
 
 	/**
@@ -284,28 +248,6 @@ public class PreviewProcessorImpl {
 	}
 
 	/**
-	 * Mark content items we intend to process with our pid@host
-	 * @param content
-	 */
-	public void claimContent(List<Map<String,Object>> content){
-		JSONArray batch = new JSONArray();
-
-		for (Map<String,Object> item: content) {
-			JSONObject req = new JSONObject();
-			JSONObject params = new JSONObject();
-		    String path = (String)item.get("_path");
-		    req.put("_charset_", "UTF-8");
-		    req.put("url", "/p/" + path + ".json");
-		    params.put("sakai:processor", this.name);
-		    req.put("params", params);
-		    batch.add(req);
-		}
-		PostMethod post = new PostMethod("/system/batch");
-		post.addParameter("requests", batch.toString());
-		HttpUtils.http(HttpUtils.getHttpClient(server, "admin", password), post);
-	}
-
-	/**
 	 * Download a content body to a file
 	 * @param address
 	 * @param filePath
@@ -334,18 +276,5 @@ public class PreviewProcessorImpl {
 				log.error("Error closing output stream: {}", e);
 			}
 		}
-	}
-
-	/**
-	 * Get the content metadata
-	 * @param contentId
-	 * @return
-	 */
-	protected Map<String,Object> getContentMeta(String contentId){
-		String url = server + "/p/" + contentId + ".json";
-		log.info("Downloading content metadata from {}", url);
-		GetMethod get = new GetMethod(url);
-		JSONObject result = HttpUtils.http(HttpUtils.getHttpClient(server, "admin", password), get);
-		return ImmutableMap.copyOf(result);
 	}
 }
