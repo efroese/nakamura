@@ -24,6 +24,8 @@ import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -90,7 +92,6 @@ public class PreviewProcessorImpl {
 		List<Map<String,Object>> failed  = new LinkedList<Map<String,Object>>();
 
 		content = filterAlreadyProcessed(content);
-		
 		if (content.isEmpty()){
 			return;
 		}
@@ -102,14 +103,13 @@ public class PreviewProcessorImpl {
 				ignored.add(result);
 				continue;
 			}
-			// Comes from the contentFetcher. Not guaeranteed to have other info
 			String id = (String)result.get("_path");
 
 			try {
-				
-				// Fetch he full content meta 
+				// Fetch the full content meta
 				Map<String,Object> item = getContentMeta(id);
 				
+				// example: /var/sakaioae/pp/previews/s0meGr0SsId/
 				String previewDirPath = StringUtils.join(
 						new String[]{ basePath, "previews", id }, File.separator);
 				File previewDir = new File(previewDirPath);
@@ -130,23 +130,34 @@ public class PreviewProcessorImpl {
 						new String[] { basePath, "docs", id + "." + extension }, File.separator);
 				download(server + "/p/" + id, contentFilePath);
 				
-
-				// Not an image and not a PDF
-				List<String> previewPaths = new ArrayList<String>();
-				if (!PreviewProcessor.IMAGE_EXTENSIONS.contains(extension) &&
-						!PreviewProcessor.PDF_EXTENSIONS.contains(extension)){
-					// Convert it to a pdf
-					previewPaths = jodProcessor.process(contentFilePath);
-					previewPaths = pdfProcessor.process(previewPaths.get(0));					
-				}
 				if (PreviewProcessor.PDF_EXTENSIONS.contains(extension)){
-					previewPaths = pdfProcessor.process(contentFilePath);
+					pdfProcessor.process(contentFilePath);
 				}
-				if (!previewPaths.isEmpty()){
-					imageProcessor.resize(previewPaths.get(0),
+				else if (!PreviewProcessor.IMAGE_EXTENSIONS.contains(extension)){
+					// Not an image and not a PDF
+					// Convert it to a pdf
+					String convertedPDFPath = StringUtils.join(
+							new String[] { basePath, "previews", id, id + ".pdf" }, File.separator);
+					jodProcessor.process(contentFilePath, convertedPDFPath);
+					// Split the PDF and snap images of the pages
+					// They get saved to ${basePath}/previews/${id}/${id}.page.[1...n].JPEG
+					pdfProcessor.process(convertedPDFPath);
+					new File(convertedPDFPath).delete();
+				}
+
+				File[] previewFiles = previewDir.listFiles();
+				Arrays.sort(previewFiles,
+					new Comparator<File>(){
+						public int compare(final File f1, final File f2) {
+							return f1.getName().compareTo(f2.getName());
+						}
+					});
+
+				if (previewFiles.length > 0){
+					imageProcessor.resize(previewFiles[0].getAbsolutePath(),
 							previewDir.getAbsolutePath() + File.separator + id + ".normal.jpg",
 							new Double(700.0), null);
-					imageProcessor.resize(previewPaths.get(0),
+					imageProcessor.resize(previewFiles[0].getAbsolutePath(),
 							previewDir.getAbsolutePath() + File.separator + id + ".small.jpg",
 							new Double(180.0), new Double(225.0));
 				}
