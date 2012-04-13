@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.util.PDFImageWriter;
 import org.apache.pdfbox.util.Splitter;
@@ -62,8 +61,7 @@ public class PDFProcessor {
 						ImageFormat.IMAGE_FORMAT_JPEG.name, null,
 						1, 1, outputPrefix);
 				if (success){
-					String previewPath = output
-					Prefix + pageNum +
+					String previewPath = outputPrefix + pageNum +
 						"." + ImageFormat.IMAGE_FORMAT_JPEG.name;
 					log.debug("Wrote page image {}", previewPath);
 					previewPaths.add(previewPath);
