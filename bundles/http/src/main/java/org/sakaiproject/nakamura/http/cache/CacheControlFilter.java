@@ -69,7 +69,9 @@ import javax.servlet.http.HttpServletResponse;
         "root;.*(js|css)$;.lastmodified:unset;.cookies:unset;.requestCache:900;.expires:180000;Vary: Accept-Encoding",
         "root;.*html$;.lastmodified:unset;.cookies:unset;.requestCache:900;.expires:180000;Vary: Accept-Encoding",
         "var;^/var/search/public/.*$;.lastmodified:unset;.cookies:unset;.requestCache:900;.expires:3600;Vary: Accept-Encoding",
-        "var;^/var/widgets.json$;.lastmodified:unset;.cookies:unset;.requestCache:900;.expires:180000;Vary: Accept-Encoding"}, 
+        "var;^/var/widgets.json$;.lastmodified:unset;.cookies:unset;.requestCache:900;.expires:180000;Vary: Accept-Encoding",
+        "system;^/system/dynamic-config/config.[0-9a-f]*.json;.lastmodified:unset;.cookies:unset;.requestCache:900;.expires:180000;Vary: Accept-Encoding"
+    },
         description = "List of path prefixes followed by a regex. If the prefix starts with a root: it means files in the root folder that match the pattern."),
     @Property(name = "service.vendor", value = "The Sakai Foundation")})
 public class CacheControlFilter implements Filter {
