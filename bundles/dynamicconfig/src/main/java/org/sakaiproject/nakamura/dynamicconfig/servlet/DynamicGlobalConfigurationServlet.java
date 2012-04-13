@@ -1,4 +1,4 @@
-package org.sakaiproject.nakamura.dynamicconfig;
+package org.sakaiproject.nakamura.dynamicconfig.servlet;
 
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
