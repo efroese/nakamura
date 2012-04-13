@@ -55,9 +55,9 @@ public class FileBackedDynamicConfigurationServiceImpl implements DynamicConfigu
   private static final int CHUNK_SIZE               = 8192;
 
   // parameter names for configuration
-  public static final String CONFIG_DIR             = "config.dir";
-  public static final String CONFIG_FILENAME        = "config.filename";
-  public static final String CUSTOM_DIR             = "custom.dir";
+  public static final String CONFIG_DIR             = "config.master.dir";
+  public static final String CONFIG_FILENAME        = "config.master.filename";
+  public static final String CUSTOM_DIR             = "config.custom.dir";
 
   // default configuration values
   public static final String DFT_CONFIG_DIR         = "var/dynamicconfig";
