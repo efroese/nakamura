@@ -46,6 +46,8 @@ import org.sakaiproject.nakamura.termextract.TermExtractorImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableMap;
+
 public class PreviewProcessorImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(PreviewProcessorImpl.class);
@@ -65,6 +67,7 @@ public class PreviewProcessorImpl {
 	protected JODProcessor jodProcessor;
 	protected PDFProcessor pdfProcessor;
 	protected TikaTextExtractor textExtractor;
+	protected TermExtractor termExtractor;
 
 	protected String previewsDir;
 	protected String docsDir;
@@ -83,6 +86,7 @@ public class PreviewProcessorImpl {
 
 		this.previewsDir = StringUtils.join(new String[] { basePath, "previews" } );
 		this.docsDir = StringUtils.join(new String[] { basePath, "docs" } );
+		this.termExtractor = new TermExtractorImpl(null);
 	}
 
 	public void process() throws IOException{
@@ -91,6 +95,7 @@ public class PreviewProcessorImpl {
 		List<Map<String,Object>> content = contentFetcher.getContentForProcessing(server.toString(), "admin", password);
 		List<Map<String,Object>> ignored = new LinkedList<Map<String,Object>>();
 		List<Map<String,Object>> failed  = new LinkedList<Map<String,Object>>();
+		List<Map<String,Object>> processed  = new LinkedList<Map<String,Object>>();
 
 		content = filterAlreadyProcessed(content);
 		if (content.isEmpty()){
@@ -106,16 +111,15 @@ public class PreviewProcessorImpl {
 			}
 			String id = (String)result.get("_path");
 			String contentFilePath = null;
+			// example: /var/sakaioae/pp/previews/s0meGr0SsId/
+			String previewDirPath = StringUtils.join(new String[]{ previewsDir, id }, File.separator);
+			File previewDir = new File(previewDirPath);
 
 			try {
+				previewDir.mkdirs();
+
 				// Fetch the full content meta
 				Map<String,Object> item = nakamura.getContentMeta(id);
-
-				// example: /var/sakaioae/pp/previews/s0meGr0SsId/
-				String previewDirPath = StringUtils.join(
-						new String[]{ previewsDir, id }, File.separator);
-				File previewDir = new File(previewDirPath);
-				previewDir.mkdirs();
 
 				// Determine the correct file extension
 				String extension = null;
@@ -136,9 +140,10 @@ public class PreviewProcessorImpl {
 					processImage(contentFilePath, item);
 				}
 				else {
-					processDocument(contentFilePath, item, extension);
+					int pageCount = processDocument(contentFilePath, item, extension);
+					nakamura.post("/p/" + id + ".json", ImmutableMap.of("sakai:pagecount", Integer.toString(pageCount)));
 				}
-
+				processed.add(item);
 			}
 			catch (Exception e){
 				log.error("There was an error generating a preview for {}: {}", id, e);
@@ -146,13 +151,31 @@ public class PreviewProcessorImpl {
 			}
 			finally {
 				new File(contentFilePath).delete();
+				previewDir.delete();
 			}
 		}
+		
+		for(Map<String,Object> processedItem : processed){
+			nakamura.post("/p/" + processedItem.get("_path") + ".json", ImmutableMap.of("sakai:needsprocessing", "false"));
+			nakamura.post("/p/" + processedItem.get("_path") + ".json", ImmutableMap.of("sakai:hasPreview", "true"));
+		}
 
-
+		for(Map<String,Object> processedItem : failed){
+			nakamura.post("/p/" + processedItem.get("_path") + ".json", ImmutableMap.of("sakai:needsprocessing", "false"));
+			nakamura.post("/p/" + processedItem.get("_path") + ".json", ImmutableMap.of("sakai:processing_failed", "true"));
+		}
 	}
 
-	protected void processDocument(String contentFilePath, Map<String,Object> item, String extension)
+	/**
+	 * Convert, split, and render previews for a document.
+	 * @param contentFilePath
+	 * @param item
+	 * @param extension
+	 * @return
+	 * @throws ProcessingException
+	 * @throws FileNotFoundException
+	 */
+	protected int processDocument(String contentFilePath, Map<String,Object> item, String extension)
 	throws ProcessingException, FileNotFoundException{
 		String id = (String)item.get("_path");
 
@@ -177,13 +200,12 @@ public class PreviewProcessorImpl {
 		if (item.containsKey("sakai:pool-content-created-for")){
 			String userId = (String)item.get("sakai:pool-content-created-for");
 			if (nakamura.doAutoTaggingForUser(userId)){
-				TermExtractor te = new TermExtractorImpl();
-				List<ExtractedTerm> terms = te.process(textExtractor.getText(contentFilePath));
 				List<String> tags = new ArrayList<String>();
-				for (ExtractedTerm term : terms){
+				for (ExtractedTerm term : termExtractor.process(textExtractor.getText(contentFilePath))){
 					tags.add(term.getTerm());
 				}
 				nakamura.tagContent(id, tags);
+				log.info("Tagged {} with {}", id, StringUtils.join(tags.toArray(), ","));
 			}
 		}
 
@@ -201,7 +223,6 @@ public class PreviewProcessorImpl {
 				imageProcessor.resize(preview.getAbsolutePath(),
 						contentPreviewDirectory + File.separator + id + ".normal.jpg",
 						new Double(700.0), null);
-
 				nakamura.uploadFile(id, preview, Integer.toString(i), "normal");
 
 				imageProcessor.resize(preview.getAbsolutePath(),
@@ -212,8 +233,9 @@ public class PreviewProcessorImpl {
 			catch (ProcessingException e) {
 				log.error("Error uploading content preview.", e);
 			}
+			i++;
 		}
-
+		return previewFiles.length;
 	}
 
 	protected void processImage(String contentFilePath, Map<String,Object> item)

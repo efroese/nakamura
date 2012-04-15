@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -118,6 +119,14 @@ public class NakamuraFacade {
 		post = new PostMethod("/p/" + id + "/page" + page + "." + size + ".jpg");
 		post.addParameter("sakai:excludeSearch", "true");
 		http(getHttpClient(server, "admin", password), post);
+	}
+
+	public JSONObject post(String url, Map<String, String> params) {
+		PostMethod post = new PostMethod(url);
+		for (Entry<String, String> entry: params.entrySet()){
+			post.addParameter(entry.getKey(), entry.getValue());
+		}
+		return http(getHttpClient(server, "admin", password), post);
 	}
 
 }
