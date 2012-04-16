@@ -19,6 +19,7 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,8 +55,9 @@ public class NakamuraFacade {
 		    String path = (String)item.get("_path");
 		    req.put("_charset_", "UTF-8");
 		    req.put("url", "/p/" + path + ".json");
+		    req.put("method", "POST");
 		    params.put("sakai:processor", name);
-		    req.put("params", params);
+		    req.put("parameters", params);
 		    batch.add(req);
 		}
 		PostMethod post = new PostMethod("/system/batch");
@@ -70,7 +72,7 @@ public class NakamuraFacade {
 	 */
 	protected boolean doAutoTaggingForUser(String userId){
 		boolean generateTags = false;
-		String userMetaUrl = server + "/system/me?uid=" + userId;
+		String userMetaUrl = "/system/me?uid=" + userId;
 		log.debug("Fetching user metadata from {}", userMetaUrl);
 		GetMethod get = new GetMethod(userMetaUrl);
 		JSONObject userMeta = http(getHttpClient(server, "admin", password), get);
@@ -88,7 +90,7 @@ public class NakamuraFacade {
 	 */
 	@SuppressWarnings("unchecked")
 	public Map<String,Object> getContentMeta(String contentId){
-		String url = server + "/p/" + contentId + ".json";
+		String url = "/p/" + contentId + ".json";
 		log.info("Downloading content metadata from {}", url);
 		GetMethod get = new GetMethod(url);
 		JSONObject result = http(getHttpClient(server, "admin", password), get);
@@ -101,16 +103,15 @@ public class NakamuraFacade {
 	 * @param tags
 	 */
 	public void tagContent(String contentId, List<String> tags){
-		PostMethod post = new PostMethod(server + "/p/" + contentId);
+		PostMethod post = new PostMethod("/p/" + contentId);
 		post.addParameter(":operation", "tag");
-		for (String tag: tags){
-			post.addParameter("key", "/tags/" + tag);
-		}
+		// key => /tags/merp/tags/uh derp/tags/blerp
+		post.addParameter("key", "/tags/" + StringUtils.join(tags, "/tags/"));
 		http(getHttpClient(server, "admin", password), post);
 	}
 
 	public void uploadFile(String id, File content, String page, String size) throws FileNotFoundException {
-		PostMethod post = new PostMethod("/system/pool/createfile/" + id + ".page" + page + "-" + size);
+		PostMethod post = new PostMethod("/system/pool/createfile." + id + ".page" + page + "-" + size);
 		Part part = new FilePart("thumbnail", content);
 		MultipartRequestEntity entity = new MultipartRequestEntity(new Part[]{ part }, post.getParams());
 		post.setRequestEntity(entity);
