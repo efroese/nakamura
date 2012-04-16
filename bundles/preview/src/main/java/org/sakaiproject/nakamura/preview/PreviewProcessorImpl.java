@@ -150,7 +150,10 @@ public class PreviewProcessorImpl {
 				failed.add(result);
 			}
 			finally {
-				new File(contentFilePath).delete();
+				if (contentFilePath != null){
+					File contentPathToDelete = new File(contentFilePath);
+					contentPathToDelete.delete();
+				}
 				previewDir.delete();
 			}
 		}

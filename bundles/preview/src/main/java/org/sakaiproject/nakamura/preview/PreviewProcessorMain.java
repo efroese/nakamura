@@ -44,7 +44,7 @@ public class PreviewProcessorMain {
 				resource.add(line.trim());
 			}
 		}
-		log.trace("Loaded resource {}: {}", filename, resource);
+		log.trace("Loaded resource {}: {} lines.", filename, resource.size());
 		return resource;
 	}
 
