@@ -20,9 +20,9 @@ package org.sakaiproject.nakamura.preview;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -30,6 +30,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.httpclient.HostConfiguration;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpHost;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -41,7 +47,9 @@ import org.sakaiproject.nakamura.preview.processors.ImageProcessor;
 import org.sakaiproject.nakamura.preview.processors.JODProcessor;
 import org.sakaiproject.nakamura.preview.processors.PDFProcessor;
 import org.sakaiproject.nakamura.preview.processors.TikaTextExtractor;
+import org.sakaiproject.nakamura.preview.util.EasySSLProtocolSocketFactory;
 import org.sakaiproject.nakamura.preview.util.FileListUtils;
+import org.sakaiproject.nakamura.preview.util.HttpUtils;
 import org.sakaiproject.nakamura.termextract.TermExtractorImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +61,7 @@ public class PreviewProcessorImpl {
 	private static final Logger log = LoggerFactory.getLogger(PreviewProcessorImpl.class);
 
 	protected URL server;
+	protected URL contentServer;
 	protected String password;
 	protected String name;
 	protected String basePath;
@@ -72,6 +81,7 @@ public class PreviewProcessorImpl {
 	protected String previewsDir;
 	protected String docsDir;
 
+
 	public PreviewProcessorImpl() {
 		this.name = ManagementFactory.getRuntimeMXBean().getName();
 		init();
@@ -84,8 +94,8 @@ public class PreviewProcessorImpl {
 		this.textExtractor = new TikaTextExtractor();
 		this.nakamura = new NakamuraFacade(server, password);
 
-		this.previewsDir = StringUtils.join(new String[] { basePath, "previews" } );
-		this.docsDir = StringUtils.join(new String[] { basePath, "docs" } );
+		this.previewsDir = StringUtils.join(new String[] { basePath, "previews" }, File.separator );
+		this.docsDir = StringUtils.join(new String[] { basePath, "docs" }, File.separator );
 		this.termExtractor = new TermExtractorImpl(null);
 	}
 
@@ -248,10 +258,9 @@ public class PreviewProcessorImpl {
 		imageProcessor.resize(contentFilePath, normalPath, new Double(700.0), null);
 		nakamura.uploadFile(id, new File(normalPath), "1", "normal");
 
-		imageProcessor.resize(contentFilePath,
-		previewsDir + File.separator + id + File.separator + id + ".small.jpg",
-		new Double(180.0), new Double(225.0));
-		nakamura.uploadFile(id, new File(normalPath), "1", "small");
+		String smallPath = previewsDir + File.separator + id + File.separator + id + ".small.jpg";
+		imageProcessor.resize(contentFilePath, smallPath, new Double(180.0), new Double(225.0));
+		nakamura.uploadFile(id, new File(smallPath), "1", "small");
 	}
 
 	/**
@@ -327,25 +336,33 @@ public class PreviewProcessorImpl {
 	 * Download a content body to a file
 	 * @param address
 	 * @param filePath
+	 * @throws Exception
 	 */
-	public void download(String address, String filePath) {
+	@SuppressWarnings("deprecation")
+	public void download(String address, String filePath) throws Exception {
 		OutputStream output = null;
-		InputStream input = null;
 		try {
-			input = new URL(address).openConnection().getInputStream();
-			output = FileUtils.openOutputStream(new File(filePath));
-			IOUtils.copy(input, output);
-			log.info("Downloaded content body {} to {}", address, filePath);
+			URL url = new URL(address);
+			GetMethod get = new GetMethod(url.getPath());
+			HttpClient client = HttpUtils.getHttpClient(contentServer, "admin", password);
+			HostConfiguration hc = new HostConfiguration();
+			hc.setHost(new HttpHost(contentServer.getHost(), contentServer.getPort(),
+					new Protocol(contentServer.getProtocol(), new EasySSLProtocolSocketFactory(), contentServer.getDefaultPort())));
+			int responseCode = client.executeMethod(hc, get);
+			if (responseCode == HttpStatus.SC_OK){
+				output = FileUtils.openOutputStream(new File(filePath));
+				IOUtils.copy(get.getResponseBodyAsStream(), output);
+				log.info("Downloaded content body {} to {}", address, filePath);
+			}
+			else {
+				throw new Exception("Error downloading content. Response code was " + responseCode);
+			}
 		}
 		catch (Exception e) {
 			log.error("Error downloading content: {}", e);
+			throw e;
 		}
 		finally {
-			try {
-				if (input != null) { input.close(); }
-			} catch (IOException e) {
-				log.error("Error closing input stream: {}", e);
-			}
 			try {
 				if (output != null) { output.close(); }
 			} catch (IOException e) {

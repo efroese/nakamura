@@ -50,16 +50,18 @@ public class PreviewProcessorMain {
 
 	public static void main(String[] args) throws Exception{
 		
-		if (args.length < 3){
-			System.out.println("usage: java -jar jarpath http://localhost:8080 adminpass /var/sakaioae/preview_processor/");
+		if (args.length < 4){
+			System.out.println("usage: java -jar jarpath http://localhost:8080 http://localhost:8082 adminpass /var/sakaioae/preview_processor/");
 			return;
 		}
 		String server = args[0];
-		String password = args[1];
-		String basePath = args[2];
+		String contentServer = args[1];
+		String password = args[2];
+		String basePath = args[3];
 		
 		PreviewProcessorImpl pp = new PreviewProcessorImpl();
 		pp.server = new URL(server);
+		pp.contentServer = new URL(contentServer);
 		pp.password = password;
 		pp.basePath = basePath;
 		pp.ignoreTypes = loadResourceSet("ignore.types");
