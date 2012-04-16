@@ -22,6 +22,7 @@ import java.net.URL;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpState;
@@ -30,6 +31,8 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.protocol.Protocol;
+import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -39,8 +42,6 @@ public class HttpUtils {
 
 	public static Log log = LogFactory.getLog(HttpUtils.class);
 
-	// This could be anything but I think this is explanatory
-	private static final String HTTP_REFERER = "/system/console";
 	private static final String HTTP_USER_AGENT = HttpUtils.class.getName();
 
 	/**
@@ -56,6 +57,18 @@ public class HttpUtils {
 		client.getParams().setAuthenticationPreemptive(true);
 		client.getParams().setParameter("http.useragent", HTTP_USER_AGENT);
 		client.getParams().setParameter("_charset_", "utf-8");
+
+		ProtocolSocketFactory factory = new EasySSLProtocolSocketFactory();
+		HostConfiguration hostConfiguration = new HostConfiguration();
+
+		int port = url.getPort();
+		if (port == -1) {
+			port = 443;
+		}
+		Protocol easyHttps = new Protocol(url.getProtocol(), factory, port);
+		hostConfiguration.setHost(url.getHost(), port, easyHttps);
+		client.setHostConfiguration(hostConfiguration);
+
 		return client;
 	}
 
@@ -86,7 +99,9 @@ public class HttpUtils {
 	public static JSONObject http(HttpClient client, HttpMethod method) {
 
 		method.setRequestHeader("User-Agent", HTTP_USER_AGENT);
-		method.setRequestHeader("Referer", HTTP_REFERER);
+		if (client.getHostConfiguration() != null && client.getHostConfiguration().getHost() != null){
+			method.setRequestHeader("Referer", client.getHostConfiguration().getHostURL());
+		}
 
 		String errorMessage = null;
 		String responseString = null;
@@ -103,7 +118,7 @@ public class HttpUtils {
 
 		int responseCode = -1;
 		try{
-			responseCode = client.executeMethod(method);
+			responseCode = client.executeMethod(client.getHostConfiguration(), method);
 			responseString = StringUtils.trimToNull(IOUtils.toString(method.getResponseBodyAsStream()));
 
 			if(isJSONRequest){
