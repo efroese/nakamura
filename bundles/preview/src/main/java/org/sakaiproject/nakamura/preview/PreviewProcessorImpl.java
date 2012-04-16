@@ -58,6 +58,12 @@ import com.google.common.collect.ImmutableMap;
 
 public class PreviewProcessorImpl {
 
+	private static final Double SMALL_MAX_WIDTH = new Double(180.0);
+
+	private static final Double SMALL_MAX_HEIGHT = new Double(225.0);
+
+	private static final Double LARGE_MAX_WIDTH = new Double(700.0);
+
 	private static final Logger log = LoggerFactory.getLogger(PreviewProcessorImpl.class);
 
 	protected URL server;
@@ -92,6 +98,7 @@ public class PreviewProcessorImpl {
 		this.jodProcessor = new JODProcessor();
 		this.pdfProcessor = new PDFProcessor();
 		this.textExtractor = new TikaTextExtractor();
+		this.textExtractor.init();
 		this.nakamura = new NakamuraFacade(server, password);
 
 		this.previewsDir = StringUtils.join(new String[] { basePath, "previews" }, File.separator );
@@ -229,18 +236,18 @@ public class PreviewProcessorImpl {
 		for (File preview: previewFiles){
 			try {
 				imageProcessor.resize(preview.getAbsolutePath(),
-						contentPreviewDirectory + File.separator + id + ".large",
-						new Double(700.0), null);
+						contentPreviewDirectory + File.separator + id + ".large.jpg",
+						LARGE_MAX_WIDTH, null);
 				nakamura.uploadFile(id, preview, Integer.toString(i), "large");
 
 				imageProcessor.resize(preview.getAbsolutePath(),
 						contentPreviewDirectory + File.separator + id + ".normal.jpg",
-						new Double(700.0), null);
+						LARGE_MAX_WIDTH, null);
 				nakamura.uploadFile(id, preview, Integer.toString(i), "normal");
 
 				imageProcessor.resize(preview.getAbsolutePath(),
 						contentPreviewDirectory + File.separator + id + ".small.jpg",
-						new Double(180.0), new Double(225.0));
+						SMALL_MAX_WIDTH, SMALL_MAX_HEIGHT);
 				nakamura.uploadFile(id, preview, Integer.toString(i), "small");
 			}
 			catch (ProcessingException e) {
@@ -254,12 +261,14 @@ public class PreviewProcessorImpl {
 	protected void processImage(String contentFilePath, Map<String,Object> item)
 	throws ProcessingException, FileNotFoundException {
 		String id = (String)item.get("_path");
-		String normalPath = previewsDir + File.separator + id + File.separator + id + ".normal.jpg";
-		imageProcessor.resize(contentFilePath, normalPath, new Double(700.0), null);
+		String prefix = previewsDir + File.separator + id + File.separator + id;
+
+		String normalPath = prefix + ".normal.jpg";
+		imageProcessor.resize(contentFilePath, normalPath, LARGE_MAX_WIDTH, null);
 		nakamura.uploadFile(id, new File(normalPath), "1", "normal");
 
-		String smallPath = previewsDir + File.separator + id + File.separator + id + ".small.jpg";
-		imageProcessor.resize(contentFilePath, smallPath, new Double(180.0), new Double(225.0));
+		String smallPath = prefix + ".small.jpg";
+		imageProcessor.resize(contentFilePath, smallPath, SMALL_MAX_WIDTH, SMALL_MAX_HEIGHT);
 		nakamura.uploadFile(id, new File(smallPath), "1", "small");
 	}
 

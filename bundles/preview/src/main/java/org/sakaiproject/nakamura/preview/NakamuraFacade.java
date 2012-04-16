@@ -117,9 +117,11 @@ public class NakamuraFacade {
 		post.setRequestEntity(entity);
 		http(getHttpClient(server, "admin", password), post);
 
-		post = new PostMethod("/p/" + id + "/page" + page + "." + size + ".jpg");
+		String altUrl = "/p/" + id + "/page" + page + "." + size + ".jpg";
+		post = new PostMethod(altUrl);
 		post.addParameter("sakai:excludeSearch", "true");
 		http(getHttpClient(server, "admin", password), post);
+		log.info("Uploaded {}{}", server.toString(), altUrl);
 	}
 
 	public JSONObject post(String url, Map<String, String> params) {
