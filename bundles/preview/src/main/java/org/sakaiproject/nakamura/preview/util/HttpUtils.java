@@ -35,12 +35,12 @@ import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HttpUtils {
 
-	public static Log log = LogFactory.getLog(HttpUtils.class);
+	public static Logger log = LoggerFactory.getLogger(HttpUtils.class);
 
 	private static final String HTTP_USER_AGENT = HttpUtils.class.getName();
 
