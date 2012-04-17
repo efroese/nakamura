@@ -40,6 +40,22 @@ public class NakamuraFacade {
 		this.password = password;
 	}
 
+	public JSONObject get(String url){
+		log.info("GET {}", url);
+		GetMethod get = new GetMethod(url);
+		JSONObject result = http(getHttpClient(server, "admin", password), get);
+		return result;
+	}
+
+	public JSONObject post(String url, Map<String, String> params) {
+		log.info("POST {}", url);
+		PostMethod post = new PostMethod(url);
+		for (Entry<String, String> entry: params.entrySet()){
+			post.addParameter(entry.getKey(), entry.getValue());
+		}
+		return http(getHttpClient(server, "admin", password), post);
+	}
+
 	/**
 	 * Mark content items we intend to process with our pid@host
 	 * @param content the content to claim
@@ -59,9 +75,7 @@ public class NakamuraFacade {
 		    req.put("parameters", params);
 		    batch.add(req);
 		}
-		PostMethod post = new PostMethod("/system/batch");
-		post.addParameter("requests", batch.toString());
-		http(getHttpClient(server, "admin", password), post);
+		post("/system/batch", ImmutableMap.of("requests", batch.toString()));
 	}
 
 	/**
@@ -70,35 +84,28 @@ public class NakamuraFacade {
 	 * @return
 	 */
 	protected boolean doAutoTaggingForUser(String userId){
-		boolean generateTags = false;
+		boolean doAutoTagging = false;
 		String userMetaUrl = "/system/me?uid=" + userId;
 		log.debug("Fetching user metadata from {}", userMetaUrl);
-		GetMethod get = new GetMethod(userMetaUrl);
-		JSONObject userMeta = http(getHttpClient(server, "admin", password), get);
+		JSONObject userMeta = get(userMetaUrl);
 		JSONObject props = userMeta.getJSONObject("user").getJSONObject("properties");
 		if (props.has("isAutoTagging") && props.getBoolean("isAutoTagging")){
-			generateTags = true;
+			doAutoTagging = true;
 		}
-		return generateTags;
+		return doAutoTagging;
 	}
 
 	/**
-	 * Get the content metadata
-	 * @param contentId
-	 * @return
+	 * Upload a content preview image
+	 * @param contentId the id of the content item (_path)
+	 * @param preview the file to upload
+	 * @param page the page number
+	 * @param size the size identifier (small, normal, large)
+	 * @throws FileNotFoundException
 	 */
-	@SuppressWarnings("unchecked")
-	public Map<String,Object> getContentMeta(String contentId){
-		String url = "/p/" + contentId + ".json";
-		log.info("Downloading content metadata from {}", url);
-		GetMethod get = new GetMethod(url);
-		JSONObject result = http(getHttpClient(server, "admin", password), get);
-		return ImmutableMap.copyOf(result);
-	}
-
-	public void uploadFile(String contentId, File content, String page, String size) throws FileNotFoundException {
+	public void uploadContentPreview(String contentId, File preview, String page, String size) throws FileNotFoundException {
 		PostMethod post = new PostMethod("/system/pool/createfile." + contentId + ".page" + page + "-" + size);
-		Part part = new FilePart("thumbnail", content);
+		Part part = new FilePart("thumbnail", preview);
 		MultipartRequestEntity entity = new MultipartRequestEntity(new Part[]{ part }, post.getParams());
 		post.setRequestEntity(entity);
 		http(getHttpClient(server, "admin", password), post);
@@ -109,13 +116,4 @@ public class NakamuraFacade {
 		http(getHttpClient(server, "admin", password), post);
 		log.info("Uploaded {}{}", server.toString(), altUrl);
 	}
-
-	public JSONObject post(String url, Map<String, String> params) {
-		PostMethod post = new PostMethod(url);
-		for (Entry<String, String> entry: params.entrySet()){
-			post.addParameter(entry.getKey(), entry.getValue());
-		}
-		return http(getHttpClient(server, "admin", password), post);
-	}
-
 }

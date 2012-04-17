@@ -136,7 +136,8 @@ public class PreviewProcessorImpl {
 				previewDir.mkdirs();
 
 				// Fetch the full content meta
-				Map<String,Object> item = nakamura.getContentMeta(id);
+				@SuppressWarnings("unchecked")
+				Map<String,Object> item = ImmutableMap.copyOf(nakamura.get("/p/" + id + ".json"));
 
 				// Determine the correct file extension
 				String extension = null;
@@ -252,17 +253,17 @@ public class PreviewProcessorImpl {
 				imageProcessor.resize(preview.getAbsolutePath(),
 						contentPreviewDirectory + File.separator + id + ".large.jpg",
 						LARGE_MAX_WIDTH, null);
-				nakamura.uploadFile(id, preview, Integer.toString(i), "large");
+				nakamura.uploadContentPreview(id, preview, Integer.toString(i), "large");
 
 				imageProcessor.resize(preview.getAbsolutePath(),
 						contentPreviewDirectory + File.separator + id + ".normal.jpg",
 						LARGE_MAX_WIDTH, null);
-				nakamura.uploadFile(id, preview, Integer.toString(i), "normal");
+				nakamura.uploadContentPreview(id, preview, Integer.toString(i), "normal");
 
 				imageProcessor.resize(preview.getAbsolutePath(),
 						contentPreviewDirectory + File.separator + id + ".small.jpg",
 						SMALL_MAX_WIDTH, SMALL_MAX_HEIGHT);
-				nakamura.uploadFile(id, preview, Integer.toString(i), "small");
+				nakamura.uploadContentPreview(id, preview, Integer.toString(i), "small");
 			}
 			catch (ProcessingException e) {
 				log.error("Error uploading content preview.", e);
@@ -279,11 +280,11 @@ public class PreviewProcessorImpl {
 
 		String normalPath = prefix + ".normal.jpg";
 		imageProcessor.resize(contentFilePath, normalPath, LARGE_MAX_WIDTH, null);
-		nakamura.uploadFile(id, new File(normalPath), "1", "normal");
+		nakamura.uploadContentPreview(id, new File(normalPath), "1", "normal");
 
 		String smallPath = prefix + ".small.jpg";
 		imageProcessor.resize(contentFilePath, smallPath, SMALL_MAX_WIDTH, SMALL_MAX_HEIGHT);
-		nakamura.uploadFile(id, new File(smallPath), "1", "small");
+		nakamura.uploadContentPreview(id, new File(smallPath), "1", "small");
 	}
 
 	/**
