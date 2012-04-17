@@ -103,21 +103,27 @@ public class NakamuraFacade {
 	 * @param tags
 	 */
 	public void tagContent(String contentId, List<String> tags){
-		PostMethod post = new PostMethod("/p/" + contentId);
-		post.addParameter(":operation", "tag");
-		// key => /tags/merp/tags/uh derp/tags/blerp
-		post.addParameter("key", "/tags/" + StringUtils.join(tags, "/tags/"));
-		http(getHttpClient(server, "admin", password), post);
+		if (tags != null && !tags.isEmpty()){
+			PostMethod post = new PostMethod("/p/" + contentId);
+			post.addParameter(":operation", "tag");
+			// key => /tags/merp/tags/uh derp/tags/blerp
+			String tagString = "/tags/" + StringUtils.join(tags, "/tags/");
+			post.addParameter("key", tagString);
+			log.info("Tagging {} with {}", contentId, tagString);
+			http(getHttpClient(server, "admin", password), post);
+		} else {
+			log.info("No tags provided for {}", contentId);
+		}
 	}
 
-	public void uploadFile(String id, File content, String page, String size) throws FileNotFoundException {
-		PostMethod post = new PostMethod("/system/pool/createfile." + id + ".page" + page + "-" + size);
+	public void uploadFile(String contentId, File content, String page, String size) throws FileNotFoundException {
+		PostMethod post = new PostMethod("/system/pool/createfile." + contentId + ".page" + page + "-" + size);
 		Part part = new FilePart("thumbnail", content);
 		MultipartRequestEntity entity = new MultipartRequestEntity(new Part[]{ part }, post.getParams());
 		post.setRequestEntity(entity);
 		http(getHttpClient(server, "admin", password), post);
 
-		String altUrl = "/p/" + id + "/page" + page + "." + size + ".jpg";
+		String altUrl = "/p/" + contentId + "/page" + page + "." + size + ".jpg";
 		post = new PostMethod(altUrl);
 		post.addParameter("sakai:excludeSearch", "true");
 		http(getHttpClient(server, "admin", password), post);
