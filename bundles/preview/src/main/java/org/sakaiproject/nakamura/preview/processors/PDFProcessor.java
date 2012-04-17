@@ -37,18 +37,15 @@ public class PDFProcessor {
 	 * @throws ProcessingException
 	 */
 	public void process(String inputPath, String outputPrefix) throws ProcessingException {
-		File input = new File(inputPath);
-
 		// Guess what this does? I'll give you $5
 		PDFImageWriter imageWriter = new PDFImageWriter();
 		try {
 			// Load, split, loop and write an image of each page
-			PDDocument document = PDDocument.load(input);
+			PDDocument document = PDDocument.load(new File(inputPath));
 			int pageCount = document.getNumberOfPages();
 			boolean success = imageWriter.writeImage(document,
 					ImageFormat.IMAGE_FORMAT_JPEG.name, null,
 					1, pageCount, outputPrefix);
-
 			if (success) {
 				log.debug("Wrote {} page image(s) to {}", pageCount, outputPrefix);
 			}
