@@ -17,9 +17,6 @@
  */
 package org.sakaiproject.nakamura.preview;
 
-import static org.sakaiproject.nakamura.preview.util.HttpUtils.getHttpClient;
-import static org.sakaiproject.nakamura.preview.util.HttpUtils.http;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -27,18 +24,18 @@ import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import net.sf.json.JSONObject;
 
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpHost;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -194,6 +191,45 @@ public class PreviewProcessorImpl {
 	}
 
 	/**
+	 * Download a content body to a file
+	 * @param address
+	 * @param filePath
+	 * @throws Exception
+	 */
+	@SuppressWarnings("deprecation")
+	protected void download(String address, String filePath) throws Exception {
+		OutputStream output = null;
+		try {
+			URL url = new URL(address);
+			GetMethod get = new GetMethod(url.getPath());
+			HttpClient client = HttpUtils.getHttpClient(contentServer, "admin", password);
+			HostConfiguration hc = new HostConfiguration();
+			hc.setHost(new HttpHost(contentServer.getHost(), contentServer.getPort(),
+					new Protocol(contentServer.getProtocol(), new EasySSLProtocolSocketFactory(), contentServer.getDefaultPort())));
+			int responseCode = client.executeMethod(hc, get);
+			if (responseCode == HttpStatus.SC_OK){
+				output = FileUtils.openOutputStream(new File(filePath));
+				IOUtils.copy(get.getResponseBodyAsStream(), output);
+				log.info("Downloaded content body {} to {}", address, filePath);
+			}
+			else {
+				throw new Exception("Error downloading content. Response code was " + responseCode);
+			}
+		}
+		catch (Exception e) {
+			log.error("Error downloading content: {}", e);
+			throw e;
+		}
+		finally {
+			try {
+				if (output != null) { output.close(); }
+			} catch (IOException e) {
+				log.error("Error closing output stream: {}", e);
+			}
+		}
+	}
+
+	/**
 	 * Convert, split, and render previews for a document.
 	 * @param contentFilePath
 	 * @param item
@@ -226,7 +262,8 @@ public class PreviewProcessorImpl {
 
 		if (item.containsKey("sakai:pool-content-created-for")){
 			String userId = (String)item.get("sakai:pool-content-created-for");
-			if (nakamura.doAutoTaggingForUser(userId)){
+			JSONObject userMeta = getUserMeta(userId);
+			if (doAutoTaggingForUser(userMeta)){
 				List<String> tags = new ArrayList<String>();
 				List<ExtractedTerm> terms = termExtractor.process(textExtractor.getText(contentFilePath));
 				for (ExtractedTerm term : terms){
@@ -331,8 +368,6 @@ public class PreviewProcessorImpl {
 	 * Create the folders we need.
 	 */
 	private void createDirectories(){
-		File baseDir = new File(basePath);
-		baseDir.mkdirs();
 		for (String sub : new String[] { "docs", "previews", "logs" }){
 			new File(this.basePath + File.separator + sub).mkdirs();
 		}
@@ -356,42 +391,13 @@ public class PreviewProcessorImpl {
 		return unprocessed;
 	}
 
-	/**
-	 * Download a content body to a file
-	 * @param address
-	 * @param filePath
-	 * @throws Exception
-	 */
-	@SuppressWarnings("deprecation")
-	public void download(String address, String filePath) throws Exception {
-		OutputStream output = null;
-		try {
-			URL url = new URL(address);
-			GetMethod get = new GetMethod(url.getPath());
-			HttpClient client = HttpUtils.getHttpClient(contentServer, "admin", password);
-			HostConfiguration hc = new HostConfiguration();
-			hc.setHost(new HttpHost(contentServer.getHost(), contentServer.getPort(),
-					new Protocol(contentServer.getProtocol(), new EasySSLProtocolSocketFactory(), contentServer.getDefaultPort())));
-			int responseCode = client.executeMethod(hc, get);
-			if (responseCode == HttpStatus.SC_OK){
-				output = FileUtils.openOutputStream(new File(filePath));
-				IOUtils.copy(get.getResponseBodyAsStream(), output);
-				log.info("Downloaded content body {} to {}", address, filePath);
-			}
-			else {
-				throw new Exception("Error downloading content. Response code was " + responseCode);
-			}
-		}
-		catch (Exception e) {
-			log.error("Error downloading content: {}", e);
-			throw e;
-		}
-		finally {
-			try {
-				if (output != null) { output.close(); }
-			} catch (IOException e) {
-				log.error("Error closing output stream: {}", e);
-			}
-		}
+	protected JSONObject getUserMeta(String userId){
+		log.debug("Fetching user metadata for {}", userId);
+		return nakamura.get("/system/me?uid=" + userId);
+	}
+
+	protected boolean doAutoTaggingForUser(JSONObject userMeta){
+		JSONObject props = userMeta.getJSONObject("user").getJSONObject("properties");
+		return props.has("isAutoTagging") && props.getBoolean("isAutoTagging");
 	}
 }

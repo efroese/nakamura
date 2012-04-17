@@ -79,23 +79,6 @@ public class NakamuraFacade {
 	}
 
 	/**
-	 * Get the user.properties.isAutogagging values
-	 * @param userId
-	 * @return
-	 */
-	protected boolean doAutoTaggingForUser(String userId){
-		boolean doAutoTagging = false;
-		String userMetaUrl = "/system/me?uid=" + userId;
-		log.debug("Fetching user metadata from {}", userMetaUrl);
-		JSONObject userMeta = get(userMetaUrl);
-		JSONObject props = userMeta.getJSONObject("user").getJSONObject("properties");
-		if (props.has("isAutoTagging") && props.getBoolean("isAutoTagging")){
-			doAutoTagging = true;
-		}
-		return doAutoTagging;
-	}
-
-	/**
 	 * Upload a content preview image
 	 * @param contentId the id of the content item (_path)
 	 * @param preview the file to upload
