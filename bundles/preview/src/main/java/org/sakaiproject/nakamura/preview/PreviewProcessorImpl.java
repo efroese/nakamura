@@ -22,7 +22,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -98,7 +97,6 @@ public class PreviewProcessorImpl {
 		this.jodProcessor = new JODProcessor();
 		this.pdfProcessor = new PDFProcessor();
 		this.textExtractor = new TikaTextExtractor();
-		this.textExtractor.init();
 		this.nakamura = new NakamuraFacade(server, password);
 
 		this.previewsDir = StringUtils.join(new String[] { basePath, "previews" }, File.separator );
@@ -106,7 +104,7 @@ public class PreviewProcessorImpl {
 		this.termExtractor = new TermExtractorImpl(null);
 	}
 
-	public void process() throws IOException{
+	public void process() throws IOException {
 		createDirectories();
 
 		List<Map<String,Object>> content = contentFetcher.getContentForProcessing(server.toString(), "admin", password);
@@ -171,18 +169,24 @@ public class PreviewProcessorImpl {
 					File contentPathToDelete = new File(contentFilePath);
 					contentPathToDelete.delete();
 				}
-				previewDir.delete();
+				FileUtils.deleteDirectory(previewDir);
 			}
 		}
 		
+		String processedId = null;
 		for(Map<String,Object> processedItem : processed){
-			nakamura.post("/p/" + processedItem.get("_path") + ".json", ImmutableMap.of("sakai:needsprocessing", "false"));
+			processedId = (String)processedItem.get("_path");
+			nakamura.post("/p/" + processedId + ".json", ImmutableMap.of("sakai:needsprocessing", "false"));
+			log.info("Set {}  {}={}", new String[] { processedId, "sakai:needsprocessing", "false"});
 			nakamura.post("/p/" + processedItem.get("_path") + ".json", ImmutableMap.of("sakai:hasPreview", "true"));
+			log.info("Set {}  {}={}", new String[] { processedId, "sakai:hasPreview", "true"});
 		}
 
 		for(Map<String,Object> processedItem : failed){
 			nakamura.post("/p/" + processedItem.get("_path") + ".json", ImmutableMap.of("sakai:needsprocessing", "false"));
+			log.info("Set {}  {}={}", new String[] { processedId, "sakai:needsprocessing", "false"});
 			nakamura.post("/p/" + processedItem.get("_path") + ".json", ImmutableMap.of("sakai:processing_failed", "true"));
+			log.info("Set {}  {}={}", new String[] { processedId, "sakai:processing_failed", "true"});
 		}
 	}
 

@@ -49,7 +49,7 @@ public class PDFProcessor {
 					ImageFormat.IMAGE_FORMAT_JPEG.name, null,
 					1, pageCount, outputPrefix);
 
-			if (success){
+			if (success) {
 				log.debug("Wrote {} page image(s) to {}", pageCount, outputPrefix);
 			}
 			else {
