@@ -33,21 +33,16 @@ public class TikaTextExtractor {
 
 	private static Logger log = LoggerFactory.getLogger(TikaTextExtractor.class); 
 
-	protected Parser parser;
-	
-	public void init(){
-		parser = new AutoDetectParser();
-	}
-
 	public String getText(String inputPath){
-		File input = new File(inputPath);
-		ContentHandler textHandler = new BodyContentHandler();
+		Parser parser = new AutoDetectParser();
+		ContentHandler handler = new BodyContentHandler();
 		try {
-			parser.parse(new FileInputStream(input), textHandler, new Metadata(), new ParseContext());
+			parser.parse(new FileInputStream(new File(inputPath)), handler, new Metadata(), new ParseContext());
 		} catch (Exception e) {
-			log.error("Error while trying to extract text from {}", input.getAbsolutePath());
+			log.error("Error while trying to extract text from {}", inputPath);
 		}
-		return textHandler.toString();
+		String text = handler.toString();
+		log.debug("Extracted text from {} : {}", inputPath, text);
+		return text;
 	}
-
 }
