@@ -31,10 +31,6 @@ public class PreviewProcessorMain {
 	
 	private static Logger log = LoggerFactory.getLogger(PreviewProcessorMain.class);
 
-	/**
-	 * Load up the mime.types and ignore.types files
-	 * @throws IOException
-	 */
 	@SuppressWarnings("unchecked")
 	private static Set<String> loadResourceSet(String filename) throws IOException{
 		ClassLoader cl = PreviewProcessorMain.class.getClassLoader();
@@ -50,6 +46,7 @@ public class PreviewProcessorMain {
 
 	public static void main(String[] args) throws Exception{
 		
+		// TODO get a real command line parser to handle this stuff.
 		if (args.length < 4){
 			System.out.println("usage: java -jar jarpath http://localhost:8080 http://localhost:8082 adminpass /var/sakaioae/preview_processor/");
 			return;

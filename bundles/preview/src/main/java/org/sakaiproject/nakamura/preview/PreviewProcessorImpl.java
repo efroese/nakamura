@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.util.ArrayList;
@@ -40,6 +41,11 @@ import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.sakaiproject.nakamura.api.preview.ContentFetcher;
 import org.sakaiproject.nakamura.api.preview.PreviewProcessor;
 import org.sakaiproject.nakamura.api.termextract.ExtractedTerm;
@@ -56,6 +62,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 
 public class PreviewProcessorImpl {
 
@@ -263,8 +270,8 @@ public class PreviewProcessorImpl {
 		if (item.containsKey("sakai:pool-content-created-for")){
 			String userId = (String)item.get("sakai:pool-content-created-for");
 			JSONObject userMeta = getUserMeta(userId);
+			List<String> tags = new ArrayList<String>();
 			if (doAutoTaggingForUser(userMeta)){
-				List<String> tags = new ArrayList<String>();
 				List<ExtractedTerm> terms = termExtractor.process(textExtractor.getText(contentFilePath));
 				for (ExtractedTerm term : terms){
 					if (term.getOccurences() > 1){
@@ -275,9 +282,13 @@ public class PreviewProcessorImpl {
 					String tagString = "/tags/" + StringUtils.join(tags, "/tags/");
 					log.info("Tagging {} with {}", id, tagString);
 					nakamura.post("/p/" + id, ImmutableMap.of(":operation", "tag", "key", tagString));
+					if (sendTagEmail(userMeta)){
+						doSendTagEmail(item, userId, tags);
+					}
 				} else {
 					log.info("No tags generated for {}", id);
 				}
+
 			}
 		}
 
@@ -396,8 +407,41 @@ public class PreviewProcessorImpl {
 		return nakamura.get("/system/me?uid=" + userId);
 	}
 
+	// -------------- Tagging ---------------
+
 	protected boolean doAutoTaggingForUser(JSONObject userMeta){
 		JSONObject props = userMeta.getJSONObject("user").getJSONObject("properties");
 		return props.has("isAutoTagging") && props.getBoolean("isAutoTagging");
+	}
+
+	protected boolean sendTagEmail(JSONObject userMeta){
+		JSONObject props = userMeta.getJSONObject("user").getJSONObject("properties");
+		return props.has("sendTagMsg") && props.getBoolean("sendTagMsg");
+	}
+
+	private void doSendTagEmail(Map<String,Object> item, String userId, List<String> tags) {
+		String originFileName = (String)item.get("sakai:pooled-content-file-name");
+		VelocityEngine ve = new VelocityEngine();
+		ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
+		ve.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
+		ve.init();
+		Template t = ve.getTemplate("tag-email.vm");
+		VelocityContext context = new VelocityContext();
+		context.put("origin_file_name", originFileName);
+		context.put("tags", StringUtils.join(tags, "\n"));
+		StringWriter writer = new StringWriter();
+		t.merge(context, writer);
+
+		Builder<String,String> paramBuilder = ImmutableMap.builder();
+		paramBuilder.put("sakai:type","internal");
+		paramBuilder.put("sakai:sendstate", "pending");
+		paramBuilder.put("sakai:messagebox", "outbox");
+		paramBuilder.put("sakai:to", "internal:" + userId);
+		paramBuilder.put("sakai:from", "admin");
+		paramBuilder.put("sakai:subject", "We've added some tags to " + originFileName);
+		paramBuilder.put("sakai:body", writer.toString());
+		paramBuilder.put("_charset_", "utf-8");
+		paramBuilder.put("sakai:category", "message");
+		nakamura.post("/~admin/message.create.json", paramBuilder.build());
 	}
 }
