@@ -19,7 +19,6 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,25 +94,6 @@ public class NakamuraFacade {
 		GetMethod get = new GetMethod(url);
 		JSONObject result = http(getHttpClient(server, "admin", password), get);
 		return ImmutableMap.copyOf(result);
-	}
-
-	/**
-	 * Tag a doc in OAE
-	 * @param contentId
-	 * @param tags
-	 */
-	public void tagContent(String contentId, List<String> tags){
-		if (tags != null && !tags.isEmpty()){
-			PostMethod post = new PostMethod("/p/" + contentId);
-			post.addParameter(":operation", "tag");
-			// key => /tags/merp/tags/uh derp/tags/blerp
-			String tagString = "/tags/" + StringUtils.join(tags, "/tags/");
-			post.addParameter("key", tagString);
-			log.info("Tagging {} with {}", contentId, tagString);
-			http(getHttpClient(server, "admin", password), post);
-		} else {
-			log.info("No tags provided for {}", contentId);
-		}
 	}
 
 	public void uploadFile(String contentId, File content, String page, String size) throws FileNotFoundException {

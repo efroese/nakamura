@@ -17,6 +17,9 @@
  */
 package org.sakaiproject.nakamura.preview;
 
+import static org.sakaiproject.nakamura.preview.util.HttpUtils.getHttpClient;
+import static org.sakaiproject.nakamura.preview.util.HttpUtils.http;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -24,6 +27,7 @@ import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +38,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpHost;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -108,7 +113,6 @@ public class PreviewProcessorImpl {
 		createDirectories();
 
 		List<Map<String,Object>> content = contentFetcher.getContentForProcessing(server.toString(), "admin", password);
-		List<Map<String,Object>> ignored = new LinkedList<Map<String,Object>>();
 		List<Map<String,Object>> failed  = new LinkedList<Map<String,Object>>();
 		List<Map<String,Object>> processed  = new LinkedList<Map<String,Object>>();
 
@@ -119,9 +123,7 @@ public class PreviewProcessorImpl {
 		nakamura.claimContent(content, name);
 
 		for (Map<String,Object> result : content){
-
 			if (ignore(result)){
-				ignored.add(result);
 				continue;
 			}
 			String id = (String)result.get("_path");
@@ -225,11 +227,19 @@ public class PreviewProcessorImpl {
 			String userId = (String)item.get("sakai:pool-content-created-for");
 			if (nakamura.doAutoTaggingForUser(userId)){
 				List<String> tags = new ArrayList<String>();
-				for (ExtractedTerm term : termExtractor.process(textExtractor.getText(contentFilePath))){
-					tags.add(term.getTerm());
+				List<ExtractedTerm> terms = termExtractor.process(textExtractor.getText(contentFilePath));
+				for (ExtractedTerm term : terms){
+					if (term.getOccurences() > 1){
+						tags.add(term.getTerm());
+					}
 				}
-				nakamura.tagContent(id, tags);
-				log.info("Tagged {} with {}", id, StringUtils.join(tags.toArray(), ","));
+				if (tags != null && !tags.isEmpty()){
+					String tagString = "/tags/" + StringUtils.join(tags, "/tags/");
+					log.info("Tagging {} with {}", id, tagString);
+					nakamura.post("/p/" + id, ImmutableMap.of(":operation", "tag", "key", tagString));
+				} else {
+					log.info("No tags generated for {}", id);
+				}
 			}
 		}
 
