@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.sakaiproject.nakamura.preview.util.RemoteServerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +65,7 @@ public class PreviewProcessorMain {
 		pp.ignoreTypes = loadResourceSet("ignore.types");
 		pp.mimeTypes = loadResourceSet("mime.types");
 		pp.contentFetcher = new SearchContentFetcher();
-		pp.nakamura = new NakamuraFacade(server, password);
+		pp.nakamura = new RemoteServerUtil(server, password);
 		pp.init();
 		pp.process();
 	}

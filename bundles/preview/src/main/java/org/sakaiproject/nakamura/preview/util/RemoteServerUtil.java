@@ -1,4 +1,4 @@
-package org.sakaiproject.nakamura.preview;
+package org.sakaiproject.nakamura.preview.util;
 
 import static org.sakaiproject.nakamura.preview.util.HttpUtils.getHttpClient;
 import static org.sakaiproject.nakamura.preview.util.HttpUtils.http;
@@ -7,11 +7,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -22,20 +20,18 @@ import org.apache.commons.httpclient.methods.multipart.Part;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableMap;
+public class RemoteServerUtil {
 
-public class NakamuraFacade {
-
-	private static final Logger log = LoggerFactory.getLogger(NakamuraFacade.class);
+	private static final Logger log = LoggerFactory.getLogger(RemoteServerUtil.class);
 
 	protected URL server;
 	protected String password;
 
-	public NakamuraFacade(String server, String password) throws MalformedURLException {
+	public RemoteServerUtil(String server, String password) throws MalformedURLException {
 		this(new URL(server), password);
 	}
 
-	public NakamuraFacade(URL server, String password){
+	public RemoteServerUtil(URL server, String password){
 		this.server = server;
 		this.password = password;
 	}
@@ -54,28 +50,6 @@ public class NakamuraFacade {
 			post.addParameter(entry.getKey(), entry.getValue());
 		}
 		return http(getHttpClient(server, "admin", password), post);
-	}
-
-	/**
-	 * Mark content items we intend to process with our pid@host
-	 * @param content the content to claim
-	 * @param name the pid@host
-	 */
-	public void claimContent(List<Map<String,Object>> content, String name){
-		JSONArray batch = new JSONArray();
-
-		for (Map<String,Object> item: content) {
-			JSONObject req = new JSONObject();
-			JSONObject params = new JSONObject();
-		    String path = (String)item.get("_path");
-		    req.put("_charset_", "UTF-8");
-		    req.put("url", "/p/" + path + ".json");
-		    req.put("method", "POST");
-		    params.put("sakai:processor", name);
-		    req.put("parameters", params);
-		    batch.add(req);
-		}
-		post("/system/batch", ImmutableMap.of("requests", batch.toString()));
 	}
 
 	/**

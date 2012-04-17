@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.httpclient.HostConfiguration;
@@ -57,6 +58,7 @@ import org.sakaiproject.nakamura.preview.processors.TikaTextExtractor;
 import org.sakaiproject.nakamura.preview.util.EasySSLProtocolSocketFactory;
 import org.sakaiproject.nakamura.preview.util.FileListUtils;
 import org.sakaiproject.nakamura.preview.util.HttpUtils;
+import org.sakaiproject.nakamura.preview.util.RemoteServerUtil;
 import org.sakaiproject.nakamura.termextract.TermExtractorImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +85,7 @@ public class PreviewProcessorImpl {
 	protected Set<String> ignoreTypes;
 	protected Set<String> mimeTypes;
 
-	protected NakamuraFacade nakamura;
+	protected RemoteServerUtil nakamura;
 	protected ContentFetcher contentFetcher;
 
 	protected ImageProcessor imageProcessor;
@@ -106,7 +108,7 @@ public class PreviewProcessorImpl {
 		this.jodProcessor = new JODProcessor();
 		this.pdfProcessor = new PDFProcessor();
 		this.textExtractor = new TikaTextExtractor();
-		this.nakamura = new NakamuraFacade(server, password);
+		this.nakamura = new RemoteServerUtil(server, password);
 
 		this.previewsDir = StringUtils.join(new String[] { basePath, "previews" }, File.separator );
 		this.docsDir = StringUtils.join(new String[] { basePath, "docs" }, File.separator );
@@ -124,7 +126,7 @@ public class PreviewProcessorImpl {
 		if (content.isEmpty()){
 			return;
 		}
-		nakamura.claimContent(content, name);
+		claimContent(content, name);
 
 		for (Map<String,Object> result : content){
 			if (ignore(result)){
@@ -400,6 +402,28 @@ public class PreviewProcessorImpl {
 			}
 		}
 		return unprocessed;
+	}
+
+	/**
+	 * Mark content items we intend to process with our pid@host
+	 * @param content the content to claim
+	 * @param name the pid@host
+	 */
+	protected void claimContent(List<Map<String,Object>> content, String name){
+		JSONArray batch = new JSONArray();
+
+		for (Map<String,Object> item: content) {
+			JSONObject req = new JSONObject();
+			JSONObject params = new JSONObject();
+		    String path = (String)item.get("_path");
+		    req.put("_charset_", "UTF-8");
+		    req.put("url", "/p/" + path + ".json");
+		    req.put("method", "POST");
+		    params.put("sakai:processor", name);
+		    req.put("parameters", params);
+		    batch.add(req);
+		}
+		nakamura.post("/system/batch", ImmutableMap.of("requests", batch.toString()));
 	}
 
 	protected JSONObject getUserMeta(String userId){
