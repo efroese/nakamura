@@ -34,17 +34,17 @@ public class VerifyProperNounAtSentenceStart implements TermExtractRule {
 
     boolean isNoun = Arrays.asList("NNP", "NNPS").contains(tag);
     boolean isFirstTerm = index == 0;
-    boolean lastTermIsDot = false;
-    TaggedTerm lastTaggedTerm = taggedTerms.get(taggedTerms.size() - 1);
-    if (taggedTerms != null && taggedTerms.size() > 0 && ".".equals(lastTaggedTerm.getTerm())) {
-      lastTermIsDot = true;
-    }
+    boolean previousTermIsDot = false;
     
-    if (isNoun && (isFirstTerm || lastTermIsDot)) {
+    if (index > 0 && ".".equals(taggedTerms.get(index - 1).getTerm())){
+    	previousTermIsDot = true;
+    }
+
+    if (isNoun && (isFirstTerm || previousTermIsDot)) {
       String lowerTerm = taggedTerm.getTerm().toLowerCase();
       String lowerTag = lexicon.get(lowerTerm);
       if (Arrays.asList("NN", "NNS").contains(lowerTag)) {
-        taggedTerm.setTerm(lowerTerm).setNorm(lowerTag).setTag(lowerTag);
+        taggedTerm.setTerm(lowerTerm).setNorm(lowerTerm).setTag(lowerTag);
       }
     }
   }

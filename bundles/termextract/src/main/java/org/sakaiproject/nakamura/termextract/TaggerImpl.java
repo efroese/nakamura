@@ -51,11 +51,12 @@ import org.slf4j.LoggerFactory;
 public class TaggerImpl implements Tagger {
   private static final Logger LOGGER = LoggerFactory.getLogger(TaggerImpl.class);
   // the original term spec
-//  private static final Pattern TERM_SPEC = Pattern.compile("([^a-zA-Z]*)([a-zA-Z-\\.]*[a-zA-Z])([^a-zA-Z]*[a-zA-Z]*)");
+  // ([^a-zA-Z]*)([a-zA-Z-\.]*[a-zA-Z])([^a-zA-Z]*[a-zA-Z]*)
+  private static final Pattern TERM_SPEC = Pattern.compile("([^\\.']*)[,;]*(\\.?)");
   // change original term spec to use character classes
-//  private static final Pattern TERM_SPEC = Pattern.compile("([\\W\\d_]*)(([^\\W\\d_]*[-\\.]*)*[^\\W\\d_])([\\W\\d_]*[^\\W\\d_]*)");
+  //  private static final Pattern TERM_SPEC = Pattern.compile("([\\W\\d_]*)(([^\\W\\d_]*[-\\.]*)*[^\\W\\d_])([\\W\\d_]*[^\\W\\d_]*)");
   // add some fixes to the term spec
-  private static final Pattern TERM_SPEC = Pattern.compile("([\\W\\d_]*)(([^\\W\\d_]?[-\\.]?)*[^\\W\\d_])([\\W\\d_]*[^\\W\\d_]*)");
+  // private static final Pattern TERM_SPEC = Pattern.compile("([\\W]*)(([^\\w_]+[-]?)*[^\\W\\d_])([\\W\\d_]*[^\\W\\d_]*)");
 
   private TermExtractRule[] rules;
   private Map<String, String> tagsByTerm;
@@ -113,7 +114,8 @@ public class TaggerImpl implements Tagger {
     for (String term : text.split("\\s")) {
       // If the term is empty, skip it, since we probably just have
       // multiple whitespace characters.
-      if (StringUtils.isBlank(term) || term.trim().length() <= 2) {
+      term = StringUtils.trimToNull(term);
+      if (term == null) {
         continue;
       }
       // Now, a word can be preceded or succeeded by symbols, so let's
@@ -123,9 +125,9 @@ public class TaggerImpl implements Tagger {
         terms.add(term);
         continue;
       }
-      for (int i = 0; i < match.groupCount(); i++) {
+      for (int i = 1; i <= match.groupCount(); i++) {
         String subTerm = match.group(i);
-        if (term.length() > 0) {
+        if (StringUtils.trimToNull(subTerm) != null) {
           terms.add(subTerm);
         }
       }

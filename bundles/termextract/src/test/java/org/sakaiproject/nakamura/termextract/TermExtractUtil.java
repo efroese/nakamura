@@ -28,8 +28,8 @@ import java.net.URL;
  *
  */
 public class TermExtractUtil {
-  public static String readExampleText() throws IOException, URISyntaxException {
-    URL exampleTxt = TermExtractUtil.class.getResource("/example.txt");
+  public static String readExampleText(String name) throws IOException, URISyntaxException {
+    URL exampleTxt = TermExtractUtil.class.getResource(name);
     File exampleFile = new File(exampleTxt.toURI());
     byte[] buffer = new byte[(int) exampleFile.length()];
     BufferedInputStream f = null;
