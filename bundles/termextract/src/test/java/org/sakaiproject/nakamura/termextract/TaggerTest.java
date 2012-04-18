@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import junit.framework.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,11 +40,12 @@ public class TaggerTest {
   @Before
   public void setUp() {
     tagger = new TaggerImpl();
+    tagger.activate();
   }
   
   @Test
   public void testTagging() throws Exception {
-    String txt = TermExtractUtil.readExampleText();
+    String txt = TermExtractUtil.readExampleText("/example.txt");
     List<TaggedTerm> terms = tagger.process(txt);
     Collections.sort(terms, new Comparator<TaggedTerm>() {
       Collator collator = Collator.getInstance();
@@ -61,5 +64,35 @@ public class TaggerTest {
 =======
     System.out.println("tagged: " + terms);
 >>>>>>> Add fixes from github repo (https://github.com/turian/topia.termextract)
+  }
+
+  @Test
+  public void testTermExtraction() {
+	  List<TaggedTerm> terms = tagger.process("Ikea");
+	  Assert.assertEquals(new TaggedTerm("Ikea", "NN", "Ikea"), terms.get(0));
+	  
+	  terms = tagger.process("Ikeas");
+	  Assert.assertEquals(new TaggedTerm("Ikeas", "NNS", "Ikea"), terms.get(0));
+  }
+  
+  @Test
+  public void testLeadingPunctuation(){
+	  List<TaggedTerm> terms = tagger.process(". Police");
+	  Assert.assertEquals(new TaggedTerm(".", ".", "."), terms.get(0));
+	  Assert.assertEquals(new TaggedTerm("police", "NN", "police"), terms.get(1));
+  }
+ 
+  @Test
+  public void testSentence(){
+	  List<TaggedTerm> terms = tagger.process("The fox can't jump over the fox's tail.");
+	  Assert.assertEquals(new TaggedTerm("The", "DT", "The"), terms.get(0));
+	  Assert.assertEquals(new TaggedTerm("fox", "NN", "fox"), terms.get(1));
+	  Assert.assertEquals(new TaggedTerm("can't", "MD", "can't"), terms.get(2));
+	  Assert.assertEquals(new TaggedTerm("jump", "VB", "jump"), terms.get(3));
+	  Assert.assertEquals(new TaggedTerm("over", "IN", "over"), terms.get(4));
+	  Assert.assertEquals(new TaggedTerm("the", "DT", "the"), terms.get(5));
+	  Assert.assertEquals(new TaggedTerm("fox's", "NNS", "fox'"), terms.get(6));
+	  Assert.assertEquals(new TaggedTerm("tail", "NN", "tail"), terms.get(7));
+	  Assert.assertEquals(new TaggedTerm(".", ".", "."), terms.get(8));
   }
 }

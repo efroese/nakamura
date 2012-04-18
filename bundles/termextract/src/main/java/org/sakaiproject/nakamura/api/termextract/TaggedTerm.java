@@ -69,4 +69,14 @@ public class TaggedTerm {
   public String toString() {
     return "('" + term + "', '" + tag + "', '" + norm + "')";
   }
+
+  @Override
+  public boolean equals(Object other){
+    if (! (other instanceof TaggedTerm) ){
+      return false;
+	}
+	TaggedTerm t2 = (TaggedTerm)other;
+	return term.equals(t2.getTerm()) && tag.equals(t2.getTag())
+			&& norm.equals(t2.getNorm());
+  }
 }
