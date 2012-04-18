@@ -117,6 +117,7 @@ private static final int SEARCH = 0;
 <<<<<<< HEAD
 <<<<<<< HEAD
       int strength = term.getKey().split("\\s").length;
+<<<<<<< HEAD
 =======
       int strength = StringUtils.split(term.getKey()).length;
 >>>>>>> Port of the topia termextractor from Python.
@@ -124,6 +125,9 @@ private static final int SEARCH = 0;
       int strength = term.getKey().split("\\s").length;
 >>>>>>> Add fixes from github repo (https://github.com/turian/topia.termextract)
       if (filter.filter(word, state, strength)) {
+=======
+      if (filter.filter(word, occurences, strength)) {
+>>>>>>> Send the occurrences to filter, not state. Change variable name to something more descriptive.
         retTerms.add(new ExtractedTerm(word.trim(), occurences, strength));
       }
     }
@@ -158,19 +162,19 @@ private static final int SEARCH = 0;
   
   private class DefaultFilter {
     private int singleStrengthMinOccur;
-    private int noLimitStrength;
+    private int minStrength;
 
     public DefaultFilter() {
       this(3, 2);
     }
 
-    public DefaultFilter(int singleStrengthMinOccur, int noLimitStrength) {
+    public DefaultFilter(int singleStrengthMinOccur, int minStrength) {
       this.singleStrengthMinOccur = singleStrengthMinOccur;
-      this.noLimitStrength = noLimitStrength;
+      this.minStrength = minStrength;
     }
 
     public boolean filter(String word, int occur, int strength) {
-      return ((strength == 1 && occur >= singleStrengthMinOccur) || (strength >= noLimitStrength));
+      return ((strength == 1 && occur >= singleStrengthMinOccur) || (strength >= minStrength));
     }
   }
 }
