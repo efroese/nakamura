@@ -68,7 +68,7 @@ public class TaggerImpl implements Tagger {
 >>>>>>> Add fixes from github repo (https://github.com/turian/topia.termextract)
   // the original term spec
   // ([^a-zA-Z]*)([a-zA-Z-\.]*[a-zA-Z])([^a-zA-Z]*[a-zA-Z]*)
-  private static final Pattern TERM_SPEC = Pattern.compile("([a-zA-Z]*)([-'a-zA-Z]*)[,;]*(\\.?)");
+  private static final Pattern TERM_SPEC = Pattern.compile("([a-zA-Z]*)([-'a-zA-Z]*)[;]*([,\\.\"]?)");
   // change original term spec to use character classes
   //  private static final Pattern TERM_SPEC = Pattern.compile("([\\W\\d_]*)(([^\\W\\d_]*[-\\.]*)*[^\\W\\d_])([\\W\\d_]*[^\\W\\d_]*)");
   // add some fixes to the term spec
