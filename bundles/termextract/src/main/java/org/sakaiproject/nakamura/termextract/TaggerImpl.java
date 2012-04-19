@@ -68,7 +68,12 @@ public class TaggerImpl implements Tagger {
 >>>>>>> Add fixes from github repo (https://github.com/turian/topia.termextract)
   // the original term spec
   // ([^a-zA-Z]*)([a-zA-Z-\.]*[a-zA-Z])([^a-zA-Z]*[a-zA-Z]*)
-  private static final Pattern TERM_SPEC = Pattern.compile("([-\\w]*)(['\\w]*)[;]*([,\\.]?)");
+
+  // These two regexes are not standard form anywhere. They just seemed to match the output
+  // of the topia extractor very closely. They differ on some punction and non-word chaarcter cases
+  private static final String NON_WORDS_CAP = "([\\)\\(,\\.]{0,2})";
+  private static final Pattern TERM_SPEC = Pattern.compile(NON_WORDS_CAP + "([-a-zA-Z]*)(['\\w]*)[;]*" + NON_WORDS_CAP);
+
   // change original term spec to use character classes
   //  private static final Pattern TERM_SPEC = Pattern.compile("([\\W\\d_]*)(([^\\W\\d_]*[-\\.]*)*[^\\W\\d_])([\\W\\d_]*[^\\W\\d_]*)");
   // add some fixes to the term spec
