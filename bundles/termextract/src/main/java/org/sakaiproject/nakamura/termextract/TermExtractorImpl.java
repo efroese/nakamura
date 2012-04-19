@@ -46,16 +46,28 @@ private static final int SEARCH = 0;
   private DefaultFilter filter;
 
   public TermExtractorImpl() {
-    filter = new DefaultFilter();
+    this.tagger = new TaggerImpl();
+    ((TaggerImpl) tagger).activate();
+    this.filter = new DefaultFilter();
   }
 
   public TermExtractorImpl(Tagger tagger) {
-    this();
     if (tagger == null) {
       tagger = new TaggerImpl();
       ((TaggerImpl) tagger).activate();
     }
     this.tagger = tagger;
+    this.filter = new DefaultFilter();
+  }
+
+  public TermExtractorImpl(Tagger tagger, DefaultFilter filter) {
+    if (tagger == null) {
+      this.tagger = new TaggerImpl();
+      ((TaggerImpl)this.tagger).activate();
+    }
+    if (filter == null) {
+      this.filter = new DefaultFilter();
+    }
   }
 
   public List<ExtractedTerm> process(String text) {
@@ -158,23 +170,5 @@ private static final int SEARCH = 0;
   
   protected void unbindTagger() {
     this.tagger = null;
-  }
-  
-  private class DefaultFilter {
-    private int singleStrengthMinOccur;
-    private int minStrength;
-
-    public DefaultFilter() {
-      this(3, 2);
-    }
-
-    public DefaultFilter(int singleStrengthMinOccur, int minStrength) {
-      this.singleStrengthMinOccur = singleStrengthMinOccur;
-      this.minStrength = minStrength;
-    }
-
-    public boolean filter(String word, int occur, int strength) {
-      return ((strength == 1 && occur >= singleStrengthMinOccur) || (strength >= minStrength));
-    }
   }
 }

@@ -59,6 +59,7 @@ import org.sakaiproject.nakamura.preview.util.EasySSLProtocolSocketFactory;
 import org.sakaiproject.nakamura.preview.util.FileListUtils;
 import org.sakaiproject.nakamura.preview.util.HttpUtils;
 import org.sakaiproject.nakamura.preview.util.RemoteServerUtil;
+import org.sakaiproject.nakamura.termextract.DefaultFilter;
 import org.sakaiproject.nakamura.termextract.TermExtractorImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +69,12 @@ import com.google.common.collect.ImmutableMap.Builder;
 
 public class PreviewProcessorImpl {
 
-	private static final Double SMALL_MAX_WIDTH = new Double(180.0);
+  // If a tag is one word is must occur n time in the doc text
+  private static final int SINGLE_WORD_TERM_MIN_OCCUR = 4;
+  // minimum words in a term
+  private static final int TERM_MIN_WORDS = 1;
+
+  private static final Double SMALL_MAX_WIDTH = new Double(180.0);
 
 	private static final Double SMALL_MAX_HEIGHT = new Double(225.0);
 
@@ -112,7 +118,8 @@ public class PreviewProcessorImpl {
 
 		this.previewsDir = StringUtils.join(new String[] { basePath, "previews" }, File.separator );
 		this.docsDir = StringUtils.join(new String[] { basePath, "docs" }, File.separator );
-		this.termExtractor = new TermExtractorImpl(null);
+
+		this.termExtractor = new TermExtractorImpl(null, new DefaultFilter(SINGLE_WORD_TERM_MIN_OCCUR, TERM_MIN_WORDS));
 	}
 
 	public void process() throws IOException {
