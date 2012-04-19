@@ -23,6 +23,8 @@ import org.sakaiproject.nakamura.api.termextract.TermExtractRule;
 
 /**
  * Determine whether a default noun is plural or singular.
+ *
+ * NOTE from erik@hallwaytech.com I can't find a term in english-lexicon.txt with the tag NND
  */
 public class CorrectDefaultNounTag implements TermExtractRule {
   public void process(int index, TaggedTerm taggedTerm, List<TaggedTerm> taggedTerms, Map<String, String> lexicon) {

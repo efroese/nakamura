@@ -134,6 +134,14 @@ public class TaggerTest {
     Assert.assertEquals(TERM_PERIOD, terms.get(6));
   }
 
+  @Test
+  public void testDontBreakOnHyphens(){
+    List<TaggedTerm> terms = tagger.process("super hyper-global mega-net");
+    Assert.assertEquals(new TaggedTerm("super", "JJ", "super"), terms.get(0));
+    Assert.assertEquals(new TaggedTerm("hyper-global", "NN", "hyper-global"), terms.get(1));
+    Assert.assertEquals(new TaggedTerm("mega-net", "NN", "mega-net"), terms.get(2));
+  }
+
 //  @Test
 //  public void testExample() throws Exception {
 //    List<TaggedTerm> terms = tagger.process(TermExtractUtil.readExampleText("/example.txt"));
