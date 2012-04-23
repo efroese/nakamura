@@ -177,7 +177,7 @@ public class PreviewProcessorImpl {
 				processed.add(item);
 			}
 			catch (Exception e){
-				log.error("There was an error generating a preview for {}: {}", id, e);
+				log.error("There was an error generating a preview for {}", id, e);
 				failed.add(result);
 			}
 			finally {
@@ -269,7 +269,7 @@ public class PreviewProcessorImpl {
 			// Not an image and not a PDF
 			// Convert it to a pdf
 			String convertedPDFPath = StringUtils.join(
-					new String[] { previewsDir, id, id + ".pdf" }, File.separator);
+					new String[] { docsDir, id, id + ".pdf" }, File.separator);
 			jodProcessor.process(contentFilePath, convertedPDFPath);
 			// Split the PDF and snap images of the pages
 			// Images are saved to ${basePath}/previews/${id}/${id}.page.[1...n].JPEG
