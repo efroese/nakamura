@@ -23,6 +23,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
 import org.apache.commons.io.IOUtils;
 import org.sakaiproject.nakamura.preview.util.RemoteServerUtil;
 import org.slf4j.Logger;
@@ -30,7 +35,10 @@ import org.slf4j.LoggerFactory;
 
 public class PreviewProcessorMain {
 	
-	private static Logger log = LoggerFactory.getLogger(PreviewProcessorMain.class);
+	private static final String DEFAULT_INTERVAL = "1";
+	private static final String DEFAULT_COUNT = "1";
+
+  private static Logger log = LoggerFactory.getLogger(PreviewProcessorMain.class);
 
 	@SuppressWarnings("unchecked")
 	private static Set<String> loadResourceSet(String filename) throws IOException{
@@ -46,27 +54,46 @@ public class PreviewProcessorMain {
 	}
 
 	public static void main(String[] args) throws Exception{
-		
-		// TODO get a real command line parser to handle this stuff.
-		if (args.length < 4){
-			System.out.println("usage: java -jar jarpath http://localhost:8080 http://localhost:8082 adminpass /var/sakaioae/preview_processor/");
-			return;
+
+		Options options = new Options();
+		options.addOption("s", "server", true, "OAE URL: http://localhost:8080");
+		options.addOption("c", "content", true, "OAE Content URL: http://localhost:8082");
+		options.addOption("p", "password", true, "OAE admin PASSWORD");
+		options.addOption("d", "directory", true, "Working DIRECTORY for downloads, previews, logs");
+		options.addOption("i", "interval", true, "Sleep for INTERVAL seconds between runs");
+		options.addOption("n", "count", true, "Run the processing COUNT times");
+
+		CommandLineParser parser = new GnuParser();
+		CommandLine cmd = parser.parse(options, args);
+
+		String usage = "java -jar preview.jar -s http://localhost:8080 -c http://localhost:8082 -p admin -d /var/oae/pp [-i 1] [-n 1]";
+		if (!cmd.hasOption("server") || !cmd.hasOption("content")
+		    || !cmd.hasOption("password") || !cmd.hasOption("directory")){
+		  HelpFormatter formatter = new HelpFormatter();
+		  formatter.printHelp(usage, options);
+		  System.exit(1);
 		}
-		String server = args[0];
-		String contentServer = args[1];
-		String password = args[2];
-		String basePath = args[3];
-		
+
+		int interval = Integer.parseInt(cmd.getOptionValue("interval", DEFAULT_INTERVAL));
+		int count = Integer.parseInt(cmd.getOptionValue("count", DEFAULT_COUNT));
+
 		PreviewProcessorImpl pp = new PreviewProcessorImpl();
-		pp.server = new URL(server);
-		pp.contentServer = new URL(contentServer);
-		pp.password = password;
-		pp.basePath = basePath;
+		pp.server = new URL(cmd.getOptionValue("server"));
+		pp.contentServer = new URL(cmd.getOptionValue("content"));
+		pp.password = cmd.getOptionValue("password");
+		pp.basePath = cmd.getOptionValue("directory");
 		pp.ignoreTypes = loadResourceSet("ignore.types");
 		pp.mimeTypes = loadResourceSet("mime.types");
 		pp.contentFetcher = new SearchContentFetcher();
-		pp.nakamura = new RemoteServerUtil(server, password);
+		pp.nakamura = new RemoteServerUtil(cmd.getOptionValue("server"), cmd.getOptionValue("password"));
 		pp.init();
-		pp.process();
+
+		while (true){
+		  if (count-- <= 0){
+		    break;
+		  }
+		  pp.process();
+		  Thread.sleep(interval * 1000);
+		}
 	}
 }
