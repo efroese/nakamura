@@ -62,12 +62,14 @@ private static final int SEARCH = 0;
 
   public TermExtractorImpl(Tagger tagger, DefaultFilter filter) {
     if (tagger == null) {
-      this.tagger = new TaggerImpl();
-      ((TaggerImpl)this.tagger).activate();
+      tagger = new TaggerImpl();
+      ((TaggerImpl)tagger).activate();
     }
+    this.tagger = tagger;
     if (filter == null) {
-      this.filter = new DefaultFilter();
+      filter = new DefaultFilter();
     }
+    this.filter = filter;
   }
 
   public List<ExtractedTerm> process(String text) {
