@@ -97,7 +97,7 @@ def determine_file_extension_with_mime_type(mimetype, given_extension)
       line.chomp!
       # ignore any commented lines and check for the mimetype in the line
       if line[0] != "#" && line.include?(mimetype) then
-        if line.include? given_extension
+        if ! given_extension.nil? and line.include? given_extension
           return ".#{given_extension}"
         else
           return ".#{line.split(' ')[1]}"
@@ -350,9 +350,7 @@ def main()
         end
 
         # Pass on the page_count
-        @s.execute_post @s.url_for("p/#{id}"), {"sakai:pagecount" => page_count, "sakai:hasPreview" => "true"}
-        # TODO ACAD-273 only mark if processed successfully
-        @s.execute_post @s.url_for("p/#{id}"), {"sakai:needsprocessing" => "false"}
+        @s.execute_post @s.url_for("p/#{id}"), {"sakai:pagecount" => page_count, "sakai:hasPreview" => "true", "sakai:needsprocessing" => "false"}
 
         # Change to the documents directory otherwise we won't find the next file.
         Dir.chdir DOCS_DIR
@@ -365,7 +363,7 @@ def main()
     ensure
       # No matter what we flag the file as processed and delete the temp copied file.
       # TODO ACAD-273 only mark if processed successfully
-      # @s.execute_post @s.url_for("p/#{id}"), {"sakai:needsprocessing" => "false"}
+      @s.execute_post @s.url_for("p/#{id}"), {"sakai:needsprocessing" => "false"}
       FileUtils.rm_f DOCS_DIR + "/#{filename}"
     end
   end
