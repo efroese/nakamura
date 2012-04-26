@@ -25,6 +25,8 @@ import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -69,18 +71,22 @@ import com.google.common.collect.ImmutableMap.Builder;
 
 public class PreviewProcessorImpl {
 
+  private static final Logger log = LoggerFactory.getLogger(PreviewProcessorImpl.class);
+
+  // Tags
   // If a tag is one word is must occur n time in the doc text
   private static final int SINGLE_WORD_TERM_MIN_OCCUR = 4;
-  // minimum words in a term
   private static final int TERM_MIN_WORDS = 1;
+  private static final int TERM_MAX_WORDS = 2;
+  private static final int TERM_MIN_LENGTH = 2;
+  private static final int TERM_MAX_LENGTH = 128;
 
+  // Images
   private static final Double SMALL_MAX_WIDTH = new Double(180.0);
-
 	private static final Double SMALL_MAX_HEIGHT = new Double(225.0);
-
 	private static final Double LARGE_MAX_WIDTH = new Double(700.0);
 
-	private static final Logger log = LoggerFactory.getLogger(PreviewProcessorImpl.class);
+	private static final int MAX_TAGS = 10;
 
 	protected URL server;
 	protected URL contentServer;
@@ -119,7 +125,7 @@ public class PreviewProcessorImpl {
 		this.previewsDir = StringUtils.join(new String[] { basePath, "previews" }, File.separator );
 		this.docsDir = StringUtils.join(new String[] { basePath, "docs" }, File.separator );
 
-		this.termExtractor = new TermExtractorImpl(null, new DefaultFilter(SINGLE_WORD_TERM_MIN_OCCUR, TERM_MIN_WORDS));
+		this.termExtractor = new TermExtractorImpl(null, new DefaultFilter(SINGLE_WORD_TERM_MIN_OCCUR, TERM_MIN_WORDS, TERM_MAX_WORDS, TERM_MIN_LENGTH, TERM_MAX_LENGTH));
 	}
 
 	public void process() throws IOException {
@@ -280,13 +286,33 @@ public class PreviewProcessorImpl {
 			String userId = (String)item.get("sakai:pool-content-created-for");
 			JSONObject userMeta = getUserMeta(userId);
 			List<String> tags = new ArrayList<String>();
+
 			if (doAutoTaggingForUser(userMeta)){
 				List<ExtractedTerm> terms = termExtractor.process(textExtractor.getText(contentFilePath));
-				for (ExtractedTerm term : terms){
-					if (term.getOccurences() > 1){
-						tags.add(term.getTerm());
-					}
-				}
+				// sort by occurrences * strength
+				Collections.sort(terms, new Comparator<ExtractedTerm>() {
+          @Override
+          public int compare(ExtractedTerm o1, ExtractedTerm o2) {
+            return Integer.valueOf(o1.getOccurences() * o1.getStrength()).compareTo(o2.getOccurences() * o2.getStrength());
+          }
+        });
+
+				int i = 0;
+        for (ExtractedTerm term : terms){
+          String t = term.getTerm();
+            if (i < MAX_TAGS && t.length() > 1){
+              try {
+                Double.parseDouble(t);
+                continue;
+              }
+              catch (NumberFormatException e) {
+                // ignore
+              }
+              tags.add(term.getTerm());
+              i++;
+            }
+        }
+
 				if (tags != null && !tags.isEmpty()){
 					String tagString = "/tags/" + StringUtils.join(tags, "/tags/");
 					log.info("Tagging {} with {}", id, tagString);

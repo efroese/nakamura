@@ -20,19 +20,46 @@ package org.sakaiproject.nakamura.termextract;
 
 public class DefaultFilter {
 
+  private static final int DEFAULT_MIN_LENGTH = 1;
+  private static final int DEFAULT_MAX_LENGTH = Integer.MAX_VALUE;
+  private static final int DEFAULT_MIN_STRENGTH = 2;
+  private static final int DEFAULT_MAX_STRENGTH = Integer.MAX_VALUE;
+  private static final int DEFAULT_SINGLE_STRENGTH_MIN_OCCUR = 2;
+
   private int singleStrengthMinOccur;
   private int minStrength;
+  private int maxStrength;
+  private int minLength;
+  private int maxLength;
 
   public DefaultFilter() {
-    this(3, 2);
+    this(DEFAULT_SINGLE_STRENGTH_MIN_OCCUR,
+        DEFAULT_MIN_STRENGTH, DEFAULT_MAX_STRENGTH,
+        DEFAULT_MIN_LENGTH, DEFAULT_MAX_LENGTH);
   }
 
-  public DefaultFilter(int singleStrengthMinOccur, int minStrength) {
+  public DefaultFilter(int singleStrengthMinOccur,
+      int minStrength, int maxStrength,
+      int minLength, int maxLength) {
     this.singleStrengthMinOccur = singleStrengthMinOccur;
     this.minStrength = minStrength;
+    this.maxStrength = maxStrength;
+    this.minLength = minLength;
+    this.maxLength = maxLength;
   }
 
   public boolean filter(String word, int occur, int strength) {
-    return ((strength == 1 && occur >= singleStrengthMinOccur) || (strength >= minStrength));
+
+    boolean keep = true;
+    if (word.length() < minLength || word.length() > maxLength){
+      keep = false;
+    }
+    else if (strength < minStrength || strength > maxStrength){
+      keep = false;
+    }
+    else if ((strength == 1 && occur >= singleStrengthMinOccur)){
+      keep = true;
+    }
+    return keep;
   }
 }
