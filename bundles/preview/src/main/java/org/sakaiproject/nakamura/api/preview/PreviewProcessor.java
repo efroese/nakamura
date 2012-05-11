@@ -26,6 +26,9 @@ public interface PreviewProcessor {
 	public static final String MIME_TYPE      = "_mimeType";
 	public static final String PROCESSED_BY   = "sakai:processed_by";
 	public static final String FILE_EXTENSION = "sakai:fileextension";
+	public static final String HAS_PREVIEW = "sakai:hasPreview";
+	public static final String NEEDS_PROCESSING = "sakai:needsprocessing";
+	public static final String PROCESSING_FAILED = "sakai:processing_failed";
 
 	public static final Set<String> IMAGE_EXTENSIONS = 
 		ImmutableSet.of("jpg", "jpeg", "png", "gif", "psd");

@@ -125,18 +125,23 @@ public class PreviewProcessorImpl {
 		this.previewsDir = StringUtils.join(new String[] { basePath, "previews" }, File.separator );
 		this.docsDir = StringUtils.join(new String[] { basePath, "docs" }, File.separator );
 
-		this.termExtractor = new TermExtractorImpl(null, new DefaultFilter(SINGLE_WORD_TERM_MIN_OCCUR, TERM_MIN_WORDS, TERM_MAX_WORDS, TERM_MIN_LENGTH, TERM_MAX_LENGTH));
+		this.termExtractor = new TermExtractorImpl(null,
+		    new DefaultFilter(SINGLE_WORD_TERM_MIN_OCCUR, TERM_MIN_WORDS, 
+		        TERM_MAX_WORDS, TERM_MIN_LENGTH, TERM_MAX_LENGTH));
 	}
 
 	public void process() throws IOException {
-		createDirectories();
 
-		List<Map<String,Object>> content = contentFetcher.getContentForProcessing(server.toString(), "admin", password);
+	  createDirectories();
+
+		List<Map<String,Object>> content =
+		  contentFetcher.getContentForProcessing(server.toString(), "admin", password);
 
 		content = filterAlreadyProcessed(content);
 		if (content.isEmpty()){
 			return;
 		}
+
 		claimContent(content, name);
 
 		for (Map<String,Object> result : content){
@@ -148,7 +153,6 @@ public class PreviewProcessorImpl {
 			// example: /var/sakaioae/pp/previews/s0meGr0SsId/
 			String previewDirPath = StringUtils.join(new String[]{ previewsDir, id }, File.separator);
 			File previewDir = new File(previewDirPath);
-			log.debug("previewDirPath = {} ", previewDirPath);
 
 			try {
 				previewDir.mkdirs();
@@ -180,17 +184,17 @@ public class PreviewProcessorImpl {
 					nakamura.post("/p/" + id + ".json", ImmutableMap.of("sakai:pagecount", Integer.toString(pageCount)));
 				}
 
-				nakamura.post("/p/" + id + ".json", ImmutableMap.of("sakai:needsprocessing", "false"));
-	      log.info("Set {}  {}={}", new String[] { id, "sakai:needsprocessing", "false"});
-	      nakamura.post("/p/" + id + ".json", ImmutableMap.of("sakai:hasPreview", "true"));
-	      log.info("Set {}  {}={}", new String[] { id, "sakai:hasPreview", "true"});
+				nakamura.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.NEEDS_PROCESSING, "false"));
+	      log.info("Set {}  {}={}", new String[] { id, PreviewProcessor.NEEDS_PROCESSING, "false"});
+	      nakamura.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.HAS_PREVIEW, "true"));
+	      log.info("Set {}  {}={}", new String[] { id, PreviewProcessor.HAS_PREVIEW, "true"});
 			}
 			catch (Exception e){
 				log.error("There was an error generating a preview for {}", id, e);
-				nakamura.post("/p/" + id + ".json", ImmutableMap.of("sakai:needsprocessing", "false"));
-	      log.info("Set {}  {}={}", new String[] { id, "sakai:needsprocessing", "false"});
-	      nakamura.post("/p/" + id + ".json", ImmutableMap.of("sakai:processing_failed", "true"));
-	      log.info("Set {}  {}={}", new String[] { id, "sakai:processing_failed", "true"});
+				nakamura.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.NEEDS_PROCESSING, "false"));
+	      log.info("Set {}  {}={}", new String[] { id, PreviewProcessor.NEEDS_PROCESSING, "false"});
+	      nakamura.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.PROCESSING_FAILED, "true"));
+	      log.info("Set {}  {}={}", new String[] { id, PreviewProcessor.PROCESSING_FAILED, "true"});
 			}
 			finally {
 				if (contentFilePath != null){
@@ -322,6 +326,9 @@ public class PreviewProcessorImpl {
 
 		int i = 1;
 		for (File preview: previewFiles){
+		  if (!preview.getPath().toLowerCase().endsWith(".jpg")){
+		    continue;
+		  }
 			try {
 				imageProcessor.resize(preview.getAbsolutePath(),
 						contentPreviewDirectory + File.separator + id + ".large.jpg",
