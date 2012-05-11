@@ -88,10 +88,7 @@ public class PreviewProcessorMain {
 		pp.nakamura = new RemoteServerUtil(cmd.getOptionValue("server"), cmd.getOptionValue("password"));
 		pp.init();
 
-		while (true){
-		  if (count-- <= 0){
-		    break;
-		  }
+		while (count-- >= 0){
 		  pp.process();
 		  Thread.sleep(interval * 1000);
 		}
