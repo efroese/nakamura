@@ -132,8 +132,6 @@ public class PreviewProcessorImpl {
 		createDirectories();
 
 		List<Map<String,Object>> content = contentFetcher.getContentForProcessing(server.toString(), "admin", password);
-		List<Map<String,Object>> failed  = new LinkedList<Map<String,Object>>();
-		List<Map<String,Object>> processed  = new LinkedList<Map<String,Object>>();
 
 		content = filterAlreadyProcessed(content);
 		if (content.isEmpty()){
@@ -150,6 +148,7 @@ public class PreviewProcessorImpl {
 			// example: /var/sakaioae/pp/previews/s0meGr0SsId/
 			String previewDirPath = StringUtils.join(new String[]{ previewsDir, id }, File.separator);
 			File previewDir = new File(previewDirPath);
+			log.debug("previewDirPath = {} ", previewDirPath);
 
 			try {
 				previewDir.mkdirs();
@@ -180,11 +179,18 @@ public class PreviewProcessorImpl {
 					int pageCount = processDocument(contentFilePath, item, extension);
 					nakamura.post("/p/" + id + ".json", ImmutableMap.of("sakai:pagecount", Integer.toString(pageCount)));
 				}
-				processed.add(item);
+
+				nakamura.post("/p/" + id + ".json", ImmutableMap.of("sakai:needsprocessing", "false"));
+	      log.info("Set {}  {}={}", new String[] { id, "sakai:needsprocessing", "false"});
+	      nakamura.post("/p/" + id + ".json", ImmutableMap.of("sakai:hasPreview", "true"));
+	      log.info("Set {}  {}={}", new String[] { id, "sakai:hasPreview", "true"});
 			}
 			catch (Exception e){
 				log.error("There was an error generating a preview for {}", id, e);
-				failed.add(result);
+				nakamura.post("/p/" + id + ".json", ImmutableMap.of("sakai:needsprocessing", "false"));
+	      log.info("Set {}  {}={}", new String[] { id, "sakai:needsprocessing", "false"});
+	      nakamura.post("/p/" + id + ".json", ImmutableMap.of("sakai:processing_failed", "true"));
+	      log.info("Set {}  {}={}", new String[] { id, "sakai:processing_failed", "true"});
 			}
 			finally {
 				if (contentFilePath != null){
@@ -193,22 +199,6 @@ public class PreviewProcessorImpl {
 				}
 				FileUtils.deleteDirectory(previewDir);
 			}
-		}
-		
-		String processedId = null;
-		for(Map<String,Object> processedItem : processed){
-			processedId = (String)processedItem.get("_path");
-			nakamura.post("/p/" + processedId + ".json", ImmutableMap.of("sakai:needsprocessing", "false"));
-			log.info("Set {}  {}={}", new String[] { processedId, "sakai:needsprocessing", "false"});
-			nakamura.post("/p/" + processedItem.get("_path") + ".json", ImmutableMap.of("sakai:hasPreview", "true"));
-			log.info("Set {}  {}={}", new String[] { processedId, "sakai:hasPreview", "true"});
-		}
-
-		for(Map<String,Object> processedItem : failed){
-			nakamura.post("/p/" + processedItem.get("_path") + ".json", ImmutableMap.of("sakai:needsprocessing", "false"));
-			log.info("Set {}  {}={}", new String[] { processedId, "sakai:needsprocessing", "false"});
-			nakamura.post("/p/" + processedItem.get("_path") + ".json", ImmutableMap.of("sakai:processing_failed", "true"));
-			log.info("Set {}  {}={}", new String[] { processedId, "sakai:processing_failed", "true"});
 		}
 	}
 
@@ -275,7 +265,7 @@ public class PreviewProcessorImpl {
 			// Not an image and not a PDF
 			// Convert it to a pdf
 			String convertedPDFPath = StringUtils.join(
-					new String[] { docsDir, id, id + ".pdf" }, File.separator);
+					new String[] { previewsDir, id, id + ".pdf" }, File.separator);
 			jodProcessor.process(contentFilePath, convertedPDFPath);
 			// Split the PDF and snap images of the pages
 			// Images are saved to ${basePath}/previews/${id}/${id}.page.[1...n].JPEG
