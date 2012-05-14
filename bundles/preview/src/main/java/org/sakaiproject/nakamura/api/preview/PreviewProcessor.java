@@ -29,6 +29,7 @@ public interface PreviewProcessor {
 	public static final String HAS_PREVIEW = "sakai:hasPreview";
 	public static final String NEEDS_PROCESSING = "sakai:needsprocessing";
 	public static final String PROCESSING_FAILED = "sakai:processing_failed";
+	public static final String POOL_CONTENT_CREATED_FOR = "sakai:pool-content-created-for";
 
 	public static final Set<String> IMAGE_EXTENSIONS = 
 		ImmutableSet.of("jpg", "jpeg", "png", "gif", "psd");

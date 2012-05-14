@@ -27,6 +27,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -97,37 +98,36 @@ public class PreviewProcessorImpl {
 	protected Set<String> ignoreTypes;
 	protected Set<String> mimeTypes;
 
-	protected RemoteServerUtil nakamura;
+	protected RemoteServerUtil remoteServer;
 	protected ContentFetcher contentFetcher;
 
 	protected ImageProcessor imageProcessor;
 	protected JODProcessor jodProcessor;
-	protected PDFProcessor pdfProcessor;
 	protected TikaTextExtractor textExtractor;
 	protected TermExtractor termExtractor;
 
 	protected String previewsDir;
 	protected String docsDir;
 
+	protected Map<String,JSONObject> userMetaCache;
 
 	public PreviewProcessorImpl() {
-		this.name = ManagementFactory.getRuntimeMXBean().getName();
-		init();
 	}
 
 	public void init(){
+	  this.name = ManagementFactory.getRuntimeMXBean().getName();
 		this.imageProcessor = new ImageProcessor();
 		this.jodProcessor = new JODProcessor();
-		this.pdfProcessor = new PDFProcessor();
 		this.textExtractor = new TikaTextExtractor();
-		this.nakamura = new RemoteServerUtil(server, password);
+		this.remoteServer = new RemoteServerUtil(server, password);
 
 		this.previewsDir = StringUtils.join(new String[] { basePath, "previews" }, File.separator );
 		this.docsDir = StringUtils.join(new String[] { basePath, "docs" }, File.separator );
 
 		this.termExtractor = new TermExtractorImpl(null,
-		    new DefaultFilter(SINGLE_WORD_TERM_MIN_OCCUR, TERM_MIN_WORDS, 
+		    new DefaultFilter(SINGLE_WORD_TERM_MIN_OCCUR, TERM_MIN_WORDS,
 		        TERM_MAX_WORDS, TERM_MIN_LENGTH, TERM_MAX_LENGTH));
+		this.userMetaCache = new HashMap<String, JSONObject>();
 	}
 
 	public void process() throws IOException {
@@ -159,7 +159,7 @@ public class PreviewProcessorImpl {
 
 				// Fetch the full content meta
 				@SuppressWarnings("unchecked")
-				Map<String,Object> item = ImmutableMap.copyOf(nakamura.get("/p/" + id + ".json"));
+				Map<String,Object> item = ImmutableMap.copyOf(remoteServer.get("/p/" + id + ".json"));
 
 				// Determine the correct file extension
 				String extension = null;
@@ -181,20 +181,20 @@ public class PreviewProcessorImpl {
 				}
 				else {
 					int pageCount = processDocument(contentFilePath, item, extension);
-					nakamura.post("/p/" + id + ".json", ImmutableMap.of("sakai:pagecount", Integer.toString(pageCount)));
+					remoteServer.post("/p/" + id + ".json", ImmutableMap.of("sakai:pagecount", Integer.toString(pageCount)));
 				}
 
-				nakamura.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.NEEDS_PROCESSING, "false"));
-	      log.info("Set {}  {}={}", new String[] { id, PreviewProcessor.NEEDS_PROCESSING, "false"});
-	      nakamura.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.HAS_PREVIEW, "true"));
-	      log.info("Set {}  {}={}", new String[] { id, PreviewProcessor.HAS_PREVIEW, "true"});
+				remoteServer.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.NEEDS_PROCESSING, "false"));
+	      log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.NEEDS_PROCESSING, "false"});
+	      remoteServer.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.HAS_PREVIEW, "true"));
+	      log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.HAS_PREVIEW, "true"});
 			}
 			catch (Exception e){
 				log.error("There was an error generating a preview for {}", id, e);
-				nakamura.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.NEEDS_PROCESSING, "false"));
-	      log.info("Set {}  {}={}", new String[] { id, PreviewProcessor.NEEDS_PROCESSING, "false"});
-	      nakamura.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.PROCESSING_FAILED, "true"));
-	      log.info("Set {}  {}={}", new String[] { id, PreviewProcessor.PROCESSING_FAILED, "true"});
+				remoteServer.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.NEEDS_PROCESSING, "false"));
+	      log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.NEEDS_PROCESSING, "false"});
+	      remoteServer.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.PROCESSING_FAILED, "true"));
+	      log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.PROCESSING_FAILED, "true"});
 			}
 			finally {
 				if (contentFilePath != null){
@@ -251,74 +251,63 @@ public class PreviewProcessorImpl {
 	 * @param item
 	 * @param extension
 	 * @return
-	 * @throws ProcessingException
-	 * @throws FileNotFoundException
+	 * @throws Exception
 	 */
 	protected int processDocument(String contentFilePath, Map<String,Object> item, String extension)
-	throws ProcessingException, FileNotFoundException{
+	throws Exception {
 		String id = (String)item.get("_path");
+
+		String convertedPDFPath = StringUtils.join(
+        new String[] { previewsDir, id, id + ".pdf" }, File.separator);
 
 		String outputPrefix = StringUtils.join(
 				new String[]{ previewsDir, id, "page." }, File.separator);
-		if (PreviewProcessor.PDF_EXTENSIONS.contains(extension)){
-			// Split the PDF and snap images of the pages
-			// Images are saved to ${basePath}/previews/${id}/${id}.page.[1...n].JPEG
-			pdfProcessor.process(contentFilePath, outputPrefix);
-		}
-		else {
-			// Not an image and not a PDF
-			// Convert it to a pdf
-			String convertedPDFPath = StringUtils.join(
-					new String[] { previewsDir, id, id + ".pdf" }, File.separator);
-			jodProcessor.process(contentFilePath, convertedPDFPath);
-			// Split the PDF and snap images of the pages
-			// Images are saved to ${basePath}/previews/${id}/${id}.page.[1...n].JPEG
-			pdfProcessor.process(convertedPDFPath, outputPrefix);
-		}
 
-		if (item.containsKey("sakai:pool-content-created-for")){
-			String userId = (String)item.get("sakai:pool-content-created-for");
+		PDFProcessor pdfImageCreater = new PDFProcessor(convertedPDFPath, outputPrefix);
+		if (!PreviewProcessor.PDF_EXTENSIONS.contains(extension)){
+		  jodProcessor.process(contentFilePath, convertedPDFPath);
+		}
+	  // Split the PDF and snap images of the pages
+    // Images are saved to ${basePath}/previews/${id}/${id}.page.[1...n].JPEG
+		pdfImageCreater.call();
+
+		if (item.containsKey(PreviewProcessor.POOL_CONTENT_CREATED_FOR)){
+			String userId = (String)item.get(PreviewProcessor.POOL_CONTENT_CREATED_FOR);
 			JSONObject userMeta = getUserMeta(userId);
 			List<String> tags = new ArrayList<String>();
 
 			if (doAutoTaggingForUser(userMeta)){
 				List<ExtractedTerm> terms = termExtractor.process(textExtractor.getText(contentFilePath));
-				// sort by occurrences * strength
+				// sort by occurrences + strength * 2
 				Collections.sort(terms, new Comparator<ExtractedTerm>() {
           @Override
           public int compare(ExtractedTerm o1, ExtractedTerm o2) {
-            return Integer.valueOf(o1.getOccurences() * o1.getStrength()).compareTo(o2.getOccurences() * o2.getStrength());
+            return Integer.valueOf(o1.getOccurences() + o1.getStrength() * 2)
+                    .compareTo(o2.getOccurences() + o2.getStrength() * 2);
           }
         });
 
-				int i = 0;
+				int collected_tags_count = 0;
         for (ExtractedTerm term : terms){
-          String t = term.getTerm();
-            if (i < MAX_TAGS && t.length() > 1){
-              try {
-                Double.parseDouble(t);
-                continue;
-              }
-              catch (NumberFormatException e) {
-                // ignore
-              }
-              tags.add(term.getTerm());
-              i++;
-            }
+          if (isValidTag(term) && collected_tags_count < MAX_TAGS ){
+            tags.add(term.getTerm().toLowerCase());
+            collected_tags_count++;
+          }
         }
 
 				if (tags != null && !tags.isEmpty()){
 					String tagString = "/tags/" + StringUtils.join(tags, "/tags/");
-					log.info("Tagging {} with {}", id, tagString);
-					nakamura.post("/p/" + id, ImmutableMap.of(":operation", "tag", "key", tagString));
+					log.info("Tagging {} with {}", id,  StringUtils.join(tags, ", "));
+					remoteServer.post("/p/" + id, ImmutableMap.of(":operation", "tag", "key", tagString));
 					if (sendTagEmail(userMeta)){
 						doSendTagEmail(item, userId, tags);
 					}
 				} else {
 					log.info("No tags generated for {}", id);
 				}
-
 			}
+
+			pdfImageCreater.wait();
 		}
 
 		String contentPreviewDirectory = StringUtils.join(new String[] { previewsDir, id }, File.separator);
@@ -333,17 +322,17 @@ public class PreviewProcessorImpl {
 				imageProcessor.resize(preview.getAbsolutePath(),
 						contentPreviewDirectory + File.separator + id + ".large.jpg",
 						LARGE_MAX_WIDTH, null);
-				nakamura.uploadContentPreview(id, preview, Integer.toString(i), "large");
+				remoteServer.uploadContentPreview(id, preview, Integer.toString(i), "large");
 
 				imageProcessor.resize(preview.getAbsolutePath(),
 						contentPreviewDirectory + File.separator + id + ".normal.jpg",
 						LARGE_MAX_WIDTH, null);
-				nakamura.uploadContentPreview(id, preview, Integer.toString(i), "normal");
+				remoteServer.uploadContentPreview(id, preview, Integer.toString(i), "normal");
 
 				imageProcessor.resize(preview.getAbsolutePath(),
 						contentPreviewDirectory + File.separator + id + ".small.jpg",
 						SMALL_MAX_WIDTH, SMALL_MAX_HEIGHT);
-				nakamura.uploadContentPreview(id, preview, Integer.toString(i), "small");
+				remoteServer.uploadContentPreview(id, preview, Integer.toString(i), "small");
 			}
 			catch (ProcessingException e) {
 				log.error("Error uploading content preview.", e);
@@ -353,18 +342,49 @@ public class PreviewProcessorImpl {
 		return previewFiles.length;
 	}
 
-	protected void processImage(String contentFilePath, Map<String,Object> item)
+	/**
+	 * @param term extracted by the {@link TermExtractor}
+	 * @return whether or not to use a term as a tag
+	 */
+	private boolean isValidTag(ExtractedTerm term) {
+    boolean valid = false;
+    String t = term.getTerm();
+
+    boolean isAlphaOrSpace = StringUtils.isAlphaSpace(t);
+    boolean containsHttp = t.contains("http");
+    boolean moreThanTwoWords = t.split(" ").length > 2;
+    boolean number = false;
+    try {
+      Double.parseDouble(t);
+      number = true;
+    } catch (NumberFormatException e){
+      // nothing to see here. Move along
+    }
+    if (t.length() > 1 && isAlphaOrSpace && !containsHttp && !moreThanTwoWords && !number){
+      valid = true;
+    }
+    return valid;
+  }
+
+	/**
+	 * Create the previews for an image and upload it to OAE
+	 * @param contentFilePath
+	 * @param item
+	 * @throws ProcessingException
+	 * @throws FileNotFoundException
+	 */
+  protected void processImage(String contentFilePath, Map<String,Object> item)
 	throws ProcessingException, FileNotFoundException {
 		String id = (String)item.get("_path");
 		String prefix = previewsDir + File.separator + id + File.separator + id;
 
 		String normalPath = prefix + ".normal.jpg";
 		imageProcessor.resize(contentFilePath, normalPath, LARGE_MAX_WIDTH, null);
-		nakamura.uploadContentPreview(id, new File(normalPath), "1", "normal");
+		remoteServer.uploadContentPreview(id, new File(normalPath), "1", "normal");
 
 		String smallPath = prefix + ".small.jpg";
 		imageProcessor.resize(contentFilePath, smallPath, SMALL_MAX_WIDTH, SMALL_MAX_HEIGHT);
-		nakamura.uploadContentPreview(id, new File(smallPath), "1", "small");
+		remoteServer.uploadContentPreview(id, new File(smallPath), "1", "small");
 	}
 
 	/**
@@ -389,20 +409,30 @@ public class PreviewProcessorImpl {
 		return ignore;
 	}
 
-	protected String determineFileExtensionWithMimeType(String mimetype, String extension){
-		if (mimetype == null && extension == null){
-			return null;
-		}
+	protected String determineFileExtensionWithMimeType(String path, String mimetype, String extension){
+	  // Get rid of nulls and uppercase letters
+		mimetype = StringUtils.trimToEmpty(mimetype).toLowerCase();
+		extension = StringUtils.trimToEmpty(extension).toLowerCase();
+
+		// trim .txt to txt
 		if (extension.startsWith(".")){
-			extension = extension.substring(1, extension.length());
+		  extension = extension.substring(1, extension.length());
 		}
-		for (String mime: mimeTypes){
-			if (mime.contains(mimetype) && !mime.contains(extension)){
-				String[] split = mime.split("");
-				if (split.length > 1){
-					extension = split[1];
-				}
-			}
+		// no mimetype but we have an extension
+		if (mimetype.isEmpty() && extension.isEmpty() == false){
+		  return extension;
+		}
+		else if (mimetype.isEmpty() == false) {
+		  for (String mime: mimeTypes){
+		    // if the extension is empty or isn't in the line that matches the mimetype,
+		    // then take the first extension from the list for that mimetype
+		    if (mime.contains(mimetype) && (extension.isEmpty() || !mime.contains(extension))){
+		      String[] split = mime.split(" ");
+		      if (split.length > 1){
+		        extension = split[1];
+		      }
+		    }
+		  }
 		}
 		return extension;
 	}
@@ -425,7 +455,7 @@ public class PreviewProcessorImpl {
 		List<Map<String,Object>> unprocessed = new LinkedList<Map<String,Object>>();
 		for (Map<String,Object> item : content){
 			// No one else has claimed this
-			if ( !item.containsKey(PreviewProcessor.PROCESSED_BY) ||
+			if (!item.containsKey(PreviewProcessor.PROCESSED_BY) ||
 					(item.containsKey(PreviewProcessor.PROCESSED_BY) &&
 						!name.equals(item.get(PreviewProcessor.PROCESSED_BY)))){
 				unprocessed.add(item);
@@ -453,12 +483,19 @@ public class PreviewProcessorImpl {
 		    req.put("parameters", params);
 		    batch.add(req);
 		}
-		nakamura.post("/system/batch", ImmutableMap.of("requests", batch.toString()));
+		remoteServer.post("/system/batch", ImmutableMap.of("requests", batch.toString()));
 	}
 
 	protected JSONObject getUserMeta(String userId){
-		log.debug("Fetching user metadata for {}", userId);
-		return nakamura.get("/system/me?uid=" + userId);
+	  JSONObject user = null;
+	  if (userMetaCache.containsKey(userId)){
+	    user = userMetaCache.get(userId);
+	  }
+	  else {
+	    log.debug("Fetching user metadata for {}", userId);
+	    user = remoteServer.get("/system/me?uid=" + userId);
+	  }
+	  return user;
 	}
 
 	// -------------- Tagging ---------------
@@ -496,6 +533,6 @@ public class PreviewProcessorImpl {
 		paramBuilder.put("sakai:body", writer.toString());
 		paramBuilder.put("_charset_", "utf-8");
 		paramBuilder.put("sakai:category", "message");
-		nakamura.post("/~admin/message.create.json", paramBuilder.build());
+		remoteServer.post("/~admin/message.create.json", paramBuilder.build());
 	}
 }

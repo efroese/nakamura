@@ -85,7 +85,7 @@ public class PreviewProcessorMain {
 		pp.ignoreTypes = loadResourceSet("ignore.types");
 		pp.mimeTypes = loadResourceSet("mime.types");
 		pp.contentFetcher = new SearchContentFetcher();
-		pp.nakamura = new RemoteServerUtil(cmd.getOptionValue("server"), cmd.getOptionValue("password"));
+		pp.remoteServer = new RemoteServerUtil(cmd.getOptionValue("server"), cmd.getOptionValue("password"));
 		pp.init();
 
 		while (count-- >= 0){

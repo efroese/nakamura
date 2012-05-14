@@ -19,6 +19,7 @@ package org.sakaiproject.nakamura.preview.processors;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Callable;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.util.PDFImageWriter;
@@ -27,16 +28,29 @@ import org.sakaiproject.nakamura.preview.ProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PDFProcessor {
+@SuppressWarnings("rawtypes")
+public class PDFProcessor implements Callable {
 
-	private Logger log = LoggerFactory.getLogger(JODProcessor.class);
+	private static final Logger log = LoggerFactory.getLogger(JODProcessor.class);
 
+	private String inputPath;
+	private String outputPrefix;
+	
+	public PDFProcessor(String inputPath, String outputPrefix){
+	  this.inputPath = inputPath;
+	  this.outputPrefix = outputPrefix;
+	}
+
+  @Override
+  public Object call() throws Exception {
+    process();
+    return null;
+  }
+	
 	/**
 	 * Split a PDF by pages and store them in the previews directory as contentId.page.X
-	 * @param inputPath
-	 * @throws ProcessingException
 	 */
-	public void process(String inputPath, String outputPrefix) throws ProcessingException {
+	public void process() throws ProcessingException {
 		// Guess what this does? I'll give you $5
 		PDFImageWriter imageWriter = new PDFImageWriter();
 		try {
