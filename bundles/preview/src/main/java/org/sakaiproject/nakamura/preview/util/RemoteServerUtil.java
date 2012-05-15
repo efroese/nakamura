@@ -37,14 +37,14 @@ public class RemoteServerUtil {
 	}
 
 	public JSONObject get(String url){
-		log.info("GET {}", url);
+		log.debug("GET {}", url);
 		GetMethod get = new GetMethod(url);
 		JSONObject result = http(getHttpClient(server, "admin", password), get);
 		return result;
 	}
 
 	public JSONObject post(String url, Map<String, String> params) {
-		log.info("POST {}", url);
+		log.debug("POST {}", url);
 		PostMethod post = new PostMethod(url);
 		for (Entry<String, String> entry: params.entrySet()){
 			post.addParameter(entry.getKey(), entry.getValue());

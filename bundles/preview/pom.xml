@@ -148,7 +148,7 @@
     <dependency>
     	<groupId>org.slf4j</groupId>
     	<artifactId>slf4j-jdk14</artifactId>
-    	<version>1.6.1</version>
+    	<version>1.6.4</version>
     	<type>jar</type>
     	<scope>compile</scope>
     </dependency>
@@ -185,6 +185,20 @@
     	<artifactId>commons-cli</artifactId>
     	<version>1.2</version>
     	<type>jar</type>
+    	<scope>compile</scope>
+    </dependency>
+    <dependency>
+    	<groupId>ch.qos.logback</groupId>
+    	<artifactId>logback-classic</artifactId>
+    	<version>1.0.3</version>
+    	<type>jar</type>
+    	<scope>compile</scope>
+    </dependency>
+    <dependency>
+    	<groupId>ch.qos.logback</groupId>
+    	<artifactId>logback-core</artifactId>
+    	<version>1.0.3</version>
+    	<type>pom</type>
     	<scope>compile</scope>
     </dependency>
   </dependencies>
