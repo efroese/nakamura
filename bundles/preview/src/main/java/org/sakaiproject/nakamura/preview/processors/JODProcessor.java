@@ -29,10 +29,29 @@ import com.artofsolving.jodconverter.openoffice.connection.OpenOfficeConnection;
 import com.artofsolving.jodconverter.openoffice.connection.SocketOpenOfficeConnection;
 import com.artofsolving.jodconverter.openoffice.converter.OpenOfficeDocumentConverter;
 
+/**
+ * Convert documents to PDFs using hte OOo JODConverter.
+ * Handles anything OOo can.
+ * Handle connecting to a OOo JODCOnverter service
+ */
 public class JODProcessor {
 
 	private Logger log = LoggerFactory.getLogger(JODProcessor.class);
 	
+	OpenOfficeConnection connection = null;
+
+	public OpenOfficeConnection getConnection() throws ConnectException{
+	  // connect to an OpenOffice.org instance running on port 8100
+    // TODO make the host and configurable
+	  if (connection == null){
+	    connection = new SocketOpenOfficeConnection(8100);
+	  }
+	  if (!connection.isConnected()){
+	    connection.connect();
+	  }
+	  return connection;
+	}
+
 	/**
 	 * Convert a document to a PDF
 	 * @param inputPath the path to the input document
@@ -41,17 +60,21 @@ public class JODProcessor {
 	 */
 	public void process(String inputPath, String outputPath) throws ProcessingException {
 		try {
-			// connect to an OpenOffice.org instance running on port 8100
-			// TODO make the host and configurable
-			OpenOfficeConnection connection = new SocketOpenOfficeConnection(8100);
-			connection.connect();
-			DocumentConverter converter = new OpenOfficeDocumentConverter(connection);
+			log.info("Converting {} to {}", inputPath, outputPath);
+			DocumentConverter converter = new OpenOfficeDocumentConverter(getConnection());
 			converter.convert(new File(inputPath), new File(outputPath));
-			log.info("Converted {} to {}", inputPath, outputPath);
-			connection.disconnect();
 		}
 		catch (ConnectException e){
 			throw new ProcessingException("Error connecting to the OOo document converter.", e);
 		}
+	}
+
+	@Override
+	public void finalize(){
+	  if (connection == null){
+	    return;
+	  }
+	  connection.disconnect();
+	  connection = null;
 	}
 }
