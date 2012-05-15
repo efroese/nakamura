@@ -64,12 +64,14 @@ public class PDFProcessor implements Callable<Integer> {
 		// Load, split, loop and write an image of each page
 		PDDocument document = PDDocument.load(new File(inputPath));
 		int pageCount = (numPages < 0)? document.getNumberOfPages() : 1;
+		log.info("Writing page images with prefix {}", outputPrefix);
 		boolean success = imageWriter.writeImage(document,
 		    ImageFormat.IMAGE_FORMAT_JPEG.name,
 		    null, // password
 		    1,    // start
 		    pageCount,
 		    outputPrefix);
+		document.close();
 
 		if (success) {
 			log.debug("Wrote {} page image(s) to {}", pageCount, outputPrefix);
