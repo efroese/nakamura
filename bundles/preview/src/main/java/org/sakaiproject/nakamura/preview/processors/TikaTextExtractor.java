@@ -29,10 +29,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 
+/**
+ * Extract the body text from a variety of documents using Tika.
+ */
 public class TikaTextExtractor {
 
-	private static Logger log = LoggerFactory.getLogger(TikaTextExtractor.class); 
+	private static final Logger log = LoggerFactory.getLogger(TikaTextExtractor.class);
 
+	/**
+	 * Extract the text from the body content of a document using Tika
+	 * @param inputPath path o the file
+	 * @return a String representing the body content
+	 */
 	public String getText(String inputPath){
 		Parser parser = new AutoDetectParser();
 		ContentHandler handler = new BodyContentHandler();
