@@ -32,6 +32,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -105,6 +108,7 @@ public class PreviewProcessorImpl {
 	protected JODProcessor jodProcessor;
 	protected TikaTextExtractor textExtractor;
 	protected TermExtractor termExtractor;
+	protected ExecutorService executorService;
 
 	protected String previewsDir;
 	protected String docsDir;
@@ -127,6 +131,7 @@ public class PreviewProcessorImpl {
 		    new DefaultFilter(SINGLE_WORD_TERM_MIN_OCCUR, TERM_MIN_WORDS,
 		        TERM_MAX_WORDS, TERM_MIN_LENGTH, TERM_MAX_LENGTH));
 		this.userMetaCache = new HashMap<String, JSONObject>();
+		this.executorService = Executors.newFixedThreadPool(1);
 	}
 
 	public void process() throws IOException {
@@ -283,7 +288,7 @@ public class PreviewProcessorImpl {
 		}
 	  // Split the PDF and snap images of the pages
     // Images are saved to ${basePath}/previews/${id}/${id}.page.[1...n].JPEG
-		pdfImageCreater.call();
+		Future<Integer> imageResult = executorService.submit(pdfImageCreater);
 
 		if (item.containsKey(PreviewProcessor.POOL_CONTENT_CREATED_FOR)){
 			String userId = (String)item.get(PreviewProcessor.POOL_CONTENT_CREATED_FOR);
@@ -322,6 +327,10 @@ public class PreviewProcessorImpl {
 				}
 			}
 		}
+
+		Integer pdfPageImages = imageResult.get();
+		log.info("Wrote {} page image{}",
+		    new Object[]{ pdfPageImages, (pdfPageImages > 1 || pdfPageImages == 0)? "s": "", } );
 
 		String contentPreviewDirectory = FilePathUtils. join(new String[] { previewsDir, id });
 		File[] previewFiles = FilePathUtils.listFilesSortedName(contentPreviewDirectory);
