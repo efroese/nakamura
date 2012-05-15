@@ -22,7 +22,9 @@ import java.io.FileFilter;
 import java.util.Arrays;
 import java.util.Comparator;
 
-public class FileListUtils {
+import org.apache.commons.lang.StringUtils;
+
+public class FilePathUtils {
 	/**
 	 * List the files in a directory and sort them by name.
 	 * @param dirPath
@@ -59,5 +61,9 @@ public class FileListUtils {
 				}
 			});
 		return files;
+	}
+
+	public static String join(String[] pieces){
+	  return StringUtils.join(pieces, File.separator);
 	}
 }

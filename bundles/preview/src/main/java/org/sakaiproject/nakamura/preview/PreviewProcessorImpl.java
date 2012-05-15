@@ -59,7 +59,7 @@ import org.sakaiproject.nakamura.preview.processors.JODProcessor;
 import org.sakaiproject.nakamura.preview.processors.PDFProcessor;
 import org.sakaiproject.nakamura.preview.processors.TikaTextExtractor;
 import org.sakaiproject.nakamura.preview.util.EasySSLProtocolSocketFactory;
-import org.sakaiproject.nakamura.preview.util.FileListUtils;
+import org.sakaiproject.nakamura.preview.util.FilePathUtils;
 import org.sakaiproject.nakamura.preview.util.HttpUtils;
 import org.sakaiproject.nakamura.preview.util.RemoteServerUtil;
 import org.sakaiproject.nakamura.termextract.DefaultFilter;
@@ -111,8 +111,7 @@ public class PreviewProcessorImpl {
 
 	protected Map<String,JSONObject> userMetaCache;
 
-	public PreviewProcessorImpl() {
-	}
+	public PreviewProcessorImpl() { }
 
 	public void init(){
 	  this.name = ManagementFactory.getRuntimeMXBean().getName();
@@ -121,8 +120,8 @@ public class PreviewProcessorImpl {
 		this.textExtractor = new TikaTextExtractor();
 		this.remoteServer = new RemoteServerUtil(server, password);
 
-		this.previewsDir = StringUtils.join(new String[] { basePath, "previews" }, File.separator );
-		this.docsDir = StringUtils.join(new String[] { basePath, "docs" }, File.separator );
+		this.previewsDir = FilePathUtils.join(new String[] { basePath, "previews" });
+		this.docsDir = FilePathUtils.join(new String[] { basePath, "docs" });
 
 		this.termExtractor = new TermExtractorImpl(null,
 		    new DefaultFilter(SINGLE_WORD_TERM_MIN_OCCUR, TERM_MIN_WORDS,
@@ -142,16 +141,25 @@ public class PreviewProcessorImpl {
 			return;
 		}
 
-		claimContent(content, name);
+		List<String> contentIds = new ArrayList<String>();
+		for (Map<String,Object> result : content){
+		  contentIds.add((String)result.get("_path"));
+		}
+		log.info("Starts a new batch of queued files: {}", StringUtils.join(contentIds, ", "));
+
+		claimContent(contentIds, name);
 
 		for (Map<String,Object> result : content){
 			if (ignore(result)){
 				continue;
 			}
 			String id = (String)result.get("_path");
+
+			log.info("Processing {}", id);
+
 			String contentFilePath = null;
 			// example: /var/sakaioae/pp/previews/s0meGr0SsId/
-			String previewDirPath = StringUtils.join(new String[]{ previewsDir, id }, File.separator);
+			String previewDirPath = FilePathUtils.join(new String[]{ previewsDir, id });
 			File previewDir = new File(previewDirPath);
 
 			try {
@@ -170,10 +178,10 @@ public class PreviewProcessorImpl {
 				if (item.containsKey(PreviewProcessor.MIME_TYPE)){
 					mimetype = (String)item.get(PreviewProcessor.MIME_TYPE);
 				}
-				extension = determineFileExtensionWithMimeType(mimetype, extension);
+				extension = determineFileExtensionWithMimeType(contentFilePath, mimetype, extension);
+				contentFilePath = FilePathUtils.join(new String[] { docsDir, id + "." + extension });
 
-				contentFilePath = StringUtils.join(
-						new String[] { docsDir, id + "." + extension }, File.separator);
+				log.info("With filename {}", id + "." + extension);
 				download(server + "/p/" + id, contentFilePath);
 
 				if (PreviewProcessor.IMAGE_EXTENSIONS.contains(extension)){
@@ -255,16 +263,22 @@ public class PreviewProcessorImpl {
 	 */
 	protected int processDocument(String contentFilePath, Map<String,Object> item, String extension)
 	throws Exception {
+
 		String id = (String)item.get("_path");
+		String convertedPDFPath = FilePathUtils.join(new String[] { previewsDir, id, id + ".pdf" });
+		String outputPrefix = FilePathUtils.join(new String[]{ previewsDir, id, "page." });
 
-		String convertedPDFPath = StringUtils.join(
-        new String[] { previewsDir, id, id + ".pdf" }, File.separator);
-
-		String outputPrefix = StringUtils.join(
-				new String[]{ previewsDir, id, "page." }, File.separator);
-
-		PDFProcessor pdfImageCreater = new PDFProcessor(convertedPDFPath, outputPrefix);
-		if (!PreviewProcessor.PDF_EXTENSIONS.contains(extension)){
+		int numPages = -1;
+		if (PreviewProcessor.FIRST_PAGE_ONLY_EXTENSIONS.contains(extension)){
+		  numPages = 1;
+		}
+		PDFProcessor pdfImageCreater = new PDFProcessor(convertedPDFPath, outputPrefix, numPages);
+		if (PreviewProcessor.PDF_EXTENSIONS.contains(extension)){
+		  // If the content is a PDF, just move it to the preview dir
+		  FileUtils.moveFile(new File(contentFilePath), new File(convertedPDFPath));
+		}
+		else {
+		  // Else convert it to a pdf in the preview dir
 		  jodProcessor.process(contentFilePath, convertedPDFPath);
 		}
 	  // Split the PDF and snap images of the pages
@@ -296,6 +310,7 @@ public class PreviewProcessorImpl {
         }
 
 				if (tags != null && !tags.isEmpty()){
+				  Collections.sort(tags);
 					String tagString = "/tags/" + StringUtils.join(tags, "/tags/");
 					log.info("Tagging {} with {}", id,  StringUtils.join(tags, ", "));
 					remoteServer.post("/p/" + id, ImmutableMap.of(":operation", "tag", "key", tagString));
@@ -306,37 +321,30 @@ public class PreviewProcessorImpl {
 					log.info("No tags generated for {}", id);
 				}
 			}
-
-			pdfImageCreater.wait();
 		}
 
-		String contentPreviewDirectory = StringUtils.join(new String[] { previewsDir, id }, File.separator);
-		File[] previewFiles = FileListUtils.listFilesSortedName(contentPreviewDirectory);
+		String contentPreviewDirectory = FilePathUtils. join(new String[] { previewsDir, id });
+		File[] previewFiles = FilePathUtils.listFilesSortedName(contentPreviewDirectory);
 
 		int i = 1;
 		for (File preview: previewFiles){
 		  if (!preview.getPath().toLowerCase().endsWith(".jpg")){
 		    continue;
 		  }
-			try {
-				imageProcessor.resize(preview.getAbsolutePath(),
-						contentPreviewDirectory + File.separator + id + ".large.jpg",
-						LARGE_MAX_WIDTH, null);
-				remoteServer.uploadContentPreview(id, preview, Integer.toString(i), "large");
+			imageProcessor.resize(preview.getAbsolutePath(),
+					contentPreviewDirectory + File.separator + id + ".large.jpg",
+					LARGE_MAX_WIDTH, null);
+			remoteServer.uploadContentPreview(id, preview, Integer.toString(i), "large");
 
-				imageProcessor.resize(preview.getAbsolutePath(),
-						contentPreviewDirectory + File.separator + id + ".normal.jpg",
-						LARGE_MAX_WIDTH, null);
-				remoteServer.uploadContentPreview(id, preview, Integer.toString(i), "normal");
+			imageProcessor.resize(preview.getAbsolutePath(),
+					contentPreviewDirectory + File.separator + id + ".normal.jpg",
+					LARGE_MAX_WIDTH, null);
+			remoteServer.uploadContentPreview(id, preview, Integer.toString(i), "normal");
 
-				imageProcessor.resize(preview.getAbsolutePath(),
-						contentPreviewDirectory + File.separator + id + ".small.jpg",
-						SMALL_MAX_WIDTH, SMALL_MAX_HEIGHT);
-				remoteServer.uploadContentPreview(id, preview, Integer.toString(i), "small");
-			}
-			catch (ProcessingException e) {
-				log.error("Error uploading content preview.", e);
-			}
+			imageProcessor.resize(preview.getAbsolutePath(),
+					contentPreviewDirectory + File.separator + id + ".small.jpg",
+					SMALL_MAX_WIDTH, SMALL_MAX_HEIGHT);
+			remoteServer.uploadContentPreview(id, preview, Integer.toString(i), "small");
 			i++;
 		}
 		return previewFiles.length;
@@ -409,6 +417,13 @@ public class PreviewProcessorImpl {
 		return ignore;
 	}
 
+	/**
+	 * Figure out the correct file extension for the file based on the mimtype and extension in OAE
+	 * @param path the path to the file
+	 * @param mimetype the mimetype stored for this file in OAE
+	 * @param extension the extension stored for this file in OAE
+	 * @return the file extension
+	 */
 	protected String determineFileExtensionWithMimeType(String path, String mimetype, String extension){
 	  // Get rid of nulls and uppercase letters
 		mimetype = StringUtils.trimToEmpty(mimetype).toLowerCase();
@@ -466,23 +481,23 @@ public class PreviewProcessorImpl {
 
 	/**
 	 * Mark content items we intend to process with our pid@host
-	 * @param content the content to claim
+	 * @param contentIds the content to claim
 	 * @param name the pid@host
 	 */
-	protected void claimContent(List<Map<String,Object>> content, String name){
+	protected void claimContent(List<String> contentIds, String name){
 		JSONArray batch = new JSONArray();
 
-		for (Map<String,Object> item: content) {
+		for (String id: contentIds) {
 			JSONObject req = new JSONObject();
 			JSONObject params = new JSONObject();
-		    String path = (String)item.get("_path");
 		    req.put("_charset_", "UTF-8");
-		    req.put("url", "/p/" + path + ".json");
+		    req.put("url", "/p/" + id + ".json");
 		    req.put("method", "POST");
 		    params.put("sakai:processor", name);
 		    req.put("parameters", params);
 		    batch.add(req);
 		}
+		log.info("Claim content for this processor {}", name);
 		remoteServer.post("/system/batch", ImmutableMap.of("requests", batch.toString()));
 	}
 

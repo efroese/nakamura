@@ -28,47 +28,56 @@ import org.sakaiproject.nakamura.preview.ProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("rawtypes")
-public class PDFProcessor implements Callable {
+/**
+ * Render a series of images from PDF pages.
+ */
+public class PDFProcessor implements Callable<Integer> {
 
 	private static final Logger log = LoggerFactory.getLogger(JODProcessor.class);
 
 	private String inputPath;
 	private String outputPrefix;
-	
-	public PDFProcessor(String inputPath, String outputPrefix){
+	private int numPages;
+
+	/**
+	 * @param inputPath the path to a PDF file
+	 * @param outputPrefix a prefix to append pageN.jpeg to
+	 * @param numPages how many pages to process, -1 for all pages
+	 */
+	public PDFProcessor(String inputPath, String outputPrefix, int numPages){
 	  this.inputPath = inputPath;
 	  this.outputPrefix = outputPrefix;
+	  this.numPages = numPages;
 	}
 
   @Override
-  public Object call() throws Exception {
-    process();
-    return null;
+  public Integer call() throws Exception {
+    return process();
   }
 	
 	/**
-	 * Split a PDF by pages and store them in the previews directory as contentId.page.X
+	 * Split a PDF by pages and store them in the previews directory as contentId.pageX.jpeg
+	 * @throws IOException 
 	 */
-	public void process() throws ProcessingException {
-		// Guess what this does? I'll give you $5
+	public Integer process() throws ProcessingException, IOException {
 		PDFImageWriter imageWriter = new PDFImageWriter();
-		try {
-			// Load, split, loop and write an image of each page
-			PDDocument document = PDDocument.load(new File(inputPath));
-			int pageCount = document.getNumberOfPages();
-			boolean success = imageWriter.writeImage(document,
-					ImageFormat.IMAGE_FORMAT_JPEG.name, null,
-					1, pageCount, outputPrefix);
-			if (success) {
-				log.debug("Wrote {} page image(s) to {}", pageCount, outputPrefix);
-			}
-			else {
-				log.error("PDFBox was unable to save an image for document {} ", inputPath);
-			}
-		} catch (IOException e) {
-			log.error("Error while splitting the PDF: {}", e);
-			throw new ProcessingException("Error while splitting PDF at " + inputPath, e);
+		// Load, split, loop and write an image of each page
+		PDDocument document = PDDocument.load(new File(inputPath));
+		int pageCount = (numPages < 0)? document.getNumberOfPages() : 1;
+		boolean success = imageWriter.writeImage(document,
+		    ImageFormat.IMAGE_FORMAT_JPEG.name,
+		    null, // password
+		    1,    // start
+		    pageCount,
+		    outputPrefix);
+
+		if (success) {
+			log.debug("Wrote {} page image(s) to {}", pageCount, outputPrefix);
+			return pageCount;
+		}
+		else {
+			log.error("PDFBox was unable to save an image for document {} ", inputPath);
+			return 0;
 		}
 	}
 }
