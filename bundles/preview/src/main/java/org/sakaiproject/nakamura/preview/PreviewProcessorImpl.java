@@ -48,6 +48,7 @@ import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tika.Tika;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -178,13 +179,14 @@ public class PreviewProcessorImpl {
 				String extension = null;
 				if (item.containsKey(PreviewProcessor.FILE_EXTENSION)){
 					extension = (String)item.get(PreviewProcessor.FILE_EXTENSION);
+					extension = StringUtils.stripStart(extension, ".");
 				}
 				String mimetype = null;
 				if (item.containsKey(PreviewProcessor.MIME_TYPE)){
 					mimetype = (String)item.get(PreviewProcessor.MIME_TYPE);
 				}
-				extension = determineFileExtensionWithMimeType(contentFilePath, mimetype, extension);
 				contentFilePath = FilePathUtils.join(new String[] { docsDir, id + "." + extension });
+				extension = determineFileExtensionWithMimeType(contentFilePath, mimetype, extension);
 
 				log.info("With filename {}", id + "." + extension);
 				download(server + "/p/" + id, contentFilePath);
@@ -266,7 +268,7 @@ public class PreviewProcessorImpl {
 	 * @return
 	 * @throws Exception
 	 */
-	protected int processDocument(String contentFilePath, Map<String,Object> item, String extension)
+	protected Integer processDocument(String contentFilePath, Map<String,Object> item, String extension)
 	throws Exception {
 
 		String id = (String)item.get("_path");
@@ -280,7 +282,7 @@ public class PreviewProcessorImpl {
 		PDFProcessor pdfImageCreater = new PDFProcessor(convertedPDFPath, outputPrefix, numPages);
 		if (PreviewProcessor.PDF_EXTENSIONS.contains(extension)){
 		  // If the content is a PDF, just move it to the preview dir
-		  FileUtils.moveFile(new File(contentFilePath), new File(convertedPDFPath));
+		  FileUtils.copyFile(new File(contentFilePath), new File(convertedPDFPath));
 		}
 		else {
 		  // Else convert it to a pdf in the preview dir
@@ -328,18 +330,16 @@ public class PreviewProcessorImpl {
 			}
 		}
 
-		Integer pdfPageImages = imageResult.get();
+		Integer numPDFPageImages = imageResult.get();
 		log.info("Wrote {} page image{}",
-		    new Object[]{ pdfPageImages, (pdfPageImages > 1 || pdfPageImages == 0)? "s": "", } );
+		    new Object[]{ numPDFPageImages, (numPDFPageImages > 1 || numPDFPageImages == 0)? "s": "", } );
 
-		String contentPreviewDirectory = FilePathUtils. join(new String[] { previewsDir, id });
-		File[] previewFiles = FilePathUtils.listFilesSortedName(contentPreviewDirectory);
+		String contentPreviewDirectory = FilePathUtils.join(new String[] { previewsDir, id } );
+		for (int i = 1; i <= numPDFPageImages; i++){
 
-		int i = 1;
-		for (File preview: previewFiles){
-		  if (!preview.getPath().toLowerCase().endsWith(".jpg")){
-		    continue;
-		  }
+		  String pageImagePath = FilePathUtils.join(new String[] { contentPreviewDirectory, "page." + i + ".JPEG"  });
+		  File preview = new File(pageImagePath);
+
 			imageProcessor.resize(preview.getAbsolutePath(),
 					contentPreviewDirectory + File.separator + id + ".large.jpg",
 					LARGE_MAX_WIDTH, null);
@@ -354,9 +354,8 @@ public class PreviewProcessorImpl {
 					contentPreviewDirectory + File.separator + id + ".small.jpg",
 					SMALL_MAX_WIDTH, SMALL_MAX_HEIGHT);
 			remoteServer.uploadContentPreview(id, preview, Integer.toString(i), "small");
-			i++;
 		}
-		return previewFiles.length;
+		return numPDFPageImages;
 	}
 
 	/**
@@ -438,15 +437,12 @@ public class PreviewProcessorImpl {
 		mimetype = StringUtils.trimToEmpty(mimetype).toLowerCase();
 		extension = StringUtils.trimToEmpty(extension).toLowerCase();
 
-		// trim .txt to txt
-		if (extension.startsWith(".")){
-		  extension = extension.substring(1, extension.length());
+		// no mimetype, use tika to guess it
+		if (mimetype.isEmpty()){
+		  mimetype = new Tika().detect(path);
 		}
-		// no mimetype but we have an extension
-		if (mimetype.isEmpty() && extension.isEmpty() == false){
-		  return extension;
-		}
-		else if (mimetype.isEmpty() == false) {
+
+		if (!mimetype.isEmpty()) {
 		  for (String mime: mimeTypes){
 		    // if the extension is empty or isn't in the line that matches the mimetype,
 		    // then take the first extension from the list for that mimetype
