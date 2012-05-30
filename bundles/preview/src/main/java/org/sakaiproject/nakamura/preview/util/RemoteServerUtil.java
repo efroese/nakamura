@@ -22,7 +22,9 @@ import org.slf4j.LoggerFactory;
 
 public class RemoteServerUtil {
 
-	private static final Logger log = LoggerFactory.getLogger(RemoteServerUtil.class);
+  private static final Logger log = LoggerFactory.getLogger(RemoteServerUtil.class);
+
+  private static final int NO_TIMEOUT = 0;
 
 	protected URL server;
 	protected String password;
@@ -44,13 +46,17 @@ public class RemoteServerUtil {
 	}
 
 	public JSONObject post(String url, Map<String, String> params) {
-		log.debug("POST {}", url);
-		PostMethod post = new PostMethod(url);
-		for (Entry<String, String> entry: params.entrySet()){
-			post.addParameter(entry.getKey(), entry.getValue());
-		}
-		return http(getHttpClient(server, "admin", password), post);
+		return post(url, params, NO_TIMEOUT);
 	}
+
+	public JSONObject post(String url, Map<String, String> params, int timeout) {
+    log.debug("POST {}", url);
+    PostMethod post = new PostMethod(url);
+    for (Entry<String, String> entry: params.entrySet()){
+      post.addParameter(entry.getKey(), entry.getValue());
+    }
+    return http(getHttpClient(server, "admin", password), post, timeout);
+  }
 
 	/**
 	 * Upload a content preview image

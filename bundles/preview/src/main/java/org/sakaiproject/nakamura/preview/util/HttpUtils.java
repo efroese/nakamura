@@ -31,6 +31,7 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.commons.io.IOUtils;
@@ -84,6 +85,13 @@ public class HttpUtils {
 			}
 		}
 		return port;
+	}
+
+	public static JSONObject http(HttpClient client, HttpMethod method, int timeout) {
+	  HttpConnectionManagerParams params = client.getHttpConnectionManager().getParams();
+	  params.setSoTimeout(timeout);
+	  client.getHttpConnectionManager().setParams(params);
+	  return HttpUtils.http(client, method);
 	}
 
 	/**
