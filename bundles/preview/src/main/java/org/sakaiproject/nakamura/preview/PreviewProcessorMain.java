@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 public class PreviewProcessorMain {
 
-  private static final String DEFAULT_INTERVAL = "1";
   private static final String DEFAULT_COUNT = "1";
 
   private static Logger log = LoggerFactory
@@ -65,9 +64,8 @@ public class PreviewProcessorMain {
     options.addOption("p", "password", true, "OAE admin PASSWORD");
     options.addOption("d", "directory", true,
         "Working DIRECTORY for downloads, previews, logs");
-    options.addOption("i", "interval", true,
-        "Sleep for INTERVAL seconds between runs");
     options.addOption("n", "count", true, "Run the processing COUNT times");
+    options.addOption("t", "tagging", false, "Force tagging of all documents.");
 
     CommandLineParser parser = new GnuParser();
     CommandLine cmd = parser.parse(options, args);
@@ -80,8 +78,6 @@ public class PreviewProcessorMain {
       System.exit(1);
     }
 
-    int interval = Integer.parseInt(cmd.getOptionValue("interval",
-        DEFAULT_INTERVAL));
     int count = Integer.parseInt(cmd.getOptionValue("count", DEFAULT_COUNT));
 
     PreviewProcessorImpl pp = new PreviewProcessorImpl();
@@ -94,12 +90,25 @@ public class PreviewProcessorMain {
     pp.server = new URL(cmd.getOptionValue("server"));
     pp.contentServer = new URL(cmd.getOptionValue("content"));
     pp.contentFetcher = new SearchContentFetcher();
-    pp.remoteServer = new RemoteServerUtil(cmd.getOptionValue("server"),
-        cmd.getOptionValue("password"));
+    pp.remoteServer = new RemoteServerUtil(cmd.getOptionValue("server"), cmd.getOptionValue("password"));
 
-    while (count-- >= 0) {
-      pp.process();
-      Thread.sleep(interval * 1000);
+    if (cmd.hasOption("tagging")){
+      pp.forceTagging = true;
+      log.info("Tagging all content regardless of user preferences!");
+    }
+
+    try {
+      while (count >= 0) {
+        pp.process();
+        count--;
+      }
+      System.exit(0);
+    }
+    catch (Exception e){
+      log.error("The preview processor threw an exception {}", e);
+    }
+    finally {
+      System.exit(1);
     }
   }
 }

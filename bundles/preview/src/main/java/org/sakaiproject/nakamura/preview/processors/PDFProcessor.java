@@ -19,7 +19,6 @@ package org.sakaiproject.nakamura.preview.processors;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.Callable;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.util.PDFImageWriter;
@@ -31,35 +30,15 @@ import org.slf4j.LoggerFactory;
 /**
  * Render a series of images from PDF pages.
  */
-public class PDFProcessor implements Callable<Integer> {
+public class PDFProcessor {
 
 	private static final Logger log = LoggerFactory.getLogger(JODProcessor.class);
-
-	private String inputPath;
-	private String outputPrefix;
-	private int numPages;
-
-	/**
-	 * @param inputPath the path to a PDF file
-	 * @param outputPrefix a prefix to append pageN.jpeg to
-	 * @param numPages how many pages to process, -1 for all pages
-	 */
-	public PDFProcessor(String inputPath, String outputPrefix, int numPages){
-	  this.inputPath = inputPath;
-	  this.outputPrefix = outputPrefix;
-	  this.numPages = numPages;
-	}
-
-  @Override
-  public Integer call() throws Exception {
-    return process();
-  }
 	
 	/**
 	 * Split a PDF by pages and store them in the previews directory as contentId.pageX.jpeg
 	 * @throws IOException 
 	 */
-	public Integer process() throws ProcessingException, IOException {
+	public Integer process(String inputPath, String outputPrefix, int numPages) throws ProcessingException, IOException {
 		PDFImageWriter imageWriter = new PDFImageWriter();
 		// Load, split, loop and write an image of each page
 		PDDocument document = PDDocument.load(new File(inputPath));

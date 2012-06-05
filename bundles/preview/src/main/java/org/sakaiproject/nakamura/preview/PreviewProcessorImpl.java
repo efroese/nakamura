@@ -32,9 +32,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -91,30 +88,42 @@ public class PreviewProcessorImpl {
 	private static final Double SMALL_MAX_HEIGHT = new Double(225.0);
 	private static final Double LARGE_MAX_WIDTH = new Double(700.0);
 
+	// Tags
 	private static final int MAX_TAGS = 10;
 
+	// HTTP
+	// Timeout if it takes more than PROP_TIMEOUT milliseconds to set a property on
+	// a content item in OAE
+	private static final int PROP_TIMEOUT = 20 * 1000;
+
+	// Connecting to the remote OAE instance
 	protected URL server;
 	protected URL contentServer;
 	protected String password;
 	protected String name;
 	protected String basePath;
 
+	// Mimetype lists
 	protected Set<String> ignoreTypes;
 	protected Set<String> mimeTypes;
 
+	// OAE
 	protected RemoteServerUtil remoteServer;
+	// Get content ids for processing
 	protected ContentFetcher contentFetcher;
 
 	protected ImageProcessor imageProcessor;
 	protected JODProcessor jodProcessor;
+	protected PDFProcessor pdfImageCreator;
 	protected TikaTextExtractor textExtractor;
 	protected TermExtractor termExtractor;
-	protected ExecutorService executorService;
 
 	protected String previewsDir;
 	protected String docsDir;
 
 	protected Map<String,JSONObject> userMetaCache;
+
+	protected boolean forceTagging = false;
 
 	public PreviewProcessorImpl() { }
 
@@ -122,6 +131,7 @@ public class PreviewProcessorImpl {
 	  this.name = ManagementFactory.getRuntimeMXBean().getName();
 		this.imageProcessor = new ImageProcessor();
 		this.jodProcessor = new JODProcessor();
+		this.pdfImageCreator = new PDFProcessor();
 		this.textExtractor = new TikaTextExtractor();
 		this.remoteServer = new RemoteServerUtil(server, password);
 
@@ -132,7 +142,6 @@ public class PreviewProcessorImpl {
 		    new DefaultFilter(SINGLE_WORD_TERM_MIN_OCCUR, TERM_MIN_WORDS,
 		        TERM_MAX_WORDS, TERM_MIN_LENGTH, TERM_MAX_LENGTH));
 		this.userMetaCache = new HashMap<String, JSONObject>();
-		this.executorService = Executors.newFixedThreadPool(1);
 	}
 
 	public void process() throws IOException {
@@ -191,6 +200,7 @@ public class PreviewProcessorImpl {
 				log.info("With filename {}", id + "." + extension);
 				download(server + "/p/" + id, contentFilePath);
 
+				// Images are easy just download and resize
 				if (PreviewProcessor.IMAGE_EXTENSIONS.contains(extension)){
 					processImage(contentFilePath, item);
 				}
@@ -199,17 +209,19 @@ public class PreviewProcessorImpl {
 					remoteServer.post("/p/" + id + ".json", ImmutableMap.of("sakai:pagecount", Integer.toString(pageCount)));
 				}
 
-				remoteServer.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.NEEDS_PROCESSING, "false"));
+				remoteServer.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.NEEDS_PROCESSING, "false"), PROP_TIMEOUT);
 	      log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.NEEDS_PROCESSING, "false"});
-	      remoteServer.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.HAS_PREVIEW, "true"));
+	      remoteServer.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.HAS_PREVIEW, "true"), PROP_TIMEOUT);
 	      log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.HAS_PREVIEW, "true"});
+	      log.info("SUCCESS processed {}",id);
 			}
 			catch (Exception e){
 				log.error("There was an error generating a preview for {}", id, e);
-				remoteServer.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.NEEDS_PROCESSING, "false"));
+				remoteServer.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.NEEDS_PROCESSING, "false"), PROP_TIMEOUT);
 	      log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.NEEDS_PROCESSING, "false"});
-	      remoteServer.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.PROCESSING_FAILED, "true"));
+	      remoteServer.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.PROCESSING_FAILED, "true"), PROP_TIMEOUT);
 	      log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.PROCESSING_FAILED, "true"});
+	      log.info("FAILURE processing {}",id);
 			}
 			finally {
 				if (contentFilePath != null){
@@ -279,7 +291,7 @@ public class PreviewProcessorImpl {
 		if (PreviewProcessor.FIRST_PAGE_ONLY_EXTENSIONS.contains(extension)){
 		  numPages = 1;
 		}
-		PDFProcessor pdfImageCreater = new PDFProcessor(convertedPDFPath, outputPrefix, numPages);
+
 		if (PreviewProcessor.PDF_EXTENSIONS.contains(extension)){
 		  // If the content is a PDF, just move it to the preview dir
 		  FileUtils.copyFile(new File(contentFilePath), new File(convertedPDFPath));
@@ -288,9 +300,6 @@ public class PreviewProcessorImpl {
 		  // Else convert it to a pdf in the preview dir
 		  jodProcessor.process(contentFilePath, convertedPDFPath);
 		}
-	  // Split the PDF and snap images of the pages
-    // Images are saved to ${basePath}/previews/${id}/${id}.page.[1...n].JPEG
-		Future<Integer> imageResult = executorService.submit(pdfImageCreater);
 
 		if (item.containsKey(PreviewProcessor.POOL_CONTENT_CREATED_FOR)){
 			String userId = (String)item.get(PreviewProcessor.POOL_CONTENT_CREATED_FOR);
@@ -330,7 +339,9 @@ public class PreviewProcessorImpl {
 			}
 		}
 
-		Integer numPDFPageImages = imageResult.get();
+	// Split the PDF and snap images of the pages
+    // Images are saved to ${basePath}/previews/${id}/${id}.page.[1...n].JPEG
+		Integer numPDFPageImages = pdfImageCreator.process(convertedPDFPath, outputPrefix, numPages);
 		log.info("Wrote {} page image{}",
 		    new Object[]{ numPDFPageImages, (numPDFPageImages > 1 || numPDFPageImages == 0)? "s": "", } );
 
@@ -521,6 +532,9 @@ public class PreviewProcessorImpl {
 	// -------------- Tagging ---------------
 
 	protected boolean doAutoTaggingForUser(JSONObject userMeta){
+	  if (forceTagging){
+	    return true;
+	  }
 		JSONObject props = userMeta.getJSONObject("user").getJSONObject("properties");
 		return props.has("isAutoTagging") && props.getBoolean("isAutoTagging");
 	}
