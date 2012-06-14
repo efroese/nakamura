@@ -20,13 +20,6 @@ package org.sakaiproject.nakamura.api.termextract;
 
 import java.util.Collection;
 import java.util.List;
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-import java.util.Set;
->>>>>>> Port of the topia termextractor from Python.
-=======
->>>>>>> Add fixes from github repo (https://github.com/turian/topia.termextract)
 
 /**
  * A utility to provide POS tag extractions from a given text.
@@ -37,15 +30,7 @@ public interface Tagger {
    * 
    * @param text
    */
-<<<<<<< HEAD
-<<<<<<< HEAD
   List<String> tokenize(String text);
-=======
-  Set<String> tokenize(String text);
->>>>>>> Port of the topia termextractor from Python.
-=======
-  List<String> tokenize(String text);
->>>>>>> Add fixes from github repo (https://github.com/turian/topia.termextract)
 
   /**
    * Returns the tagged list of terms.

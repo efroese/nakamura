@@ -44,21 +44,10 @@ public class TermExtractorTest {
   public void testExtraction() throws Exception {
     String txt = TermExtractUtil.readExampleText("/example.txt");
     List<ExtractedTerm> terms = extractor.process(txt);
-<<<<<<< HEAD
-<<<<<<< HEAD
     System.out.println("extracted: " + terms);
-<<<<<<< HEAD
-=======
-    System.out.println(terms);
->>>>>>> Port of the topia termextractor from Python.
-=======
-    System.out.println("extracted: " + terms);
->>>>>>> Add fixes from github repo (https://github.com/turian/topia.termextract)
-=======
     
     txt = TermExtractUtil.readExampleText("/recipe.txt");
     terms = extractor.process(txt);
     System.out.println("extracted: " + terms);
->>>>>>> Use a simpler regex to split terms.
   }
 }

@@ -25,20 +25,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-<<<<<<< HEAD
-<<<<<<< HEAD
 import java.util.List;
 import java.util.Map;
-=======
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
->>>>>>> Port of the topia termextractor from Python.
-=======
-import java.util.List;
-import java.util.Map;
->>>>>>> Add fixes from github repo (https://github.com/turian/topia.termextract)
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,10 +50,6 @@ import org.slf4j.LoggerFactory;
  */
 public class TaggerImpl implements Tagger {
   private static final Logger LOGGER = LoggerFactory.getLogger(TaggerImpl.class);
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Add fixes from github repo (https://github.com/turian/topia.termextract)
   // the original term spec
   // ([^a-zA-Z]*)([a-zA-Z-\.]*[a-zA-Z])([^a-zA-Z]*[a-zA-Z]*)
 
@@ -77,18 +61,7 @@ public class TaggerImpl implements Tagger {
   // change original term spec to use character classes
   //  private static final Pattern TERM_SPEC = Pattern.compile("([\\W\\d_]*)(([^\\W\\d_]*[-\\.]*)*[^\\W\\d_])([\\W\\d_]*[^\\W\\d_]*)");
   // add some fixes to the term spec
-<<<<<<< HEAD
-  private static final Pattern TERM_SPEC = Pattern.compile("([\\W\\d_]*)(([^\\W\\d_]?[-\\.]?)*[^\\W\\d_])([\\W\\d_]*[^\\W\\d_]*)");
-<<<<<<< HEAD
-=======
-  private static final Pattern TERM_SPEC = Pattern
-      .compile("([^a-zA-Z]*)([a-zA-Z-\\.]*[a-zA-Z])([^a-zA-Z]*[a-zA-Z]*)");
->>>>>>> Port of the topia termextractor from Python.
-=======
->>>>>>> Add fixes from github repo (https://github.com/turian/topia.termextract)
-=======
   // private static final Pattern TERM_SPEC = Pattern.compile("([\\W]*)(([^\\w_]+[-]?)*[^\\W\\d_])([\\W\\d_]*[^\\W\\d_]*)");
->>>>>>> Use a simpler regex to split terms.
 
   private TermExtractRule[] rules;
   private Map<String, String> tagsByTerm;
@@ -115,15 +88,7 @@ public class TaggerImpl implements Tagger {
 
       // Read File Line By Line
       while ((strLine = br.readLine()) != null) {
-<<<<<<< HEAD
-<<<<<<< HEAD
         String[] termAndTag = StringUtils.split(strLine, " ", 3); // split on " " since we control the file
-=======
-        String[] termAndTag = StringUtils.split(strLine, " ", 3);
->>>>>>> Port of the topia termextractor from Python.
-=======
-        String[] termAndTag = StringUtils.split(strLine, " ", 3); // split on " " since we control the file
->>>>>>> Add fixes from github repo (https://github.com/turian/topia.termextract)
         if (termAndTag.length >= 2) {
           tagsByTerm.put(termAndTag[0], termAndTag[1]);
         } else {
@@ -149,21 +114,9 @@ public class TaggerImpl implements Tagger {
    * 
    * @see org.sakaiproject.nakamura.api.termextract.Tagger#tokenize(java.lang.String)
    */
-<<<<<<< HEAD
-<<<<<<< HEAD
   public List<String> tokenize(String text) {
     ArrayList<String> terms = new ArrayList<String>();
     for (String term : text.split("\\s")) {
-=======
-  public Set<String> tokenize(String text) {
-    HashSet<String> terms = new HashSet<String>();
-    for (String term : StringUtils.split(text)) {
->>>>>>> Port of the topia termextractor from Python.
-=======
-  public List<String> tokenize(String text) {
-    ArrayList<String> terms = new ArrayList<String>();
-    for (String term : text.split("\\s")) {
->>>>>>> Add fixes from github repo (https://github.com/turian/topia.termextract)
       // If the term is empty, skip it, since we probably just have
       // multiple whitespace characters.
       term = StringUtils.trimToNull(term);
@@ -223,15 +176,7 @@ public class TaggerImpl implements Tagger {
    * @see org.sakaiproject.nakamura.api.termextract.Tagger#process(java.lang.String)
    */
   public List<TaggedTerm> process(String text) {
-<<<<<<< HEAD
-<<<<<<< HEAD
     List<String> terms = tokenize(text);
-=======
-    Set<String> terms = tokenize(text);
->>>>>>> Port of the topia termextractor from Python.
-=======
-    List<String> terms = tokenize(text);
->>>>>>> Add fixes from github repo (https://github.com/turian/topia.termextract)
     List<TaggedTerm> tags = tag(terms);
     return tags;
   }
