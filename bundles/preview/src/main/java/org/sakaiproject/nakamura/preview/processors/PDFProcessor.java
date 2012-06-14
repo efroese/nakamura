@@ -20,6 +20,7 @@ package org.sakaiproject.nakamura.preview.processors;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.felix.scr.annotations.Component;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.util.PDFImageWriter;
 import org.apache.sanselan.ImageFormat;
@@ -30,35 +31,36 @@ import org.slf4j.LoggerFactory;
 /**
  * Render a series of images from PDF pages.
  */
+@Component
 public class PDFProcessor {
 
-	private static final Logger log = LoggerFactory.getLogger(JODProcessor.class);
-	
-	/**
-	 * Split a PDF by pages and store them in the previews directory as contentId.pageX.jpeg
-	 * @throws IOException 
-	 */
-	public Integer process(String inputPath, String outputPrefix, int numPages) throws ProcessingException, IOException {
-		PDFImageWriter imageWriter = new PDFImageWriter();
-		// Load, split, loop and write an image of each page
-		PDDocument document = PDDocument.load(new File(inputPath));
-		int pageCount = (numPages < 0)? document.getNumberOfPages() : 1;
-		log.info("Writing page images with prefix {}", outputPrefix);
-		boolean success = imageWriter.writeImage(document,
-		    ImageFormat.IMAGE_FORMAT_JPEG.name,
-		    null, // password
-		    1,    // start
-		    pageCount,
-		    outputPrefix);
-		document.close();
+  private static final Logger log = LoggerFactory.getLogger(JODProcessor.class);
 
-		if (success) {
-			log.debug("Wrote {} page image(s) to {}", pageCount, outputPrefix);
-			return pageCount;
-		}
-		else {
-			log.error("PDFBox was unable to save an image for document {} ", inputPath);
-			return 0;
-		}
-	}
+  /**
+   * Split a PDF by pages and store them in the previews directory as contentId.pageX.jpeg
+   * @throws IOException
+   */
+  public Integer process(String inputPath, String outputPrefix, int numPages) throws ProcessingException, IOException {
+    PDFImageWriter imageWriter = new PDFImageWriter();
+    // Load, split, loop and write an image of each page
+    PDDocument document = PDDocument.load(new File(inputPath));
+    int pageCount = (numPages < 0)? document.getNumberOfPages() : 1;
+    log.info("Writing page images with prefix {}", outputPrefix);
+    boolean success = imageWriter.writeImage(document,
+        ImageFormat.IMAGE_FORMAT_JPEG.name,
+        null, // password
+        1,    // start
+        pageCount,
+        outputPrefix);
+    document.close();
+
+    if (success) {
+      log.debug("Wrote {} page image(s) to {}", pageCount, outputPrefix);
+      return pageCount;
+    }
+    else {
+      log.error("PDFBox was unable to save an image for document {} ", inputPath);
+      return 0;
+    }
+  }
 }

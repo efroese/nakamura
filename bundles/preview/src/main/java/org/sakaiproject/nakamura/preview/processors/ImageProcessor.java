@@ -22,6 +22,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.felix.scr.annotations.Component;
 import org.apache.sanselan.ImageInfo;
 import org.apache.sanselan.ImageReadException;
 import org.apache.sanselan.ImageWriteException;
@@ -32,59 +33,60 @@ import org.sakaiproject.nakamura.preview.ProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Component
 public class ImageProcessor {
-	
-	private static final Logger log = LoggerFactory.getLogger(ImageProcessor.class);
 
-	/**
-	 * resize and save the image
-	 * @param inputPath the path to the input file
-	 * @param suffix an identifier for the thumbnail
-	 * @param maxWidth the maximum width of the resized image (in pixels)
-	 * @param maxHeight the maximum height of the resized image (in pixels)
-	 * @throws ProcessingException
-	 */
-	public void resize(String inputPath, String outputPath, Double maxWidth, Double maxHeight)
-	throws ProcessingException {
-		File input = new File(inputPath);
-		File dst = new File(outputPath);
-		
-		try {
-			ImageInfo info = Sanselan.getImageInfo(input);
-			BufferedImage image = ImageUtils.getBufferedImage(IOUtils.getFileBytes(input), info);
-			Dimension d = Sanselan.getImageSize(input);
+  private static final Logger log = LoggerFactory.getLogger(ImageProcessor.class);
 
-			Double width = d.getWidth();
-			Double height = d.getHeight();
-			Double ratio = width / maxWidth;
+  /**
+   * resize and save the image
+   * @param inputPath the path to the input file
+   * @param suffix an identifier for the thumbnail
+   * @param maxWidth the maximum width of the resized image (in pixels)
+   * @param maxHeight the maximum height of the resized image (in pixels)
+   * @throws ProcessingException
+   */
+  public void resize(String inputPath, String outputPath, Double maxWidth, Double maxHeight)
+  throws ProcessingException {
+    File input = new File(inputPath);
+    File dst = new File(outputPath);
 
-			if (maxHeight == null){
-				maxHeight = height / ratio;
-			}
+    try {
+      ImageInfo info = Sanselan.getImageInfo(input);
+      BufferedImage image = ImageUtils.getBufferedImage(IOUtils.getFileBytes(input), info);
+      Dimension d = Sanselan.getImageSize(input);
 
-			Double imageRatio = width / height;
-			Double scaleRatio = 0.0;
-			if (imageRatio > ratio){
-				scaleRatio = maxWidth / width;
-			}
-			else {
-				scaleRatio = maxHeight / height;
-			}
-			int targetWidth = (int)(width * scaleRatio);
-			int targetHeight = (int)(height * scaleRatio);
-			ImageUtils.write(ImageUtils.getScaledInstance(image, targetWidth, targetHeight), info, dst);
-			
-			log.debug("Wrote image {}h x {}w to {}",
-					new Object[] { Integer.toString(targetHeight), Integer.toString(targetWidth), dst.getAbsolutePath()});
-		} catch (ImageReadException e) {
-			log.error("Error reading image at {}, {}", inputPath, e);
-			throw new ProcessingException("Error reading image " + inputPath, e);
-		}  catch (IOException e) {
-			log.error("Error reading image at {}, {}", inputPath, e);
-			throw new ProcessingException("Error reading image " + inputPath, e);
-		} catch (ImageWriteException e) {
-			log.error("Error writing image at {}, {}", inputPath, e);
-			throw new ProcessingException("Error writing image " + inputPath, e);
-		}
-	}
+      Double width = d.getWidth();
+      Double height = d.getHeight();
+      Double ratio = width / maxWidth;
+
+      if (maxHeight == null){
+        maxHeight = height / ratio;
+      }
+
+      Double imageRatio = width / height;
+      Double scaleRatio = 0.0;
+      if (imageRatio > ratio){
+        scaleRatio = maxWidth / width;
+      }
+      else {
+        scaleRatio = maxHeight / height;
+      }
+      int targetWidth = (int)(width * scaleRatio);
+      int targetHeight = (int)(height * scaleRatio);
+      ImageUtils.write(ImageUtils.getScaledInstance(image, targetWidth, targetHeight), info, dst);
+
+      log.debug("Wrote image {}h x {}w to {}",
+          new Object[] { Integer.toString(targetHeight), Integer.toString(targetWidth), dst.getAbsolutePath()});
+    } catch (ImageReadException e) {
+      log.error("Error reading image at {}, {}", inputPath, e);
+      throw new ProcessingException("Error reading image " + inputPath, e);
+    }  catch (IOException e) {
+      log.error("Error reading image at {}, {}", inputPath, e);
+      throw new ProcessingException("Error reading image " + inputPath, e);
+    } catch (ImageWriteException e) {
+      log.error("Error writing image at {}, {}", inputPath, e);
+      throw new ProcessingException("Error writing image " + inputPath, e);
+    }
+  }
 }

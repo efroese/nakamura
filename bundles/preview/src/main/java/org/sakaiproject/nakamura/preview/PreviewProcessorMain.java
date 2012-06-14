@@ -17,60 +17,48 @@
  */
 package org.sakaiproject.nakamura.preview;
 
-import java.io.IOException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
-import org.apache.commons.io.IOUtils;
+import org.sakaiproject.nakamura.preview.processors.ImageProcessor;
+import org.sakaiproject.nakamura.preview.processors.PDFProcessor;
+import org.sakaiproject.nakamura.preview.processors.TikaTextExtractor;
 import org.sakaiproject.nakamura.preview.util.RemoteServerUtil;
+import org.sakaiproject.nakamura.termextract.TermExtractorImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 
 public class PreviewProcessorMain {
 
   private static final String DEFAULT_COUNT = "1";
 
   private static Logger log = LoggerFactory
-      .getLogger(PreviewProcessorMain.class);
-
-  @SuppressWarnings("unchecked")
-  private static Set<String> loadResourceSet(String filename)
-      throws IOException {
-    ClassLoader cl = PreviewProcessorMain.class.getClassLoader();
-    Set<String> resource = new HashSet<String>();
-    for (String line : (List<String>) IOUtils.readLines(cl
-        .getResourceAsStream(filename))) {
-      if (!line.startsWith("#") && !line.trim().equals("")) {
-        resource.add(line.trim());
-      }
-    }
-    log.trace("Loaded resource {}: {} lines.", filename, resource.size());
-    return resource;
-  }
+  .getLogger(PreviewProcessorMain.class);
 
   public static void main(String[] args) throws Exception {
 
     Options options = new Options();
     options.addOption("s", "server", true, "OAE URL: http://localhost:8080");
     options.addOption("c", "content", true,
-        "OAE Content URL: http://localhost:8082");
+    "OAE Content URL: http://localhost:8082");
+    options.addOption("u", "user", true, "OAE admin user");
     options.addOption("p", "password", true, "OAE admin PASSWORD");
     options.addOption("d", "directory", true,
-        "Working DIRECTORY for downloads, previews, logs");
+    "Working DIRECTORY for downloads, previews, logs");
     options.addOption("n", "count", true, "Run the processing COUNT times");
     options.addOption("t", "tagging", false, "Force tagging of all documents.");
 
     CommandLineParser parser = new GnuParser();
     CommandLine cmd = parser.parse(options, args);
 
-    String usage = "java -jar preview.jar -s http://localhost:8080 -c http://localhost:8082 -p admin -d /var/oae/pp [-i 1] [-n 1]";
+    String usage = "java -jar preview.jar -s http://localhost:8080 -c http://localhost:8082 -u admin -p admin -d /var/oae/pp [-i 1] [-n 1]";
     if (!cmd.hasOption("server") || !cmd.hasOption("content")
         || !cmd.hasOption("password") || !cmd.hasOption("directory")) {
       HelpFormatter formatter = new HelpFormatter();
@@ -81,19 +69,28 @@ public class PreviewProcessorMain {
     int count = Integer.parseInt(cmd.getOptionValue("count", DEFAULT_COUNT));
 
     PreviewProcessorImpl pp = new PreviewProcessorImpl();
-    pp.password = cmd.getOptionValue("password");
-    pp.basePath = cmd.getOptionValue("directory");
-    pp.ignoreTypes = loadResourceSet("ignore.types");
-    pp.mimeTypes = loadResourceSet("mime.types");
-    pp.init();
+    Builder<String, Object> props =  ImmutableMap.builder();
 
-    pp.server = new URL(cmd.getOptionValue("server"));
-    pp.contentServer = new URL(cmd.getOptionValue("content"));
+    props.put(PreviewProcessorImpl.PROP_REMOTE_SERVER_URL, cmd.getOptionValue("server"));
+    props.put(PreviewProcessorImpl.PROP_REMOTE_CONTENT_SERVER_URL, cmd.getOptionValue("content"));
+    props.put(PreviewProcessorImpl.PROP_REMOTE_SERVER_USER, cmd.getOptionValue("user"));
+    props.put(PreviewProcessorImpl.PROP_REMOTE_SERVER_PASSWORD, cmd.getOptionValue("password"));
+    props.put(PreviewProcessorImpl.PROP_BASEPATH, cmd.getOptionValue("directory"));
+    props.put(PreviewProcessorImpl.PROP_MAX_TAGS, PreviewProcessorImpl.DEFAULT_MAX_TAGS);
+    props.put(PreviewProcessorImpl.PROP_FORCE_TAGGING, cmd.getOptionValue("tagging"));
+    pp.modified(props.build());
+
+    pp.remoteServerUrl = new URL(cmd.getOptionValue("server"));
+    pp.remoteContentServerUrl = new URL(cmd.getOptionValue("content"));
     pp.contentFetcher = new SearchContentFetcher();
     pp.remoteServer = new RemoteServerUtil(cmd.getOptionValue("server"), cmd.getOptionValue("password"));
 
+    pp.imageProcessor = new ImageProcessor();
+    pp.pdfImageCreator = new PDFProcessor();
+    pp.textExtractor = new TikaTextExtractor();
+    pp.termExtractor = new TermExtractorImpl();
+
     if (cmd.hasOption("tagging")){
-      pp.forceTagging = true;
       log.info("Tagging all content regardless of user preferences!");
     }
 

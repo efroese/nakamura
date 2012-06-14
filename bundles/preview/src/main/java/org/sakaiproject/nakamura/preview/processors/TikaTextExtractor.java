@@ -20,6 +20,7 @@ package org.sakaiproject.nakamura.preview.processors;
 import java.io.File;
 import java.io.FileInputStream;
 
+import org.apache.felix.scr.annotations.Component;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
@@ -32,25 +33,26 @@ import org.xml.sax.ContentHandler;
 /**
  * Extract the body text from a variety of documents using Tika.
  */
+@Component
 public class TikaTextExtractor {
 
-	private static final Logger log = LoggerFactory.getLogger(TikaTextExtractor.class);
+  private static final Logger log = LoggerFactory.getLogger(TikaTextExtractor.class);
 
-	/**
-	 * Extract the text from the body content of a document using Tika
-	 * @param inputPath path o the file
-	 * @return a String representing the body content
-	 */
-	public String getText(String inputPath){
-		Parser parser = new AutoDetectParser();
-		ContentHandler handler = new BodyContentHandler();
-		try {
-			parser.parse(new FileInputStream(new File(inputPath)), handler, new Metadata(), new ParseContext());
-		} catch (Exception e) {
-			log.error("Error while trying to extract text from {}", inputPath);
-		}
-		String text = handler.toString();
-		log.debug("Extracted text from {} : {}", inputPath, text);
-		return text;
-	}
+  /**
+   * Extract the text from the body content of a document using Tika
+   * @param inputPath path o the file
+   * @return a String representing the body content
+   */
+  public String getText(String inputPath){
+    Parser parser = new AutoDetectParser();
+    ContentHandler handler = new BodyContentHandler();
+    try {
+      parser.parse(new FileInputStream(new File(inputPath)), handler, new Metadata(), new ParseContext());
+    } catch (Exception e) {
+      log.error("Error while trying to extract text from {}", inputPath);
+    }
+    String text = handler.toString();
+    log.debug("Extracted text from {} : {}", inputPath, text);
+    return text;
+  }
 }

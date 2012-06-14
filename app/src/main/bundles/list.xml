@@ -746,5 +746,10 @@ KERN-1187
       <artifactId>org.sakaiproject.nakamura.robots.txt</artifactId>
       <version>1.5.0-SNAPSHOT</version>
     </bundle>
+    <bundle>
+      <groupId>org.sakaiproject.nakamura</groupId>
+      <artifactId>org.sakaiproject.nakamura.preview</artifactId>
+      <version>1.3-SNAPSHOT</version>
+    </bundle>
    </startLevel>
 </bundles>

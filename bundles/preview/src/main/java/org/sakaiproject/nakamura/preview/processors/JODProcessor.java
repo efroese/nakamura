@@ -19,7 +19,14 @@ package org.sakaiproject.nakamura.preview.processors;
 
 import java.io.File;
 import java.net.ConnectException;
+import java.util.Map;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Modified;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.sakaiproject.nakamura.preview.ProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,47 +41,57 @@ import com.artofsolving.jodconverter.openoffice.converter.OpenOfficeDocumentConv
  * Handles anything OOo can.
  * Handle connecting to a OOo JODCOnverter service
  */
+@Component
 public class JODProcessor {
 
-	private Logger log = LoggerFactory.getLogger(JODProcessor.class);
-	
-	OpenOfficeConnection connection = null;
+  private Logger log = LoggerFactory.getLogger(JODProcessor.class);
 
-	public OpenOfficeConnection getConnection() throws ConnectException{
-	  // connect to an OpenOffice.org instance running on port 8100
-    // TODO make the host and configurable
-	  if (connection == null){
-	    connection = new SocketOpenOfficeConnection(8100);
-	  }
-	  if (!connection.isConnected()){
-	    connection.connect();
-	  }
-	  return connection;
-	}
+  OpenOfficeConnection connection = null;
 
-	/**
-	 * Convert a document to a PDF
-	 * @param inputPath the path to the input document
-	 * @param outputPath where to store the PDF
-	 * @throws ProcessingException
-	 */
-	public void process(String inputPath, String outputPath) throws ProcessingException {
-		try {
-			log.info("Converting {} to {}", inputPath, outputPath);
-			DocumentConverter converter = new OpenOfficeDocumentConverter(getConnection());
-			converter.convert(new File(inputPath), new File(outputPath));
-		}
-		catch (ConnectException e){
-			throw new ProcessingException("Error connecting to the OOo document converter.", e);
-		}
-	}
+  @Property
+  public static final String PROP_JOD_PORT = "jod.port";
+  public static final int DEFAULT_JOD_PORT = 8100;
+  protected int port;
 
-	@Override
-	public void finalize(){
-	  if (connection == null){
-	    return;
-	  }
-	  connection.disconnect();
-	  connection = null;
-	}
+  @Activate
+  @Modified
+  public void modified(Map<String,Object> props){
+    port = PropertiesUtil.toInteger(props.get(PROP_JOD_PORT), DEFAULT_JOD_PORT);
+  }
+
+  @Deactivate
+  public void deactivate(){
+    if (connection == null){
+      return;
+    }
+    connection.disconnect();
+    connection = null;
+  }
+
+  public OpenOfficeConnection getConnection() throws ConnectException{
+    if (connection == null){
+      connection = new SocketOpenOfficeConnection(port);
+    }
+    if (!connection.isConnected()){
+      connection.connect();
+    }
+    return connection;
+  }
+
+  /**
+   * Convert a document to a PDF
+   * @param inputPath the path to the input document
+   * @param outputPath where to store the PDF
+   * @throws ProcessingException
+   */
+  public void process(String inputPath, String outputPath) throws ProcessingException {
+    try {
+      log.info("Converting {} to {}", inputPath, outputPath);
+      DocumentConverter converter = new OpenOfficeDocumentConverter(getConnection());
+      converter.convert(new File(inputPath), new File(outputPath));
+    }
+    catch (ConnectException e){
+      throw new ProcessingException("Error connecting to the JOD OOo document converter.", e);
+    }
+  }
 }
