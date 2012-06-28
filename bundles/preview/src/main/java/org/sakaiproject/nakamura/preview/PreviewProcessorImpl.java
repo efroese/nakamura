@@ -202,6 +202,7 @@ public class PreviewProcessorImpl {
     this.userMetaCache = new HashMap<String, JSONObject>();
 
     scheduler.addJob(JOB_NAME, this, null, schedulingExpression, false);
+    log.info("The Preview Processor is scheduled to fire : {}", schedulingExpression);
   }
 
   public void process() throws IOException {

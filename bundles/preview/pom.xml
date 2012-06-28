@@ -20,14 +20,14 @@
   <parent>
     <groupId>org.sakaiproject.nakamura</groupId>
     <artifactId>base</artifactId>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.4.0-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>org.sakaiproject.nakamura.preview</artifactId>
   <packaging>bundle</packaging>
   <name>Sakai Nakamura :: Preview Processor</name>
-  <version>1.3-SNAPSHOT</version>
+  <version>1.4.0-SNAPSHOT</version>
 
   <build>
     <plugins>
@@ -44,7 +44,20 @@
           <instructions>
             <Bundle-Category>sakai-nakamura</Bundle-Category>
             <Private-Package>org.sakaiproject.nakamura.preview</Private-Package>
-            <Import-Package>*</Import-Package>
+            <Embed-Dependency>jodconverter,fontbox,pdfbox,sanselan,json-lib</Embed-Dependency>
+            <Import-Package>
+            !com.sun.star*,
+            com.thoughtworks.xstream*;resolution:=optional,
+            org.apache.commons.cli;resolution:=optional,
+            org.apache.jempbox.xmp;resolution:=optional,
+            org.bouncycastle.*;resolution:=optional,
+            com.ibm.icu.text;resolution:=optional,
+            junit.framework;resolution:=optional,
+            net.sf.ezmorph*;resolution:=optional,
+            nu.xom;resolution:=optional,
+            org.apache.commons.beanutils;resolution:=optional,
+            org.apache.oro.text.regex;resolution:=optional,
+            *</Import-Package>
           </instructions>
         </configuration>
       </plugin>
@@ -167,6 +180,13 @@
     	<scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>fontbox</artifactId>
+      <version>1.6.0</version>
+      <type>bundle</type>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
     	<groupId>org.apache.velocity</groupId>
     	<artifactId>velocity</artifactId>
     	<version>1.7</version>
@@ -192,13 +212,6 @@
     	<artifactId>logback-core</artifactId>
     	<version>1.0.3</version>
     	<type>pom</type>
-    	<scope>compile</scope>
-    </dependency>
-    <dependency>
-    	<groupId>org.apache.pdfbox</groupId>
-    	<artifactId>fontbox</artifactId>
-    	<version>1.6.0</version>
-    	<type>bundle</type>
     	<scope>compile</scope>
     </dependency>
     <dependency>

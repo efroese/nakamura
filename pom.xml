@@ -117,6 +117,8 @@
         <module>bundles/robots.txt</module>
         <module>bundles/org.json</module>
         <module>bundles/perf4j</module>
+        <module>bundles/termextract</module>
+        <module>bundles/preview</module>
         <module>testscripts</module>
       </modules>
     </profile>

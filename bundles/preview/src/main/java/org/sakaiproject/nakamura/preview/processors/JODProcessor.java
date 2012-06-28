@@ -41,7 +41,7 @@ import com.artofsolving.jodconverter.openoffice.converter.OpenOfficeDocumentConv
  * Handles anything OOo can.
  * Handle connecting to a OOo JODCOnverter service
  */
-@Component
+@Component(metatype=true)
 public class JODProcessor {
 
   private Logger log = LoggerFactory.getLogger(JODProcessor.class);

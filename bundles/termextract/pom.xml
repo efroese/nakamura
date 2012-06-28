@@ -23,7 +23,7 @@
 	<parent>
     <groupId>org.sakaiproject.nakamura</groupId>
     <artifactId>base</artifactId>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.4.0-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 	<artifactId>org.sakaiproject.nakamura.termextract</artifactId>
@@ -43,8 +43,7 @@
         <configuration>
           <instructions>
             <Bundle-Category>sakai-nakamura</Bundle-Category>
-            <Export-Package>org.sakaiproject.nakamura.api.*</Export-Package>
-            <Private-Package>org.sakaiproject.nakamura.termextract.*</Private-Package>
+            <Export-Package>org.sakaiproject.nakamura.api.*,org.sakaiproject.nakamura.termextract.*</Export-Package>
           </instructions>
         </configuration>
       </plugin>
