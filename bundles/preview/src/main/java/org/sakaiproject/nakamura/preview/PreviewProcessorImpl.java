@@ -41,6 +41,7 @@ import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpHost;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.io.FileUtils;
@@ -51,6 +52,7 @@ import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.sling.commons.scheduler.Scheduler;
 import org.apache.tika.Tika;
@@ -65,7 +67,7 @@ import org.sakaiproject.nakamura.api.termextract.ExtractedTerm;
 import org.sakaiproject.nakamura.api.termextract.TermExtractor;
 import org.sakaiproject.nakamura.preview.processors.ImageProcessor;
 import org.sakaiproject.nakamura.preview.processors.JODProcessor;
-import org.sakaiproject.nakamura.preview.processors.PDFProcessor;
+import org.sakaiproject.nakamura.preview.processors.PDFBoxProcessor;
 import org.sakaiproject.nakamura.preview.processors.TikaTextExtractor;
 import org.sakaiproject.nakamura.preview.util.EasySSLProtocolSocketFactory;
 import org.sakaiproject.nakamura.preview.util.FilePathUtils;
@@ -77,9 +79,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 
-@Component(metatype = true)
+@Service(PreviewProcessorImpl.class)
+@Component(metatype = true,immediate = true)
 public class PreviewProcessorImpl {
 
   private static final Logger log = LoggerFactory.getLogger(PreviewProcessorImpl.class);
@@ -100,54 +102,53 @@ public class PreviewProcessorImpl {
   // a content item in OAE
   private static final int PROP_TIMEOUT = 20 * 1000;
 
-  @Property
+  @Property(intValue=PreviewProcessorImpl.DEFAULT_MAX_TAGS)
   public static final String PROP_MAX_TAGS = "max.tags";
   public static final int DEFAULT_MAX_TAGS = 10;
   private int maxTags;
 
-  @Property
+  @Property(value=PreviewProcessorImpl.DEFAULT_SCHEDULE)
   public static final String PROP_SCHEDULE = "quartz.schedule";
-  public static final String DEFAULT_SCHEDULE = "0 0/5 * * * *"; // every 5 minutes
+  public static final String DEFAULT_SCHEDULE = "0 0/5 * * * ?"; // every 5 minutes
   private String schedulingExpression;
 
-  @Property
+  @Property(value=PreviewProcessorImpl.DEFAULT_REMOTE_SERVER_URL)
   public static final String PROP_REMOTE_SERVER_URL = "remote.server.url";
   private static final String DEFAULT_REMOTE_SERVER_URL = "http://localhost:8080";
   protected URL remoteServerUrl;
 
-  @Property
+  @Property(value=PreviewProcessorImpl.DEFAULT_REMOTE_SERVER_USER)
   public static final String PROP_REMOTE_SERVER_USER = "remote.server.user";
   public static final String DEFAULT_REMOTE_SERVER_USER = "admin";
   protected String remoteServerUser;
 
-  @Property
+  @Property(value=PreviewProcessorImpl.DEFAULT_REMOTE_SERVER_PASSWORD)
   public static final String PROP_REMOTE_SERVER_PASSWORD = "remote.server.password";
   public static final String DEFAULT_REMOTE_SERVER_PASSWORD = "admin";
   protected String remoteServerPassword;
 
-  @Property
+  @Property(value=PreviewProcessorImpl.DEFAULT_REMOTE_CONTENT_SERVER_URL)
   public static final String PROP_REMOTE_CONTENT_SERVER_URL = "remote.content.server.url";
   public static final String DEFAULT_REMOTE_CONTENT_SERVER_URL = "http://localhost:8082";
   protected URL remoteContentServerUrl;
 
-  @Property
+  @Property(value=PreviewProcessorImpl.DEFAULT_BASEPATH)
   public static final String PROP_BASEPATH = "basedir";
   public static final String DEFAULT_BASEPATH = "/tmp/pp";
   protected String basePath;
 
-  @Property
+  @Property(boolValue=false)
   public static final String PROP_FORCE_TAGGING = "force.tagging";
+  protected boolean forceTagging = false;
 
   private static final String JOB_NAME = "Preview Processor Job";
 
-  protected boolean forceTagging = false;
-
   @Reference
-  protected ImageProcessor imageProcessor;
+  protected ImageProcessor thumbnailGenerator;
   @Reference
-  protected JODProcessor jodProcessor;
+  protected JODProcessor pdfConverter;
   @Reference
-  protected PDFProcessor pdfImageCreator;
+  protected PDFBoxProcessor pdfSplitter;
   @Reference
   protected TikaTextExtractor textExtractor;
   @Reference
@@ -265,22 +266,22 @@ public class PreviewProcessorImpl {
         }
         else {
           int pageCount = processDocument(contentFilePath, item, extension);
-          remoteServer.post("/p/" + id + ".json", ImmutableMap.of("sakai:pagecount", Integer.toString(pageCount)));
+          remoteServer.post("/p/" + id + ".json", new NameValuePair("sakai:pagecount", Integer.toString(pageCount)));
         }
 
-        remoteServer.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.NEEDS_PROCESSING, "false"), PROP_TIMEOUT);
+        remoteServer.post("/p/" + id + ".json", new NameValuePair(PreviewProcessor.NEEDS_PROCESSING, "false"), PROP_TIMEOUT);
         log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.NEEDS_PROCESSING, "false"});
-        remoteServer.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.HAS_PREVIEW, "true"), PROP_TIMEOUT);
+        remoteServer.post("/p/" + id + ".json", new NameValuePair(PreviewProcessor.HAS_PREVIEW, "true"), PROP_TIMEOUT);
         log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.HAS_PREVIEW, "true"});
         log.info("SUCCESS processed {}",id);
       }
       catch (Exception e){
-        log.error("There was an error generating a preview for {}", id, e);
-        remoteServer.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.NEEDS_PROCESSING, "false"), PROP_TIMEOUT);
-        log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.NEEDS_PROCESSING, "false"});
-        remoteServer.post("/p/" + id + ".json", ImmutableMap.of(PreviewProcessor.PROCESSING_FAILED, "true"), PROP_TIMEOUT);
-        log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.PROCESSING_FAILED, "true"});
         log.info("FAILURE processing {}",id);
+        log.error("There was an error generating a preview for {}", id, e);
+        remoteServer.post("/p/" + id + ".json", new NameValuePair(PreviewProcessor.NEEDS_PROCESSING, "false"), PROP_TIMEOUT);
+        log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.NEEDS_PROCESSING, "false"});
+        remoteServer.post("/p/" + id + ".json", new NameValuePair(PreviewProcessor.PROCESSING_FAILED, "true"), PROP_TIMEOUT);
+        log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.PROCESSING_FAILED, "true"});
       }
       finally {
         if (contentFilePath != null){
@@ -357,7 +358,7 @@ public class PreviewProcessorImpl {
     }
     else {
       // Else convert it to a pdf in the preview dir
-      jodProcessor.process(contentFilePath, convertedPDFPath);
+      pdfConverter.process(contentFilePath, convertedPDFPath);
     }
 
     if (item.containsKey(PreviewProcessor.POOL_CONTENT_CREATED_FOR)){
@@ -386,9 +387,19 @@ public class PreviewProcessorImpl {
 
         if (tags != null && !tags.isEmpty()){
           Collections.sort(tags);
-          String tagString = "/tags/" + StringUtils.join(tags, "/tags/");
+          List<String> tagParams = new ArrayList<String>();
+          for (String tag: tags){
+            tagParams.add("/tags/" + tag);
+          }
           log.info("Tagging {} with {}", id,  StringUtils.join(tags, ", "));
-          remoteServer.post("/p/" + id, ImmutableMap.of(":operation", "tag", "key", tagString));
+          
+          List<NameValuePair> parameters = new ArrayList<NameValuePair>();
+          parameters.add(new NameValuePair(":operation", "tag"));
+          for (String tagParam : tagParams){
+            parameters.add(new NameValuePair("key", tagParam));
+          }
+          remoteServer.post("/p/" + id, (NameValuePair[])parameters.toArray());
+
           if (sendTagEmail(userMeta)){
             doSendTagEmail(item, userId, tags);
           }
@@ -400,7 +411,7 @@ public class PreviewProcessorImpl {
 
     // Split the PDF and snap images of the pages
     // Images are saved to ${basePath}/previews/${id}/${id}.page.[1...n].JPEG
-    Integer numPDFPageImages = pdfImageCreator.process(convertedPDFPath, outputPrefix, numPages);
+    Integer numPDFPageImages = pdfSplitter.process(convertedPDFPath, outputPrefix, numPages);
     log.info("Wrote {} page image{}",
         new Object[]{ numPDFPageImages, (numPDFPageImages > 1 || numPDFPageImages == 0)? "s": "", } );
 
@@ -410,17 +421,17 @@ public class PreviewProcessorImpl {
       String pageImagePath = FilePathUtils.join(new String[] { contentPreviewDirectory, "page." + i + ".JPEG"  });
       File preview = new File(pageImagePath);
 
-      imageProcessor.resize(preview.getAbsolutePath(),
+      thumbnailGenerator.resize(preview.getAbsolutePath(),
           contentPreviewDirectory + File.separator + id + ".large.jpg",
           LARGE_MAX_WIDTH, null);
       remoteServer.uploadContentPreview(id, preview, Integer.toString(i), "large");
 
-      imageProcessor.resize(preview.getAbsolutePath(),
+      thumbnailGenerator.resize(preview.getAbsolutePath(),
           contentPreviewDirectory + File.separator + id + ".normal.jpg",
           LARGE_MAX_WIDTH, null);
       remoteServer.uploadContentPreview(id, preview, Integer.toString(i), "normal");
 
-      imageProcessor.resize(preview.getAbsolutePath(),
+      thumbnailGenerator.resize(preview.getAbsolutePath(),
           contentPreviewDirectory + File.separator + id + ".small.jpg",
           SMALL_MAX_WIDTH, SMALL_MAX_HEIGHT);
       remoteServer.uploadContentPreview(id, preview, Integer.toString(i), "small");
@@ -465,11 +476,11 @@ public class PreviewProcessorImpl {
     String prefix = previewsDir + File.separator + id + File.separator + id;
 
     String normalPath = prefix + ".normal.jpg";
-    imageProcessor.resize(contentFilePath, normalPath, LARGE_MAX_WIDTH, null);
+    thumbnailGenerator.resize(contentFilePath, normalPath, LARGE_MAX_WIDTH, null);
     remoteServer.uploadContentPreview(id, new File(normalPath), "1", "normal");
 
     String smallPath = prefix + ".small.jpg";
-    imageProcessor.resize(contentFilePath, smallPath, SMALL_MAX_WIDTH, SMALL_MAX_HEIGHT);
+    thumbnailGenerator.resize(contentFilePath, smallPath, SMALL_MAX_WIDTH, SMALL_MAX_HEIGHT);
     remoteServer.uploadContentPreview(id, new File(smallPath), "1", "small");
   }
 
@@ -573,7 +584,7 @@ public class PreviewProcessorImpl {
       batch.add(req);
     }
     log.info("Claim content for this processor {}", name);
-    remoteServer.post("/system/batch", ImmutableMap.of("requests", batch.toString()));
+    remoteServer.post("/system/batch", new NameValuePair("requests", batch.toString()));
   }
 
   protected JSONObject getUserMeta(String userId){
@@ -616,17 +627,17 @@ public class PreviewProcessorImpl {
     StringWriter writer = new StringWriter();
     t.merge(context, writer);
 
-    Builder<String,String> paramBuilder = ImmutableMap.builder();
-    paramBuilder.put("sakai:type","internal");
-    paramBuilder.put("sakai:sendstate", "pending");
-    paramBuilder.put("sakai:messagebox", "outbox");
-    paramBuilder.put("sakai:to", "internal:" + userId);
-    paramBuilder.put("sakai:from", remoteServerUser);
-    paramBuilder.put("sakai:subject", "We've added some tags to " + originFileName);
-    paramBuilder.put("sakai:body", writer.toString());
-    paramBuilder.put("_charset_", "utf-8");
-    paramBuilder.put("sakai:category", "message");
-    remoteServer.post("/~admin/message.create.json", paramBuilder.build());
+    ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+    params.add(new NameValuePair("sakai:type","internal"));
+    params.add(new NameValuePair("sakai:sendstate", "pending"));
+    params.add(new NameValuePair("sakai:messagebox", "outbox"));
+    params.add(new NameValuePair("sakai:to", "internal:" + userId));
+    params.add(new NameValuePair("sakai:from", remoteServerUser));
+    params.add(new NameValuePair("sakai:subject", "We've added some tags to " + originFileName));
+    params.add(new NameValuePair("sakai:body", writer.toString()));
+    params.add(new NameValuePair("_charset_", "utf-8"));
+    params.add(new NameValuePair("sakai:category", "message"));
+    remoteServer.post("/~admin/message.create.json", (NameValuePair[])params.toArray());
   }
 
   @SuppressWarnings("unchecked")

@@ -7,11 +7,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import net.sf.json.JSONObject;
 
+import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
@@ -45,16 +44,22 @@ public class RemoteServerUtil {
 		return result;
 	}
 
-	public JSONObject post(String url, Map<String, String> params) {
-		return post(url, params, NO_TIMEOUT);
+	public JSONObject post(String url, NameValuePair parameter) {
+    return post(url, new NameValuePair[] { parameter }, NO_TIMEOUT);
+  }
+
+	public JSONObject post(String url, NameValuePair parameter, int timeout) {
+    return post(url, new NameValuePair[] { parameter }, timeout);
+  }
+
+	public JSONObject post(String url, NameValuePair[] parameters) {
+		return post(url, parameters, NO_TIMEOUT);
 	}
 
-	public JSONObject post(String url, Map<String, String> params, int timeout) {
+  public JSONObject post(String url, NameValuePair[] parameters, int timeout) {
     log.debug("POST {}", url);
     PostMethod post = new PostMethod(url);
-    for (Entry<String, String> entry: params.entrySet()){
-      post.addParameter(entry.getKey(), entry.getValue());
-    }
+    post.addParameters(parameters);
     return http(getHttpClient(server, "admin", password), post, timeout);
   }
 
