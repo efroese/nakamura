@@ -17,26 +17,29 @@
  */
 package org.sakaiproject.nakamura.preview.processors;
 
+
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
 import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.sanselan.ImageInfo;
 import org.apache.sanselan.ImageReadException;
 import org.apache.sanselan.ImageWriteException;
 import org.apache.sanselan.Sanselan;
 import org.apache.sanselan.util.IOUtils;
-import org.sakaiproject.nakamura.preview.util.ImageUtils;
 import org.sakaiproject.nakamura.preview.ProcessingException;
+import org.sakaiproject.nakamura.preview.util.ImageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component
+@Service(ImageProcessor.class)
+@Component(immediate = true)
 public class ImageProcessor {
 
-  private static final Logger log = LoggerFactory.getLogger(ImageProcessor.class);
+  static final Logger log = LoggerFactory.getLogger(ImageProcessor.class);
 
   /**
    * resize and save the image

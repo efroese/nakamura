@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.util.PDFImageWriter;
 import org.apache.sanselan.ImageFormat;
@@ -31,8 +32,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Render a series of images from PDF pages.
  */
-@Component
-public class PDFProcessor {
+@Service(PDFBoxProcessor.class)
+@Component(immediate = true)
+public class PDFBoxProcessor {
 
   private static final Logger log = LoggerFactory.getLogger(JODProcessor.class);
 

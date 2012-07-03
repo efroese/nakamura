@@ -26,6 +26,7 @@ import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Deactivate;
 import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.sakaiproject.nakamura.preview.ProcessingException;
 import org.slf4j.Logger;
@@ -41,7 +42,8 @@ import com.artofsolving.jodconverter.openoffice.converter.OpenOfficeDocumentConv
  * Handles anything OOo can.
  * Handle connecting to a OOo JODCOnverter service
  */
-@Component(metatype=true)
+@Service(JODProcessor.class)
+@Component(metatype=true, immediate = true)
 public class JODProcessor {
 
   private Logger log = LoggerFactory.getLogger(JODProcessor.class);
@@ -78,11 +80,8 @@ public class JODProcessor {
     return connection;
   }
 
-  /**
-   * Convert a document to a PDF
-   * @param inputPath the path to the input document
-   * @param outputPath where to store the PDF
-   * @throws ProcessingException
+  /* (non-Javadoc)
+   * @see org.sakaiproject.nakamura.preview.processors.DocumentConverter#process(java.lang.String, java.lang.String)
    */
   public void process(String inputPath, String outputPath) throws ProcessingException {
     try {

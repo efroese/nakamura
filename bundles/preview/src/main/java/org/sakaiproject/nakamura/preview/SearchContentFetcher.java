@@ -30,12 +30,14 @@ import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Service;
 import org.sakaiproject.nakamura.api.preview.ContentFetcher;
 import org.sakaiproject.nakamura.preview.util.HttpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component
+@Service
 public class SearchContentFetcher implements ContentFetcher {
 
   private static final Logger log = LoggerFactory.getLogger(SearchContentFetcher.class);
