@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Service;
 import org.sakaiproject.nakamura.api.termextract.ExtractedTerm;
 import org.sakaiproject.nakamura.api.termextract.TaggedTerm;
 import org.sakaiproject.nakamura.api.termextract.Tagger;
@@ -37,6 +39,8 @@ import org.slf4j.LoggerFactory;
  * This class is wired up as an OSGi service in serviceComponent.xml but is not dependent
  * directly on OSGi.
  */
+@Component
+@Service
 public class TermExtractorImpl implements TermExtractor {
   private static final Logger LOGGER = LoggerFactory.getLogger(TermExtractorImpl.class);
 private static final int SEARCH = 0;
