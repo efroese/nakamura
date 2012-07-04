@@ -18,51 +18,10 @@
 package org.sakaiproject.nakamura.preview.util;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.util.Arrays;
-import java.util.Comparator;
 
 import org.apache.commons.lang.StringUtils;
 
 public class FilePathUtils {
-	/**
-	 * List the files in a directory and sort them by name.
-	 * @param dirPath
-	 * @return
-	 */
-	public static File[] listFilesSortedName(String dirPath){
-		File[] files = new File(dirPath).listFiles();
-		Arrays.sort(files,
-			new Comparator<File>(){
-				public int compare(final File f1, final File f2) {
-					return f1.getName().compareTo(f2.getName());
-				}
-			});
-		return files;
-	}
-
-	/**
-	 * List sub-directories and sort them by name 
-	 * @param dirPath
-	 * @return
-	 */
-	public static File[] listDirsSortedName(String dirPath){
-		// Only list directories
-		File[] files = new File(dirPath).listFiles(new FileFilter() {
-			@Override
-			public boolean accept(File pathname) {
-				return pathname.isDirectory();
-			}
-		});
-		Arrays.sort(files,
-			new Comparator<File>(){
-				public int compare(final File f1, final File f2) {
-					return f1.getName().compareTo(f2.getName());
-				}
-			});
-		return files;
-	}
-
 	public static String join(String[] pieces){
 	  return StringUtils.join(pieces, File.separator);
 	}

@@ -38,7 +38,7 @@ import com.artofsolving.jodconverter.openoffice.connection.SocketOpenOfficeConne
 import com.artofsolving.jodconverter.openoffice.converter.OpenOfficeDocumentConverter;
 
 /**
- * Convert documents to PDFs using hte OOo JODConverter.
+ * Convert documents to PDFs using the OOo JODConverter.
  * Handles anything OOo can.
  * Handle connecting to a OOo JODCOnverter service
  */
