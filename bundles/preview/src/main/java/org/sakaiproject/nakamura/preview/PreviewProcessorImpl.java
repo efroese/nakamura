@@ -54,6 +54,7 @@ import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.commons.osgi.PropertiesUtil;
+import org.apache.sling.commons.scheduler.JobContext;
 import org.apache.sling.commons.scheduler.Scheduler;
 import org.apache.tika.Tika;
 import org.apache.velocity.Template;
@@ -61,6 +62,7 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import org.apache.sling.commons.scheduler.Job;
 import org.sakaiproject.nakamura.api.preview.ContentFetcher;
 import org.sakaiproject.nakamura.api.preview.PreviewProcessor;
 import org.sakaiproject.nakamura.api.termextract.ExtractedTerm;
@@ -81,8 +83,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableMap;
 
 @Service(PreviewProcessorImpl.class)
-@Component(metatype = true,immediate = true)
-public class PreviewProcessorImpl {
+@Component(metatype = true, immediate = true)
+public class PreviewProcessorImpl implements Job {
 
   private static final Logger log = LoggerFactory.getLogger(PreviewProcessorImpl.class);
 
@@ -204,6 +206,15 @@ public class PreviewProcessorImpl {
 
     scheduler.addJob(JOB_NAME, this, null, schedulingExpression, false);
     log.info("The Preview Processor is scheduled to fire : {}", schedulingExpression);
+  }
+
+  @Override
+  public void execute(JobContext ctx)  {
+      try {
+        process();
+      } catch (IOException e) {
+        log.error("Processing failed", e);
+      }
   }
 
   public void process() throws IOException {

@@ -39,8 +39,6 @@ import com.artofsolving.jodconverter.openoffice.converter.OpenOfficeDocumentConv
 
 /**
  * Convert documents to PDFs using the OOo JODConverter.
- * Handles anything OOo can.
- * Handle connecting to a OOo JODCOnverter service
  */
 @Service(JODProcessor.class)
 @Component(metatype=true, immediate = true)
