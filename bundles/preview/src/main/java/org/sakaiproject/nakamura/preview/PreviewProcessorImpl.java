@@ -72,7 +72,6 @@ import org.sakaiproject.nakamura.preview.processors.PDFConverter;
 import org.sakaiproject.nakamura.preview.processors.PDFBoxProcessor;
 import org.sakaiproject.nakamura.preview.processors.TikaTextExtractor;
 import org.sakaiproject.nakamura.preview.util.EasySSLProtocolSocketFactory;
-import org.sakaiproject.nakamura.preview.util.FilePathUtils;
 import org.sakaiproject.nakamura.preview.util.HttpUtils;
 import org.sakaiproject.nakamura.preview.util.RemoteServerUtil;
 import org.sakaiproject.nakamura.termextract.DefaultFilter;
@@ -195,8 +194,8 @@ public class PreviewProcessorImpl implements Job {
     this.schedulingExpression = PropertiesUtil.toString(props.get(PROP_SCHEDULE), DEFAULT_SCHEDULE);
 
     this.remoteServer = new RemoteServerUtil(remoteServerUrl, remoteServerPassword);
-    this.previewsDir = FilePathUtils.join(new String[] { basePath, "previews" });
-    this.docsDir = FilePathUtils.join(new String[] { basePath, "docs" });
+    this.previewsDir = StringUtils.join(new String[] { basePath, "previews" }, File.separator);
+    this.docsDir = StringUtils.join(new String[] { basePath, "docs" }, File.separator);
     createDirectories();
 
     this.termExtractor = new TermExtractorImpl(null,
@@ -245,7 +244,7 @@ public class PreviewProcessorImpl implements Job {
 
       String contentFilePath = null;
       // example: /var/sakaioae/pp/previews/s0meGr0SsId/
-      String previewDirPath = FilePathUtils.join(new String[]{ previewsDir, id });
+      String previewDirPath = StringUtils.join(new String[]{ previewsDir, id }, File.separator);
       File previewDir = new File(previewDirPath);
 
       try {
@@ -265,7 +264,7 @@ public class PreviewProcessorImpl implements Job {
         if (item.containsKey(PreviewProcessor.MIME_TYPE)){
           mimetype = (String)item.get(PreviewProcessor.MIME_TYPE);
         }
-        contentFilePath = FilePathUtils.join(new String[] { docsDir, id + "." + extension });
+        contentFilePath = StringUtils.join(new String[] { docsDir, id + "." + extension }, File.separator);
         extension = determineFileExtensionWithMimeType(contentFilePath, mimetype, extension);
 
         log.info("With filename {}", id + "." + extension);
@@ -362,8 +361,8 @@ public class PreviewProcessorImpl implements Job {
   throws Exception {
 
     String id = (String)item.get("_path");
-    String convertedPDFPath = FilePathUtils.join(new String[] { previewsDir, id, id + ".pdf" });
-    String outputPrefix = FilePathUtils.join(new String[]{ previewsDir, id, "page." });
+    String convertedPDFPath = StringUtils.join(new String[] { previewsDir, id, id + ".pdf" }, File.separator);
+    String outputPrefix = StringUtils.join(new String[]{ previewsDir, id, "page." }, File.separator);
 
     int numPages = -1;
     if (PreviewProcessor.FIRST_PAGE_ONLY_EXTENSIONS.contains(extension)){
@@ -433,10 +432,10 @@ public class PreviewProcessorImpl implements Job {
     log.info("Wrote {} page image{}",
         new Object[]{ numPDFPageImages, (numPDFPageImages > 1 || numPDFPageImages == 0)? "s": "", } );
 
-    String contentPreviewDirectory = FilePathUtils.join(new String[] { previewsDir, id } );
+    String contentPreviewDirectory = StringUtils.join(new String[] { previewsDir, id }, File.separator);
     for (int i = 1; i <= numPDFPageImages; i++){
 
-      String pageImagePath = FilePathUtils.join(new String[] { contentPreviewDirectory, "page." + i + ".JPEG"  });
+      String pageImagePath = StringUtils.join(new String[] { contentPreviewDirectory, "page." + i + ".JPEG"  }, File.separator);
       File preview = new File(pageImagePath);
 
       thumbnailGenerator.resize(preview.getAbsolutePath(),
