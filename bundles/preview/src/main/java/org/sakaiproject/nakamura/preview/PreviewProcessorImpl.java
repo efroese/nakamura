@@ -318,8 +318,15 @@ public class PreviewProcessorImpl implements Job {
       GetMethod get = new GetMethod(url.getPath());
       HttpClient client = HttpUtils.getHttpClient(remoteContentServerUrl, "admin", remoteServerPassword);
       HostConfiguration hc = new HostConfiguration();
-      hc.setHost(new HttpHost(remoteContentServerUrl.getHost(), remoteContentServerUrl.getPort(),
-          new Protocol(remoteContentServerUrl.getProtocol(), new EasySSLProtocolSocketFactory(), remoteContentServerUrl.getDefaultPort())));
+      
+      if ("https".equals(remoteContentServerUrl.getProtocol())){
+        hc.setHost(new HttpHost(remoteContentServerUrl.getHost(), remoteContentServerUrl.getPort(),
+            new Protocol(remoteContentServerUrl.getProtocol(), new EasySSLProtocolSocketFactory(), remoteContentServerUrl.getDefaultPort())));
+      }
+      else {
+        hc.setHost(new HttpHost(remoteContentServerUrl.getHost(), remoteContentServerUrl.getPort()));
+      }
+      
       int responseCode = client.executeMethod(hc, get);
       if (responseCode == HttpStatus.SC_OK){
         output = FileUtils.openOutputStream(new File(filePath));

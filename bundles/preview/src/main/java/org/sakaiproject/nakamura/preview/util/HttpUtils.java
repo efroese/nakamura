@@ -59,13 +59,15 @@ public class HttpUtils {
 		client.getParams().setParameter("http.useragent", HTTP_USER_AGENT);
 		client.getParams().setParameter("_charset_", "utf-8");
 
+		HostConfiguration hostConfiguration = new HostConfiguration();
+		hostConfiguration.setHost(url.getHost(), (url.getPort() == -1)? url.getDefaultPort(): url.getPort(), url.getProtocol());
+
 		if ("https".equals(url.getProtocol().toLowerCase())){
   		ProtocolSocketFactory factory = new EasySSLProtocolSocketFactory();
-  		HostConfiguration hostConfiguration = new HostConfiguration();
   		Protocol easyHttps = new Protocol(url.getProtocol(), factory, getPort(url));
   		hostConfiguration.setHost(url.getHost(), getPort(url), easyHttps);
-  		client.setHostConfiguration(hostConfiguration);
 		}
+		client.setHostConfiguration(hostConfiguration);
 		return client;
 	}
 
