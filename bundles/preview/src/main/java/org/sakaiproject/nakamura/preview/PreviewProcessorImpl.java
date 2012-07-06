@@ -67,8 +67,8 @@ import org.sakaiproject.nakamura.api.preview.ContentFetcher;
 import org.sakaiproject.nakamura.api.preview.PreviewProcessor;
 import org.sakaiproject.nakamura.api.termextract.ExtractedTerm;
 import org.sakaiproject.nakamura.api.termextract.TermExtractor;
-import org.sakaiproject.nakamura.preview.processors.ImageProcessor;
-import org.sakaiproject.nakamura.preview.processors.JODProcessor;
+import org.sakaiproject.nakamura.preview.processors.ThumbnailGenerator;
+import org.sakaiproject.nakamura.preview.processors.PDFConverter;
 import org.sakaiproject.nakamura.preview.processors.PDFBoxProcessor;
 import org.sakaiproject.nakamura.preview.processors.TikaTextExtractor;
 import org.sakaiproject.nakamura.preview.util.EasySSLProtocolSocketFactory;
@@ -146,9 +146,9 @@ public class PreviewProcessorImpl implements Job {
   private static final String JOB_NAME = "Preview Processor Job";
 
   @Reference
-  protected ImageProcessor thumbnailGenerator;
+  protected ThumbnailGenerator thumbnailGenerator;
   @Reference
-  protected JODProcessor pdfConverter;
+  protected PDFConverter pdfConverter;
   @Reference
   protected PDFBoxProcessor pdfSplitter;
   @Reference

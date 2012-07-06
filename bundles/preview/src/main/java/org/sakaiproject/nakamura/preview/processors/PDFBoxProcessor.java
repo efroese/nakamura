@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 @Component(immediate = true)
 public class PDFBoxProcessor {
 
-  private static final Logger log = LoggerFactory.getLogger(JODProcessor.class);
+  private static final Logger log = LoggerFactory.getLogger(PDFBoxProcessor.class);
 
   /**
    * Split a PDF by pages and store them in the previews directory as contentId.pageX.jpeg

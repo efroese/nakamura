@@ -35,11 +35,11 @@ import org.sakaiproject.nakamura.preview.util.ImageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Service(ImageProcessor.class)
+@Service(ThumbnailGenerator.class)
 @Component(immediate = true)
-public class ImageProcessor {
+public class ThumbnailGenerator {
 
-  static final Logger log = LoggerFactory.getLogger(ImageProcessor.class);
+  static final Logger log = LoggerFactory.getLogger(ThumbnailGenerator.class);
 
   /**
    * resize and save the image

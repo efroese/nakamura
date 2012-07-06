@@ -40,11 +40,11 @@ import com.artofsolving.jodconverter.openoffice.converter.OpenOfficeDocumentConv
 /**
  * Convert documents to PDFs using the OOo JODConverter.
  */
-@Service(JODProcessor.class)
+@Service(PDFConverter.class)
 @Component(metatype=true, immediate = true)
-public class JODProcessor {
+public class PDFConverter {
 
-  private Logger log = LoggerFactory.getLogger(JODProcessor.class);
+  private Logger log = LoggerFactory.getLogger(PDFConverter.class);
 
   OpenOfficeConnection connection = null;
 

@@ -24,7 +24,8 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
-import org.sakaiproject.nakamura.preview.processors.ImageProcessor;
+import org.sakaiproject.nakamura.preview.processors.PDFConverter;
+import org.sakaiproject.nakamura.preview.processors.ThumbnailGenerator;
 import org.sakaiproject.nakamura.preview.processors.PDFBoxProcessor;
 import org.sakaiproject.nakamura.preview.processors.TikaTextExtractor;
 import org.sakaiproject.nakamura.preview.util.RemoteServerUtil;
@@ -85,7 +86,8 @@ public class PreviewProcessorMain {
     pp.contentFetcher = new SearchContentFetcher();
     pp.remoteServer = new RemoteServerUtil(cmd.getOptionValue("server"), cmd.getOptionValue("password"));
 
-    pp.thumbnailGenerator = new ImageProcessor();
+    pp.thumbnailGenerator = new ThumbnailGenerator();
+    pp.pdfConverter = new PDFConverter();
     pp.pdfSplitter = new PDFBoxProcessor();
     pp.textExtractor = new TikaTextExtractor();
     pp.termExtractor = new TermExtractorImpl();
