@@ -43,7 +43,7 @@
           <instructions>
             <Bundle-Category>sakai-nakamura</Bundle-Category>
             <Private-Package>org.sakaiproject.nakamura.preview</Private-Package>
-            <Embed-Dependency>jodconverter,fontbox,pdfbox,sanselan,json-lib,ezmorph,commons-beanutils</Embed-Dependency>
+            <Embed-Dependency>jodconverter,fontbox,pdfbox,sanselan,json-lib,ezmorph,commons-beanutils,unoil,ridl,juh,jurt</Embed-Dependency>
             <Import-Package>
             !com.sun.star*,
             com.thoughtworks.xstream*;resolution:=optional,
@@ -228,7 +228,39 @@
     	<type>jar</type>
     	<scope>compile</scope>
     </dependency>
+    <dependency>
+    	<groupId>org.openoffice</groupId>
+    	<artifactId>ridl</artifactId>
+    	<version>3.2.1</version>
+    	<type>jar</type>
+    	<scope>compile</scope>
+    </dependency>
+    <dependency>
+    	<groupId>org.openoffice</groupId>
+    	<artifactId>unoil</artifactId>
+    	<version>3.2.1</version>
+    	<type>jar</type>
+    	<scope>compile</scope>
+    </dependency>
+    <dependency>
+    	<groupId>org.openoffice</groupId>
+    	<artifactId>juh</artifactId>
+    	<version>3.2.1</version>
+    	<type>jar</type>
+    	<scope>compile</scope>
+    </dependency>
+    <dependency>
+    	<groupId>org.openoffice</groupId>
+    	<artifactId>jurt</artifactId>
+    	<version>3.2.1</version>
+    	<type>jar</type>
+    	<scope>compile</scope>
+    </dependency>
   </dependencies>
+  <dependencyManagement>
+  	<dependencies>
+  	</dependencies>
+  </dependencyManagement>
   <modules>
   </modules>
 </project>
