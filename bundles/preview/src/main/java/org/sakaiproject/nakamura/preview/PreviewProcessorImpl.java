@@ -203,8 +203,10 @@ public class PreviewProcessorImpl implements Job {
             TERM_MAX_WORDS, TERM_MIN_LENGTH, TERM_MAX_LENGTH));
     this.userMetaCache = new HashMap<String, JSONObject>();
 
-    scheduler.addJob(JOB_NAME, this, null, schedulingExpression, false);
-    log.info("The Preview Processor is scheduled to fire : {}", schedulingExpression);
+    if (scheduler != null){
+      scheduler.addJob(JOB_NAME, this, null, schedulingExpression, false);
+      log.info("The Preview Processor is scheduled to fire : {}", schedulingExpression);
+    }
   }
 
   @Override
