@@ -64,7 +64,6 @@ import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.apache.sling.commons.scheduler.Job;
 import org.sakaiproject.nakamura.api.preview.ContentFetcher;
-import org.sakaiproject.nakamura.api.preview.PreviewProcessor;
 import org.sakaiproject.nakamura.api.termextract.ExtractedTerm;
 import org.sakaiproject.nakamura.api.termextract.TermExtractor;
 import org.sakaiproject.nakamura.preview.processors.ThumbnailGenerator;
@@ -80,12 +79,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 @Service(PreviewProcessorImpl.class)
 @Component(metatype = true, immediate = true)
 public class PreviewProcessorImpl implements Job {
 
   private static final Logger log = LoggerFactory.getLogger(PreviewProcessorImpl.class);
+  
+  public static final String MIME_TYPE                = "_mimeType";
+  public static final String PROCESSED_BY             = "sakai:processed_by";
+  public static final String FILE_EXTENSION           = "sakai:fileextension";
+  public static final String HAS_PREVIEW              = "sakai:hasPreview";
+  public static final String NEEDS_PROCESSING         = "sakai:needsprocessing";
+  public static final String PROCESSING_FAILED        = "sakai:processing_failed";
+  public static final String POOL_CONTENT_CREATED_FOR = "sakai:pool-content-created-for";
+
+  public static final Set<String> IMAGE_EXTENSIONS = 
+    ImmutableSet.of("jpg", "jpeg", "png", "gif", "psd");
+
+  public static final Set<String> PDF_EXTENSIONS = 
+    ImmutableSet.of("pdf");
+
+  public static final Set<String> FIRST_PAGE_ONLY_EXTENSIONS = 
+    ImmutableSet.of("htm", "html", "xhtml", "txt");
 
   // If a tag is one word is must occur n time in the doc text
   private static final int SINGLE_WORD_TERM_MIN_OCCUR = 4;
@@ -141,6 +158,8 @@ public class PreviewProcessorImpl implements Job {
   @Property(boolValue=false)
   public static final String PROP_FORCE_TAGGING = "force.tagging";
   protected boolean forceTagging = false;
+  
+  @Property(name = "scheduler.concurrent", boolValue = false)
 
   private static final String JOB_NAME = "Preview Processor Job";
 
@@ -258,13 +277,13 @@ public class PreviewProcessorImpl implements Job {
 
         // Determine the correct file extension
         String extension = null;
-        if (item.containsKey(PreviewProcessor.FILE_EXTENSION)){
-          extension = (String)item.get(PreviewProcessor.FILE_EXTENSION);
+        if (item.containsKey(FILE_EXTENSION)){
+          extension = (String)item.get(FILE_EXTENSION);
           extension = StringUtils.stripStart(extension, ".");
         }
         String mimetype = null;
-        if (item.containsKey(PreviewProcessor.MIME_TYPE)){
-          mimetype = (String)item.get(PreviewProcessor.MIME_TYPE);
+        if (item.containsKey(MIME_TYPE)){
+          mimetype = (String)item.get(MIME_TYPE);
         }
         contentFilePath = StringUtils.join(new String[] { docsDir, id + "." + extension }, File.separator);
         extension = determineFileExtensionWithMimeType(contentFilePath, mimetype, extension);
@@ -273,7 +292,7 @@ public class PreviewProcessorImpl implements Job {
         download(remoteServerUrl + "/p/" + id, contentFilePath);
 
         // Images are easy just download and resize
-        if (PreviewProcessor.IMAGE_EXTENSIONS.contains(extension)){
+        if (IMAGE_EXTENSIONS.contains(extension)){
           processImage(contentFilePath, item);
         }
         else {
@@ -281,19 +300,19 @@ public class PreviewProcessorImpl implements Job {
           remoteServer.post("/p/" + id + ".json", new NameValuePair("sakai:pagecount", Integer.toString(pageCount)));
         }
 
-        remoteServer.post("/p/" + id + ".json", new NameValuePair(PreviewProcessor.NEEDS_PROCESSING, "false"), PROP_TIMEOUT);
-        log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.NEEDS_PROCESSING, "false"});
-        remoteServer.post("/p/" + id + ".json", new NameValuePair(PreviewProcessor.HAS_PREVIEW, "true"), PROP_TIMEOUT);
-        log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.HAS_PREVIEW, "true"});
+        remoteServer.post("/p/" + id + ".json", new NameValuePair(NEEDS_PROCESSING, "false"), PROP_TIMEOUT);
+        log.info("POST /p/{}.json {}={}", new String[] { id, NEEDS_PROCESSING, "false"});
+        remoteServer.post("/p/" + id + ".json", new NameValuePair(HAS_PREVIEW, "true"), PROP_TIMEOUT);
+        log.info("POST /p/{}.json {}={}", new String[] { id, HAS_PREVIEW, "true"});
         log.info("SUCCESS processed {}",id);
       }
       catch (Exception e){
         log.info("FAILURE processing {}",id);
         log.error("There was an error generating a preview for {}", id, e);
-        remoteServer.post("/p/" + id + ".json", new NameValuePair(PreviewProcessor.NEEDS_PROCESSING, "false"), PROP_TIMEOUT);
-        log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.NEEDS_PROCESSING, "false"});
-        remoteServer.post("/p/" + id + ".json", new NameValuePair(PreviewProcessor.PROCESSING_FAILED, "true"), PROP_TIMEOUT);
-        log.info("POST /p/{}.json {}={}", new String[] { id, PreviewProcessor.PROCESSING_FAILED, "true"});
+        remoteServer.post("/p/" + id + ".json", new NameValuePair(NEEDS_PROCESSING, "false"), PROP_TIMEOUT);
+        log.info("POST /p/{}.json {}={}", new String[] { id, NEEDS_PROCESSING, "false"});
+        remoteServer.post("/p/" + id + ".json", new NameValuePair(PROCESSING_FAILED, "true"), PROP_TIMEOUT);
+        log.info("POST /p/{}.json {}={}", new String[] { id, PROCESSING_FAILED, "true"});
       }
       finally {
         if (contentFilePath != null){
@@ -367,11 +386,11 @@ public class PreviewProcessorImpl implements Job {
     String outputPrefix = StringUtils.join(new String[]{ previewsDir, id, "page." }, File.separator);
 
     int numPages = -1;
-    if (PreviewProcessor.FIRST_PAGE_ONLY_EXTENSIONS.contains(extension)){
+    if (FIRST_PAGE_ONLY_EXTENSIONS.contains(extension)){
       numPages = 1;
     }
 
-    if (PreviewProcessor.PDF_EXTENSIONS.contains(extension)){
+    if (PDF_EXTENSIONS.contains(extension)){
       // If the content is a PDF, just move it to the preview dir
       FileUtils.copyFile(new File(contentFilePath), new File(convertedPDFPath));
     }
@@ -380,8 +399,8 @@ public class PreviewProcessorImpl implements Job {
       pdfConverter.process(contentFilePath, convertedPDFPath);
     }
 
-    if (item.containsKey(PreviewProcessor.POOL_CONTENT_CREATED_FOR)){
-      String userId = (String)item.get(PreviewProcessor.POOL_CONTENT_CREATED_FOR);
+    if (item.containsKey(POOL_CONTENT_CREATED_FOR)){
+      String userId = (String)item.get(POOL_CONTENT_CREATED_FOR);
       JSONObject userMeta = getUserMeta(userId);
       List<String> tags = new ArrayList<String>();
 
@@ -511,8 +530,8 @@ public class PreviewProcessorImpl implements Job {
   private boolean ignore(Map<String,Object> item) {
     boolean ignore = false;
     String mimetype = null;
-    if (item.containsKey(PreviewProcessor.MIME_TYPE)){
-      mimetype = StringUtils.trimToNull((String)item.get(PreviewProcessor.MIME_TYPE));
+    if (item.containsKey(MIME_TYPE)){
+      mimetype = StringUtils.trimToNull((String)item.get(MIME_TYPE));
     }
     if (mimetype == null){
       ignore = true;
@@ -575,9 +594,9 @@ public class PreviewProcessorImpl implements Job {
     List<Map<String,Object>> unprocessed = new LinkedList<Map<String,Object>>();
     for (Map<String,Object> item : content){
       // No one else has claimed this
-      if (!item.containsKey(PreviewProcessor.PROCESSED_BY) ||
-          (item.containsKey(PreviewProcessor.PROCESSED_BY) &&
-              !name.equals(item.get(PreviewProcessor.PROCESSED_BY)))){
+      if (!item.containsKey(PROCESSED_BY) ||
+          (item.containsKey(PROCESSED_BY) &&
+              !name.equals(item.get(PROCESSED_BY)))){
         unprocessed.add(item);
       }
     }
