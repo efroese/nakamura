@@ -512,12 +512,13 @@ public class PreviewProcessorImpl implements Job {
   throws ProcessingException, FileNotFoundException {
     String id = (String)item.get("_path");
     String prefix = previewsDir + File.separator + id + File.separator + id;
+    String extension = StringUtils.substringAfterLast(contentFilePath, ".");
 
-    String normalPath = prefix + ".normal.jpg";
+    String normalPath = prefix + ".normal." + extension;
     thumbnailGenerator.resize(contentFilePath, normalPath, LARGE_MAX_WIDTH, null);
     remoteServer.uploadContentPreview(id, new File(normalPath), "1", "normal");
 
-    String smallPath = prefix + ".small.jpg";
+    String smallPath = prefix + ".small." + extension;
     thumbnailGenerator.resize(contentFilePath, smallPath, SMALL_MAX_WIDTH, SMALL_MAX_HEIGHT);
     remoteServer.uploadContentPreview(id, new File(smallPath), "1", "small");
   }
