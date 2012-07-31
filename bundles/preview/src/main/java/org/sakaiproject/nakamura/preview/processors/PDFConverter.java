@@ -78,8 +78,11 @@ public class PDFConverter {
     return connection;
   }
 
-  /* (non-Javadoc)
-   * @see org.sakaiproject.nakamura.preview.processors.DocumentConverter#process(java.lang.String, java.lang.String)
+  /**
+   * Convert a document to a PDF using the OOo processor.
+   * @param inputPath The path to the document.
+   * @param outputPath Where to write it
+   * @throws ProcessingException
    */
   public void process(String inputPath, String outputPath) throws ProcessingException {
     try {
