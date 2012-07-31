@@ -16,8 +16,10 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 public class RemoteServerUtil {
 
@@ -78,7 +80,8 @@ public class RemoteServerUtil {
 		post.setRequestEntity(entity);
 		http(getHttpClient(server, "admin", password), post);
 
-		String altUrl = "/p/" + contentId + "/page" + page + "." + size + ".jpg";
+		String extension = StringUtils.substringAfterLast(preview.getAbsolutePath(), ".");
+		String altUrl = "/p/" + contentId + "/page" + page + "." + size + "." + extension;
 		post = new PostMethod(altUrl);
 		post.addParameter("sakai:excludeSearch", "true");
 		http(getHttpClient(server, "admin", password), post);
