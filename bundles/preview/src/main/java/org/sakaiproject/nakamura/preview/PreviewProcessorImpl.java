@@ -106,6 +106,9 @@ public class PreviewProcessorImpl implements Job {
   public static final Set<String> FIRST_PAGE_ONLY_EXTENSIONS = 
     ImmutableSet.of("htm", "html", "xhtml", "txt");
 
+  public static final Set<String> WKHTMLTOPDF_MIME_TYPES =
+    ImmutableSet.of("x-sakai/document");
+
   // If a tag is one word is must occur n time in the doc text
   private static final int SINGLE_WORD_TERM_MIN_OCCUR = 4;
   private static final int TERM_MIN_WORDS = 1;
@@ -125,7 +128,7 @@ public class PreviewProcessorImpl implements Job {
   @Property(intValue=PreviewProcessorImpl.DEFAULT_MAX_TAGS)
   public static final String PROP_MAX_TAGS = "max.tags";
   public static final int DEFAULT_MAX_TAGS = 10;
-  private int maxTags;
+  protected int maxTags;
 
   @Property(value=PreviewProcessorImpl.DEFAULT_SCHEDULE)
   public static final String PROP_SCHEDULE = "quartz.schedule";
@@ -246,6 +249,7 @@ public class PreviewProcessorImpl implements Job {
 
     content = filterAlreadyProcessed(content);
     if (content.isEmpty()){
+      log.info("No content to prcoess.");
       return;
     }
 
@@ -290,8 +294,14 @@ public class PreviewProcessorImpl implements Job {
         contentFilePath = StringUtils.join(new String[] { docsDir, id + "." + extension }, File.separator);
         extension = determineFileExtensionWithMimeType(contentFilePath, mimetype, extension);
 
+        if (WKHTMLTOPDF_MIME_TYPES.contains(mimetype)){
+          downloadSakaiDoc(id, remoteServer.getTrustedAuthnCookie(), result, docsDir);
+          extension = "pdf";
+        }
+        else {
+          download(remoteServerUrl + "/p/" + id, contentFilePath);
+        }
         log.info("With filename {}", id + "." + extension);
-        download(remoteServerUrl + "/p/" + id, contentFilePath);
 
         // Images are easy just download and resize
         if (IMAGE_EXTENSIONS.contains(extension)){
@@ -371,6 +381,43 @@ public class PreviewProcessorImpl implements Job {
       } catch (IOException e) {
         log.error("Error closing output stream: {}", e);
       }
+    }
+  }
+  
+  /**
+   * Download a sakaidoc as a pdf.
+   * @param remote The URL to the OAE server
+   * @param cookieToken cookie token for the amdin session
+   * @param outputDirectory where to store the pdf
+   * @throws ProcessingException
+   * @throws IOException 
+   */
+  @SuppressWarnings("unchecked")
+  private void downloadSakaiDoc(String id, String cookieToken, Map<String,Object> meta, String outputDirectory)
+      throws ProcessingException, IOException {
+    log.info("Downloading the sakai doc {} to {}", id, outputDirectory);
+
+    StringBuilder urlBuilder = new StringBuilder();
+    Map<String,Object> structure = (Map<String, Object>)meta.get("structure0");
+    for (Object pageName : structure.keySet()){
+      urlBuilder.append(" '");
+      urlBuilder.append(remoteServerUrl);
+      urlBuilder.append("/content#l=");
+      urlBuilder.append((String)pageName);
+      urlBuilder.append("&p=");
+      urlBuilder.append(id);
+      urlBuilder.append("'");
+    }
+    String urls = urlBuilder.toString();
+    log.info("URLs for {} : {}", id, urls);
+
+    ProcessBuilder pb = new ProcessBuilder("wkhtmltopdf ",
+        "--cookie", "sakai-trusted-authn", cookieToken, urls,
+        StringUtils.join(new String[] { outputDirectory, id + ".pdf" }, File.separator));
+    log.info("Running command {}", StringUtils.join(pb.command(), " "));
+    Process process = pb.start();
+    if (process.exitValue() != 0){
+      throw new ProcessingException("There was an error turning the sakai doc into a PDF");
     }
   }
 

@@ -10,6 +10,8 @@ import java.net.URL;
 
 import net.sf.json.JSONObject;
 
+import org.apache.commons.httpclient.Cookie;
+import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -63,6 +65,19 @@ public class RemoteServerUtil {
     PostMethod post = new PostMethod(url);
     post.addParameters(parameters);
     return http(getHttpClient(server, "admin", password), post, timeout);
+  }
+
+  public String getTrustedAuthnCookie(){
+    String cookieString = null;
+    HttpClient client = getHttpClient(server, "admin", password);
+    PostMethod post = new PostMethod("/");
+    http(client, post);
+    for (Cookie cookie : client.getState().getCookies()){
+      if ("sakai-trusted-authn".equals(cookie.getName())){
+        cookieString = cookie.getValue();
+      }
+    }
+    return cookieString;
   }
 
 	/**
