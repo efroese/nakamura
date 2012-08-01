@@ -33,9 +33,6 @@ import org.sakaiproject.nakamura.termextract.TermExtractorImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
-
 public class PreviewProcessorMain {
 
   private static final String DEFAULT_COUNT = "1";
@@ -70,22 +67,17 @@ public class PreviewProcessorMain {
     int count = Integer.parseInt(cmd.getOptionValue("count", DEFAULT_COUNT));
 
     PreviewProcessorImpl pp = new PreviewProcessorImpl();
-    Builder<String, Object> props =  ImmutableMap.builder();
-
-    props.put(PreviewProcessorImpl.PROP_REMOTE_SERVER_URL, cmd.getOptionValue("server"));
-    props.put(PreviewProcessorImpl.PROP_REMOTE_CONTENT_SERVER_URL, cmd.getOptionValue("content"));
-    props.put(PreviewProcessorImpl.PROP_REMOTE_SERVER_USER, cmd.getOptionValue("user"));
-    props.put(PreviewProcessorImpl.PROP_REMOTE_SERVER_PASSWORD, cmd.getOptionValue("password"));
-    props.put(PreviewProcessorImpl.PROP_BASEPATH, cmd.getOptionValue("directory"));
-    props.put(PreviewProcessorImpl.PROP_MAX_TAGS, PreviewProcessorImpl.DEFAULT_MAX_TAGS);
-    props.put(PreviewProcessorImpl.PROP_FORCE_TAGGING, cmd.getOptionValue("tagging"));
-    pp.modified(props.build());
 
     pp.remoteServerUrl = new URL(cmd.getOptionValue("server"));
     pp.remoteContentServerUrl = new URL(cmd.getOptionValue("content"));
+    pp.forceTagging = Boolean.valueOf(cmd.getOptionValue("tagging"));
+    pp.remoteServerUser = cmd.getOptionValue("user");
+    pp.remoteServerPassword = cmd.getOptionValue("password");
+    pp.basePath = cmd.getOptionValue("directory");
+    pp.maxTags = 10;
+
     pp.contentFetcher = new SearchContentFetcher();
     pp.remoteServer = new RemoteServerUtil(cmd.getOptionValue("server"), cmd.getOptionValue("password"));
-
     pp.thumbnailGenerator = new ThumbnailGenerator();
     pp.pdfConverter = new PDFConverter();
     pp.pdfSplitter = new PDFBoxProcessor();
@@ -97,7 +89,7 @@ public class PreviewProcessorMain {
     }
 
     try {
-      while (count >= 0) {
+      while (count > 0) {
         pp.process();
         count--;
       }
