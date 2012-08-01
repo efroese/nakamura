@@ -251,7 +251,7 @@ public class PreviewProcessorImpl implements Job {
     for (Map<String,Object> result : content){
       contentIds.add((String)result.get("_path"));
     }
-    log.info("Starts a new batch of queued files: {}", StringUtils.join(contentIds, ", "));
+    log.info("Starts a new batch of {} queued file(s): {}", contentIds.size(), StringUtils.join(contentIds, ", "));
 
     claimContent(contentIds, name);
 
