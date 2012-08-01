@@ -93,6 +93,7 @@ public class PreviewProcessorImpl implements Job {
   public static final String HAS_PREVIEW              = "sakai:hasPreview";
   public static final String NEEDS_PROCESSING         = "sakai:needsprocessing";
   public static final String PROCESSING_FAILED        = "sakai:processing_failed";
+  public static final String PROCESSED_AT             = "sakai:processed_at";
   public static final String POOL_CONTENT_CREATED_FOR = "sakai:pool-content-created-for";
 
   public static final Set<String> IMAGE_EXTENSIONS = 
@@ -300,8 +301,6 @@ public class PreviewProcessorImpl implements Job {
           remoteServer.post("/p/" + id + ".json", new NameValuePair("sakai:pagecount", Integer.toString(pageCount)));
         }
 
-        remoteServer.post("/p/" + id + ".json", new NameValuePair(NEEDS_PROCESSING, "false"), PROP_TIMEOUT);
-        log.info("POST /p/{}.json {}={}", new String[] { id, NEEDS_PROCESSING, "false"});
         remoteServer.post("/p/" + id + ".json", new NameValuePair(HAS_PREVIEW, "true"), PROP_TIMEOUT);
         log.info("POST /p/{}.json {}={}", new String[] { id, HAS_PREVIEW, "true"});
         log.info("SUCCESS processed {}",id);
@@ -309,12 +308,16 @@ public class PreviewProcessorImpl implements Job {
       catch (Exception e){
         log.info("FAILURE processing {}",id);
         log.error("There was an error generating a preview for {}", id, e);
-        remoteServer.post("/p/" + id + ".json", new NameValuePair(NEEDS_PROCESSING, "false"), PROP_TIMEOUT);
-        log.info("POST /p/{}.json {}={}", new String[] { id, NEEDS_PROCESSING, "false"});
         remoteServer.post("/p/" + id + ".json", new NameValuePair(PROCESSING_FAILED, "true"), PROP_TIMEOUT);
         log.info("POST /p/{}.json {}={}", new String[] { id, PROCESSING_FAILED, "true"});
       }
       finally {
+        String processedAt = Long.toString(new Date().getTime());
+        remoteServer.post("/p/" + id + ".json", new NameValuePair(PROCESSED_AT, processedAt), PROP_TIMEOUT);
+        log.info("POST /p/{}.json {}={}", new String[] { id, PROCESSED_AT, processedAt});
+        remoteServer.post("/p/" + id + ".json", new NameValuePair(NEEDS_PROCESSING, "false"), PROP_TIMEOUT);
+        log.info("POST /p/{}.json {}={}", new String[] { id, NEEDS_PROCESSING, "false"});
+
         if (contentFilePath != null){
           File contentPathToDelete = new File(contentFilePath);
           contentPathToDelete.delete();
