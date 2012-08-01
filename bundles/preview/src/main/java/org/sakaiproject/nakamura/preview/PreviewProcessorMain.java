@@ -17,16 +17,21 @@
  */
 package org.sakaiproject.nakamura.preview;
 
+import java.io.File;
 import java.net.URL;
+import java.util.HashMap;
+
+import net.sf.json.JSONObject;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
+import org.apache.commons.lang.StringUtils;
+import org.sakaiproject.nakamura.preview.processors.PDFBoxProcessor;
 import org.sakaiproject.nakamura.preview.processors.PDFConverter;
 import org.sakaiproject.nakamura.preview.processors.ThumbnailGenerator;
-import org.sakaiproject.nakamura.preview.processors.PDFBoxProcessor;
 import org.sakaiproject.nakamura.preview.processors.TikaTextExtractor;
 import org.sakaiproject.nakamura.preview.util.RemoteServerUtil;
 import org.sakaiproject.nakamura.termextract.TermExtractorImpl;
@@ -75,11 +80,18 @@ public class PreviewProcessorMain {
     pp.remoteServerPassword = cmd.getOptionValue("password");
     pp.basePath = cmd.getOptionValue("directory");
     pp.maxTags = 10;
+    pp.ignoreTypes = PreviewProcessorImpl.loadResourceSet("ignore.types");
+    pp.mimeTypes = PreviewProcessorImpl.loadResourceSet("mime.types");
+    pp.previewsDir = StringUtils.join(new String[] { cmd.getOptionValue("directory"), "previews" }, File.separator);
+    pp.docsDir = StringUtils.join(new String[] { cmd.getOptionValue("directory"), "docs" }, File.separator);
+    pp.createDirectories();
+    pp.userMetaCache = new HashMap<String, JSONObject>();
 
     pp.contentFetcher = new SearchContentFetcher();
     pp.remoteServer = new RemoteServerUtil(cmd.getOptionValue("server"), cmd.getOptionValue("password"));
     pp.thumbnailGenerator = new ThumbnailGenerator();
     pp.pdfConverter = new PDFConverter();
+    pp.pdfConverter.setPort(8100);
     pp.pdfSplitter = new PDFBoxProcessor();
     pp.textExtractor = new TikaTextExtractor();
     pp.termExtractor = new TermExtractorImpl();

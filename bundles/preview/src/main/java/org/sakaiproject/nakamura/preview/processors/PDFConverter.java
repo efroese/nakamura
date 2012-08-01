@@ -68,11 +68,9 @@ public class PDFConverter {
     connection = null;
   }
 
-  public OpenOfficeConnection getConnection() throws ConnectException{
-    if (connection == null){
+  public OpenOfficeConnection getConnection() throws ConnectException {
+    if (connection == null || !connection.isConnected()){
       connection = new SocketOpenOfficeConnection(port);
-    }
-    if (!connection.isConnected()){
       connection.connect();
     }
     return connection;
@@ -90,8 +88,12 @@ public class PDFConverter {
       DocumentConverter converter = new OpenOfficeDocumentConverter(getConnection());
       converter.convert(new File(inputPath), new File(outputPath));
     }
-    catch (ConnectException e){
+    catch (Exception e){
       throw new ProcessingException("Error connecting to the JOD OOo document converter.", e);
     }
+  }
+  
+  public void setPort(int port){
+    this.port = port;
   }
 }

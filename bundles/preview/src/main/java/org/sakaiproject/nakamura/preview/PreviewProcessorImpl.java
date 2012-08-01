@@ -229,7 +229,7 @@ public class PreviewProcessorImpl implements Job {
 
     if (scheduler != null){
       scheduler.addJob(JOB_NAME, this, null, schedulingExpression, false);
-      log.info("The Preview Processor is scheduled to fire : {}", schedulingExpression);
+      log.info("The Preview Processor is scheduled to run : {}", schedulingExpression);
     }
   }
 
@@ -249,7 +249,7 @@ public class PreviewProcessorImpl implements Job {
 
     content = filterAlreadyProcessed(content);
     if (content.isEmpty()){
-      log.info("No content to prcoess.");
+      log.info("No content to process.");
       return;
     }
 
@@ -631,7 +631,7 @@ public class PreviewProcessorImpl implements Job {
   /**
    * Create the folders we need.
    */
-  private void createDirectories(){
+  protected void createDirectories(){
     for (String sub : new String[] { "docs", "previews", "logs" }){
       new File(this.basePath + File.separator + sub).mkdirs();
     }
@@ -731,7 +731,7 @@ public class PreviewProcessorImpl implements Job {
   }
 
   @SuppressWarnings("unchecked")
-  private static Set<String> loadResourceSet(String filename) throws IOException {
+  protected static Set<String> loadResourceSet(String filename) throws IOException {
     ClassLoader cl = PreviewProcessorMain.class.getClassLoader();
     Set<String> resource = new HashSet<String>();
     for (String line : (List<String>) IOUtils.readLines(cl.getResourceAsStream(filename))) {
