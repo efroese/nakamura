@@ -17,10 +17,18 @@
  */
 package org.sakaiproject.nakamura.preview.util;
 
+import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.lang.StringUtils;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.sakaiproject.nakamura.api.termextract.ExtractedTerm;
 import org.sakaiproject.nakamura.api.termextract.TermExtractor;
 import org.slf4j.Logger;
@@ -69,5 +77,39 @@ public class TagUtils {
     }
     parameters[tags.size()] = new NameValuePair(":operation", "tag");
     remoteServer.post("/p/" + id, parameters);
+  }
+
+  /**
+   * Send an email to a user that their document was tagged
+   * @param item
+   * @param userId
+   * @param tags
+   * @param from
+   * @param remoteServer
+   */
+  public static void doSendTagEmail(Map<String,Object> item, String userId, List<String> tags, String from, RemoteServerUtil remoteServer) {
+    String originFileName = (String)item.get("sakai:pooled-content-file-name");
+    VelocityEngine ve = new VelocityEngine();
+    ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
+    ve.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
+    ve.init();
+    Template t = ve.getTemplate("tag-email.vm");
+    VelocityContext context = new VelocityContext();
+    context.put("origin_file_name", originFileName);
+    context.put("tags", StringUtils.join(tags, "\n"));
+    StringWriter writer = new StringWriter();
+    t.merge(context, writer);
+
+    ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+    params.add(new NameValuePair("sakai:type","internal"));
+    params.add(new NameValuePair("sakai:sendstate", "pending"));
+    params.add(new NameValuePair("sakai:messagebox", "outbox"));
+    params.add(new NameValuePair("sakai:to", "internal:" + userId));
+    params.add(new NameValuePair("sakai:from", from));
+    params.add(new NameValuePair("sakai:subject", "We've added some tags to " + originFileName));
+    params.add(new NameValuePair("sakai:body", writer.toString()));
+    params.add(new NameValuePair("_charset_", "utf-8"));
+    params.add(new NameValuePair("sakai:category", "message"));
+    remoteServer.post("/~admin/message.create.json", (NameValuePair[])params.toArray());
   }
 }

@@ -184,6 +184,8 @@ public class PreviewProcessorImpl implements Job {
   @Reference
   protected ContentFetcher contentFetcher;
 
+  protected Tika tika;
+
   @Reference
   protected Scheduler scheduler;
 
@@ -229,6 +231,7 @@ public class PreviewProcessorImpl implements Job {
         new DefaultFilter(SINGLE_WORD_TERM_MIN_OCCUR, TERM_MIN_WORDS,
             TERM_MAX_WORDS, TERM_MIN_LENGTH, TERM_MAX_LENGTH));
     this.userMetaCache = new HashMap<String, JSONObject>();
+    this.tika = new Tika();
 
     if (scheduler != null){
       scheduler.addJob(JOB_NAME, this, null, schedulingExpression, false);
@@ -480,7 +483,7 @@ public class PreviewProcessorImpl implements Job {
         if (tags != null && !tags.isEmpty()){
           TagUtils.tagContent(id, tags, remoteServer);
           if (sendTagEmail(userMeta)){
-            doSendTagEmail(item, userId, tags);
+            TagUtils.doSendTagEmail(item, userId, tags, remoteServerUser, remoteServer);
           }
         } else {
           log.info("No tags generated for {}", id);
@@ -580,18 +583,18 @@ public class PreviewProcessorImpl implements Job {
     // Get rid of nulls and uppercase letters
     mimetype = StringUtils.trimToEmpty(mimetype).toLowerCase();
     extension = StringUtils.trimToEmpty(extension).toLowerCase();
+    String tikaMimeType = tika.detect(path).toLowerCase();
 
-    // no mimetype, use tika to guess it
-    if (mimetype.isEmpty()){
-      mimetype = new Tika().detect(path);
+    // Either its empty or wrong according to tika. Let's trust tika
+    if (!mimetype.equals(tikaMimeType)){
+      mimetype = tikaMimeType;
     }
-
     if (!mimetype.isEmpty()) {
-      for (String mime: mimeTypes){
+      for (String mimeLine: mimeTypes){
         // if the extension is empty or isn't in the line that matches the mimetype,
         // then take the first extension from the list for that mimetype
-        if (mime.contains(mimetype) && (extension.isEmpty() || !mime.contains(extension))){
-          String[] split = mime.split(" ");
+        if (mimeLine.contains(mimetype) && (extension.isEmpty() || !mimeLine.contains(extension))){
+          String[] split = mimeLine.split(" ");
           if (split.length > 1){
             extension = split[1];
           }
@@ -675,32 +678,6 @@ public class PreviewProcessorImpl implements Job {
   protected boolean sendTagEmail(JSONObject userMeta){
     JSONObject props = userMeta.getJSONObject("user").getJSONObject("properties");
     return props.has("sendTagMsg") && props.getBoolean("sendTagMsg");
-  }
-
-  private void doSendTagEmail(Map<String,Object> item, String userId, List<String> tags) {
-    String originFileName = (String)item.get("sakai:pooled-content-file-name");
-    VelocityEngine ve = new VelocityEngine();
-    ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
-    ve.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
-    ve.init();
-    Template t = ve.getTemplate("tag-email.vm");
-    VelocityContext context = new VelocityContext();
-    context.put("origin_file_name", originFileName);
-    context.put("tags", StringUtils.join(tags, "\n"));
-    StringWriter writer = new StringWriter();
-    t.merge(context, writer);
-
-    ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-    params.add(new NameValuePair("sakai:type","internal"));
-    params.add(new NameValuePair("sakai:sendstate", "pending"));
-    params.add(new NameValuePair("sakai:messagebox", "outbox"));
-    params.add(new NameValuePair("sakai:to", "internal:" + userId));
-    params.add(new NameValuePair("sakai:from", remoteServerUser));
-    params.add(new NameValuePair("sakai:subject", "We've added some tags to " + originFileName));
-    params.add(new NameValuePair("sakai:body", writer.toString()));
-    params.add(new NameValuePair("_charset_", "utf-8"));
-    params.add(new NameValuePair("sakai:category", "message"));
-    remoteServer.post("/~admin/message.create.json", (NameValuePair[])params.toArray());
   }
 
   @SuppressWarnings("unchecked")

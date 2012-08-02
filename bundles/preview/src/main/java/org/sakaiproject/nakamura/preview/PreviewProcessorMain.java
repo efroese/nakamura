@@ -29,6 +29,7 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tika.Tika;
 import org.sakaiproject.nakamura.preview.processors.PDFBoxProcessor;
 import org.sakaiproject.nakamura.preview.processors.PDFConverter;
 import org.sakaiproject.nakamura.preview.processors.ThumbnailGenerator;
@@ -86,6 +87,7 @@ public class PreviewProcessorMain {
     pp.docsDir = StringUtils.join(new String[] { cmd.getOptionValue("directory"), "docs" }, File.separator);
     pp.createDirectories();
     pp.userMetaCache = new HashMap<String, JSONObject>();
+    pp.tika = new Tika();
 
     pp.contentFetcher = new SearchContentFetcher();
     pp.remoteServer = new RemoteServerUtil(cmd.getOptionValue("server"), cmd.getOptionValue("password"));
