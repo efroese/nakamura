@@ -74,6 +74,7 @@ import org.sakaiproject.nakamura.preview.processors.TikaTextExtractor;
 import org.sakaiproject.nakamura.preview.util.EasySSLProtocolSocketFactory;
 import org.sakaiproject.nakamura.preview.util.HttpUtils;
 import org.sakaiproject.nakamura.preview.util.RemoteServerUtil;
+import org.sakaiproject.nakamura.preview.util.TagUtils;
 import org.sakaiproject.nakamura.termextract.DefaultFilter;
 import org.sakaiproject.nakamura.termextract.TermExtractorImpl;
 import org.slf4j.Logger;
@@ -468,27 +469,14 @@ public class PreviewProcessorImpl implements Job {
 
         int collected_tags_count = 0;
         for (ExtractedTerm term : terms){
-          if (isValidTag(term) && collected_tags_count < maxTags){
+          if (TagUtils.isValidTag(term) && collected_tags_count < maxTags){
             tags.add(term.getTerm().toLowerCase());
             collected_tags_count++;
           }
         }
 
         if (tags != null && !tags.isEmpty()){
-          Collections.sort(tags);
-          List<String> tagParams = new ArrayList<String>();
-          for (String tag: tags){
-            tagParams.add("/tags/" + tag);
-          }
-          log.info("Tagging {} with {}", id,  StringUtils.join(tags, ", "));
-          
-          List<NameValuePair> parameters = new ArrayList<NameValuePair>();
-          parameters.add(new NameValuePair(":operation", "tag"));
-          for (String tagParam : tagParams){
-            parameters.add(new NameValuePair("key", tagParam));
-          }
-          remoteServer.post("/p/" + id, (NameValuePair[])parameters.toArray());
-
+          TagUtils.tagContent(id, tags, remoteServer);
           if (sendTagEmail(userMeta)){
             doSendTagEmail(item, userId, tags);
           }
@@ -526,30 +514,6 @@ public class PreviewProcessorImpl implements Job {
       remoteServer.uploadContentPreview(id, preview, Integer.toString(i), "small");
     }
     return numPDFPageImages;
-  }
-
-  /**
-   * @param term extracted by the {@link TermExtractor}
-   * @return whether or not to use a term as a tag
-   */
-  private boolean isValidTag(ExtractedTerm term) {
-    boolean valid = false;
-    String t = term.getTerm();
-
-    boolean isAlphaOrSpace = StringUtils.isAlphaSpace(t);
-    boolean containsHttp = t.contains("http");
-    boolean moreThanTwoWords = t.split(" ").length > 2;
-    boolean number = false;
-    try {
-      Double.parseDouble(t);
-      number = true;
-    } catch (NumberFormatException e){
-      // nothing to see here. Move along
-    }
-    if (t.length() > 1 && isAlphaOrSpace && !containsHttp && !moreThanTwoWords && !number){
-      valid = true;
-    }
-    return valid;
   }
 
   /**
