@@ -17,8 +17,8 @@
  */
 package org.sakaiproject.nakamura.preview;
 
+import java.awt.Dimension;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
@@ -54,6 +54,8 @@ import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
+import org.apache.sanselan.ImageReadException;
+import org.apache.sanselan.Sanselan;
 import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.sling.commons.scheduler.JobContext;
 import org.apache.sling.commons.scheduler.Scheduler;
@@ -518,23 +520,30 @@ public class PreviewProcessorImpl implements Job {
 
   /**
    * Create the previews for an image and upload it to OAE
-   * @param contentFilePath
-   * @param item
-   * @throws ProcessingException
-   * @throws FileNotFoundException
+   * @param contentFilePath the path to the downloaded content image
+   * @param meta the content metadata
+   * @throws ProcessingException if an error occurs processing the image
+   * @throws ImageReadException  if an error occurs while reading the image
    */
-  protected void processImage(String contentFilePath, Map<String,Object> item)
-  throws ProcessingException, FileNotFoundException {
-    String id = (String)item.get("_path");
-    String prefix = previewsDir + File.separator + id + File.separator + id;
+  protected void processImage(String contentFilePath, Map<String,Object> meta)
+  throws ProcessingException, ImageReadException, IOException {
+    String id = (String)meta.get("_path");
+    String prefix = StringUtils.join(new String[] { previewsDir, id, id }, File.separator);
     String extension = StringUtils.substringAfterLast(contentFilePath, ".");
 
-    String normalPath = prefix + ".normal." + extension;
-    thumbnailGenerator.resize(contentFilePath, normalPath, LARGE_MAX_WIDTH, null);
+    String normalPath = contentFilePath;
+    Dimension d = Sanselan.getImageSize(new File(contentFilePath));
+    if (d.width > LARGE_MAX_WIDTH){
+      thumbnailGenerator.resize(contentFilePath, normalPath, LARGE_MAX_WIDTH, null);
+      normalPath = prefix + ".normal." + extension;
+    }
     remoteServer.uploadContentPreview(id, new File(normalPath), "1", "normal");
 
-    String smallPath = prefix + ".small." + extension;
-    thumbnailGenerator.resize(contentFilePath, smallPath, SMALL_MAX_WIDTH, SMALL_MAX_HEIGHT);
+    String smallPath = contentFilePath;
+    if (d.width > SMALL_MAX_WIDTH && d.height > SMALL_MAX_HEIGHT){
+      smallPath = prefix + ".small." + extension;
+      thumbnailGenerator.resize(contentFilePath, smallPath, SMALL_MAX_WIDTH, SMALL_MAX_HEIGHT);
+    }
     remoteServer.uploadContentPreview(id, new File(smallPath), "1", "small");
   }
 
