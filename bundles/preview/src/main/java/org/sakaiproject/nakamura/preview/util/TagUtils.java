@@ -17,7 +17,6 @@
  */
 package org.sakaiproject.nakamura.preview.util;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.httpclient.NameValuePair;
@@ -62,7 +61,6 @@ public class TagUtils {
    * @param remoteServer to connect to OAE
    */
   public static void tagContent(String id, List<String> tags, RemoteServerUtil remoteServer){
-    Collections.sort(tags);
     log.info("Tagging {} with {}", id,  StringUtils.join(tags, ", "));
     
     NameValuePair[] parameters = new NameValuePair[tags.size() + 1];
