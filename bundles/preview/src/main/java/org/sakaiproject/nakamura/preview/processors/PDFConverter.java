@@ -18,7 +18,6 @@
 package org.sakaiproject.nakamura.preview.processors;
 
 import java.io.File;
-import java.net.ConnectException;
 import java.util.Map;
 
 import org.apache.felix.scr.annotations.Activate;
@@ -28,14 +27,13 @@ import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.commons.osgi.PropertiesUtil;
+import org.artofsolving.jodconverter.OfficeDocumentConverter;
+import org.artofsolving.jodconverter.document.DefaultDocumentFormatRegistry;
+import org.artofsolving.jodconverter.office.ExternalOfficeManagerConfiguration;
+import org.artofsolving.jodconverter.office.OfficeManager;
 import org.sakaiproject.nakamura.preview.ProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.artofsolving.jodconverter.DocumentConverter;
-import com.artofsolving.jodconverter.openoffice.connection.OpenOfficeConnection;
-import com.artofsolving.jodconverter.openoffice.connection.SocketOpenOfficeConnection;
-import com.artofsolving.jodconverter.openoffice.converter.OpenOfficeDocumentConverter;
 
 /**
  * Convert documents to PDFs using the OOo JODConverter.
@@ -46,34 +44,52 @@ public class PDFConverter {
 
   private Logger log = LoggerFactory.getLogger(PDFConverter.class);
 
-  OpenOfficeConnection connection = null;
-
   @Property
   public static final String PROP_JOD_PORT = "jod.port";
   public static final int DEFAULT_JOD_PORT = 8100;
   protected int port;
 
+  @Property
+  public static final String PROP_JOD_TIMEOUT = "jod.processing.timeout";
+  public static final int DEFAULT_JOD_TIMEOUT = 300; // seconds
+  protected int timeout;
+
+  protected ExternalOfficeManagerConfiguration configuration;
+  protected OfficeManager officeManager;
+
+  public PDFConverter(){ }
+
+  public PDFConverter(int port, int timeout){
+    this.port = port;
+    this.timeout = timeout;
+  }
+
   @Activate
   @Modified
   public void modified(Map<String,Object> props){
     port = PropertiesUtil.toInteger(props.get(PROP_JOD_PORT), DEFAULT_JOD_PORT);
+    timeout = PropertiesUtil.toInteger(props.get(PROP_JOD_TIMEOUT), DEFAULT_JOD_TIMEOUT);
+    deactivate();
+    initOfficeManager();
+  }
+
+  public void initOfficeManager() {
+    configuration = new ExternalOfficeManagerConfiguration();
+    configuration.setPortNumber(port);
+    officeManager = configuration.buildOfficeManager();
+    officeManager.start();
   }
 
   @Deactivate
   public void deactivate(){
-    if (connection == null){
-      return;
+    try {
+      if (officeManager != null){
+        officeManager.stop();
+      }
     }
-    connection.disconnect();
-    connection = null;
-  }
-
-  public OpenOfficeConnection getConnection() throws ConnectException {
-    if (connection == null || !connection.isConnected()){
-      connection = new SocketOpenOfficeConnection(port);
-      connection.connect();
+    catch (Exception e){
+      officeManager = null;
     }
-    return connection;
   }
 
   /**
@@ -84,15 +100,15 @@ public class PDFConverter {
    */
   public void process(String inputPath, String outputPath) throws ProcessingException {
     try {
+      OfficeDocumentConverter converter = new OfficeDocumentConverter(officeManager, new DefaultDocumentFormatRegistry());
       log.info("Converting {} to {}", inputPath, outputPath);
-      DocumentConverter converter = new OpenOfficeDocumentConverter(getConnection());
       converter.convert(new File(inputPath), new File(outputPath));
     }
     catch (Exception e){
       throw new ProcessingException("Error connecting to the JOD OOo document converter.", e);
     }
   }
-  
+
   public void setPort(int port){
     this.port = port;
   }
