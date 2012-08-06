@@ -68,16 +68,16 @@ public class RemoteServerUtil {
   }
 
   public String getTrustedAuthnCookie(){
-    String cookieString = null;
     HttpClient client = getHttpClient(server, "admin", password);
     PostMethod post = new PostMethod("/");
     http(client, post);
     for (Cookie cookie : client.getState().getCookies()){
-      if ("sakai-trusted-authn".equals(cookie.getName())){
-        cookieString = cookie.getValue();
+      if ("sakai-trusted-authn".equals(cookie.getName()) ||
+          "SAKAI-TRACKING".equals(cookie.getName())){
+        return cookie.getValue();
       }
     }
-    return cookieString;
+    return null;
   }
 
 	/**

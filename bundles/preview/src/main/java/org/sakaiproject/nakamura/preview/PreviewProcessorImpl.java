@@ -21,7 +21,6 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.util.ArrayList;
@@ -57,21 +56,16 @@ import org.apache.felix.scr.annotations.Service;
 import org.apache.sanselan.ImageReadException;
 import org.apache.sanselan.Sanselan;
 import org.apache.sling.commons.osgi.PropertiesUtil;
+import org.apache.sling.commons.scheduler.Job;
 import org.apache.sling.commons.scheduler.JobContext;
 import org.apache.sling.commons.scheduler.Scheduler;
 import org.apache.tika.Tika;
-import org.apache.velocity.Template;
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.runtime.RuntimeConstants;
-import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
-import org.apache.sling.commons.scheduler.Job;
 import org.sakaiproject.nakamura.api.preview.ContentFetcher;
 import org.sakaiproject.nakamura.api.termextract.ExtractedTerm;
 import org.sakaiproject.nakamura.api.termextract.TermExtractor;
-import org.sakaiproject.nakamura.preview.processors.ThumbnailGenerator;
-import org.sakaiproject.nakamura.preview.processors.PDFConverter;
 import org.sakaiproject.nakamura.preview.processors.PDFBoxProcessor;
+import org.sakaiproject.nakamura.preview.processors.PDFConverter;
+import org.sakaiproject.nakamura.preview.processors.ThumbnailGenerator;
 import org.sakaiproject.nakamura.preview.processors.TikaTextExtractor;
 import org.sakaiproject.nakamura.preview.util.EasySSLProtocolSocketFactory;
 import org.sakaiproject.nakamura.preview.util.HttpUtils;
@@ -90,7 +84,7 @@ import com.google.common.collect.ImmutableSet;
 public class PreviewProcessorImpl implements Job {
 
   private static final Logger log = LoggerFactory.getLogger(PreviewProcessorImpl.class);
-  
+
   public static final String MIME_TYPE                = "_mimeType";
   public static final String PROCESSED_BY             = "sakai:processed_by";
   public static final String FILE_EXTENSION           = "sakai:fileextension";
@@ -100,13 +94,13 @@ public class PreviewProcessorImpl implements Job {
   public static final String PROCESSED_AT             = "sakai:processed_at";
   public static final String POOL_CONTENT_CREATED_FOR = "sakai:pool-content-created-for";
 
-  public static final Set<String> IMAGE_EXTENSIONS = 
+  public static final Set<String> IMAGE_EXTENSIONS =
     ImmutableSet.of("jpg", "jpeg", "png", "gif", "psd");
 
-  public static final Set<String> PDF_EXTENSIONS = 
+  public static final Set<String> PDF_EXTENSIONS =
     ImmutableSet.of("pdf");
 
-  public static final Set<String> FIRST_PAGE_ONLY_EXTENSIONS = 
+  public static final Set<String> FIRST_PAGE_ONLY_EXTENSIONS =
     ImmutableSet.of("htm", "html", "xhtml", "txt");
 
   public static final Set<String> WKHTMLTOPDF_MIME_TYPES =
@@ -166,7 +160,7 @@ public class PreviewProcessorImpl implements Job {
   @Property(boolValue=false)
   public static final String PROP_FORCE_TAGGING = "force.tagging";
   protected boolean forceTagging = false;
-  
+
   @Property(name = "scheduler.concurrent", boolValue = false)
 
   private static final String JOB_NAME = "Preview Processor Job";
@@ -190,6 +184,8 @@ public class PreviewProcessorImpl implements Job {
   protected Scheduler scheduler;
 
   protected String name;
+
+  protected String wkhtmltopdf;
 
   // Mimetype lists
   protected Set<String> ignoreTypes;
@@ -232,6 +228,13 @@ public class PreviewProcessorImpl implements Job {
             TERM_MAX_WORDS, TERM_MIN_LENGTH, TERM_MAX_LENGTH));
     this.userMetaCache = new HashMap<String, JSONObject>();
     this.tika = new Tika();
+    this.wkhtmltopdf = findOnPath("wkhtmltopdf");
+    if (this.wkhtmltopdf == null){
+      throw new Exception("Unable to find wkhtmltopdf on the path.");
+    }
+    else {
+      log.info("Using wkhtmltopdf at {}", this.wkhtmltopdf);
+    }
 
     if (scheduler != null){
       scheduler.addJob(JOB_NAME, this, null, schedulingExpression, false);
@@ -358,7 +361,7 @@ public class PreviewProcessorImpl implements Job {
       GetMethod get = new GetMethod(url.getPath());
       HttpClient client = HttpUtils.getHttpClient(remoteContentServerUrl, "admin", remoteServerPassword);
       HostConfiguration hc = new HostConfiguration();
-      
+
       if ("https".equals(remoteContentServerUrl.getProtocol())){
         hc.setHost(new HttpHost(remoteContentServerUrl.getHost(), remoteContentServerUrl.getPort(),
             new Protocol(remoteContentServerUrl.getProtocol(), new EasySSLProtocolSocketFactory(), remoteContentServerUrl.getDefaultPort())));
@@ -366,7 +369,7 @@ public class PreviewProcessorImpl implements Job {
       else {
         hc.setHost(new HttpHost(remoteContentServerUrl.getHost(), remoteContentServerUrl.getPort()));
       }
-      
+
       int responseCode = client.executeMethod(hc, get);
       if (responseCode == HttpStatus.SC_OK){
         output = FileUtils.openOutputStream(new File(filePath));
@@ -389,42 +392,57 @@ public class PreviewProcessorImpl implements Job {
       }
     }
   }
-  
+
   /**
    * Download a sakaidoc as a pdf.
    * @param remote The URL to the OAE server
    * @param cookieToken cookie token for the amdin session
    * @param outputDirectory where to store the pdf
    * @throws ProcessingException
-   * @throws IOException 
+   * @throws IOException
    */
   @SuppressWarnings("unchecked")
   private void downloadSakaiDoc(String id, String cookieToken, Map<String,Object> meta, String outputDirectory)
       throws ProcessingException, IOException {
     log.info("Downloading the sakai doc {} to {}", id, outputDirectory);
 
-    StringBuilder urlBuilder = new StringBuilder();
+    StringBuilder command = new StringBuilder();
+    command.append(this.wkhtmltopdf);
+    command.append(" --cookie");
+    command.append(" sakai-trusted-authn ");
+    command.append(cookieToken);
+    command.append(" ");
+
     Map<String,Object> structure = (Map<String, Object>)meta.get("structure0");
     for (Object pageName : structure.keySet()){
-      urlBuilder.append(" '");
-      urlBuilder.append(remoteServerUrl);
-      urlBuilder.append("/content#l=");
-      urlBuilder.append((String)pageName);
-      urlBuilder.append("&p=");
-      urlBuilder.append(id);
-      urlBuilder.append("'");
+      command.append(" '");
+      command.append(remoteServerUrl);
+      command.append("/content#l=");
+      command.append((String)pageName);
+      command.append("&p=");
+      command.append(id);
+      command.append("' ");
     }
-    String urls = urlBuilder.toString();
-    log.info("URLs for {} : {}", id, urls);
-
-    ProcessBuilder pb = new ProcessBuilder("wkhtmltopdf ",
-        "--cookie", "sakai-trusted-authn", cookieToken, urls,
-        StringUtils.join(new String[] { outputDirectory, id + ".pdf" }, File.separator));
+    command.append(StringUtils.join(new String[] { outputDirectory, id + ".pdf" }, File.separator));
+    ProcessBuilder pb = new ProcessBuilder(command.toString());
     log.info("Running command {}", StringUtils.join(pb.command(), " "));
     Process process = pb.start();
     if (process.exitValue() != 0){
       throw new ProcessingException("There was an error turning the sakai doc into a PDF");
     }
+  }
+
+  protected String findOnPath(String command){
+    String[] paths = StringUtils.split(System.getenv("PATH"), ":");
+    String test = null;
+    for (String path: paths){
+      test = StringUtils.join(new String[] { path, command }, File.separator);
+      log.info("Looking for {}", test);
+      if (new File(test).exists()){
+        return test;
+      }
+    }
+    return null;
   }
 
   /**
