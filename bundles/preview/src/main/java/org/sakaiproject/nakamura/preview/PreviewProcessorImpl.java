@@ -534,20 +534,17 @@ public class PreviewProcessorImpl implements Job {
       String pageImagePath = StringUtils.join(new String[] { contentPreviewDirectory, "page." + i + ".JPEG"  }, File.separator);
       File preview = new File(pageImagePath);
 
-      thumbnailGenerator.resize(preview.getAbsolutePath(),
-          contentPreviewDirectory + File.separator + id + ".large.jpg",
-          LARGE_MAX_WIDTH, null);
-      remoteServer.uploadContentPreview(id, preview, Integer.toString(i), "large");
+      String largePreview = contentPreviewDirectory + File.separator + id + ".large.jpg";
+      thumbnailGenerator.resize(preview.getAbsolutePath(), largePreview, LARGE_MAX_WIDTH, null);
+      remoteServer.uploadContentPreview(id, new File(largePreview), Integer.toString(i), "large");
 
-      thumbnailGenerator.resize(preview.getAbsolutePath(),
-          contentPreviewDirectory + File.separator + id + ".normal.jpg",
-          LARGE_MAX_WIDTH, null);
-      remoteServer.uploadContentPreview(id, preview, Integer.toString(i), "normal");
+      String normalPreview = contentPreviewDirectory + File.separator + id + ".normal.jpg";
+      thumbnailGenerator.resize(preview.getAbsolutePath(), normalPreview, LARGE_MAX_WIDTH, null);
+      remoteServer.uploadContentPreview(id, new File(normalPreview), Integer.toString(i), "normal");
 
-      thumbnailGenerator.resize(preview.getAbsolutePath(),
-          contentPreviewDirectory + File.separator + id + ".small.jpg",
-          SMALL_MAX_WIDTH, SMALL_MAX_HEIGHT);
-      remoteServer.uploadContentPreview(id, preview, Integer.toString(i), "small");
+      String smallPreview = contentPreviewDirectory + File.separator + id + ".small.jpg";
+      thumbnailGenerator.resize(preview.getAbsolutePath(), smallPreview, SMALL_MAX_WIDTH, SMALL_MAX_HEIGHT);
+      remoteServer.uploadContentPreview(id, new File(smallPreview), Integer.toString(i), "small");
     }
     return numPDFPageImages;
   }
