@@ -22,7 +22,9 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+/**
+ * Perform some simple operations on an OAE server via HTTP. 
+ */
 public class RemoteServerUtil {
 
   private static final Logger log = LoggerFactory.getLogger(RemoteServerUtil.class);
@@ -72,8 +74,7 @@ public class RemoteServerUtil {
     PostMethod post = new PostMethod("/");
     http(client, post);
     for (Cookie cookie : client.getState().getCookies()){
-      if ("sakai-trusted-authn".equals(cookie.getName()) ||
-          "SAKAI-TRACKING".equals(cookie.getName())){
+      if ("sakai-trusted-authn".equals(cookie.getName())){
         return cookie.getValue();
       }
     }
