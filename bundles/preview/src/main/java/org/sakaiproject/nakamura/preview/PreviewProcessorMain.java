@@ -18,6 +18,7 @@
 package org.sakaiproject.nakamura.preview;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.util.HashMap;
 
@@ -88,6 +89,7 @@ public class PreviewProcessorMain {
     pp.createDirectories();
     pp.userMetaCache = new HashMap<String, JSONObject>();
     pp.tika = new Tika();
+    pp.name = ManagementFactory.getRuntimeMXBean().getName();
 
     pp.contentFetcher = new SearchContentFetcher();
     pp.remoteServer = new RemoteServerUtil(cmd.getOptionValue("server"), cmd.getOptionValue("password"));
