@@ -300,14 +300,18 @@ public class PreviewProcessorImpl implements Job {
         if (item.containsKey(MIME_TYPE)){
           mimetype = (String)item.get(MIME_TYPE);
         }
+
         contentFilePath = StringUtils.join(new String[] { docsDir, id + "." + extension }, File.separator);
         extension = determineFileExtensionWithMimeType(contentFilePath, mimetype, extension);
 
-        if (WKHTMLTOPDF_MIME_TYPES.contains(mimetype)){
+        // Most likely a sakaidoc. wkhtmltopdf was found on the PATH.
+        // Download it as a PDF and continue processing as it were a PDF.
+        if (WKHTMLTOPDF_MIME_TYPES.contains(mimetype) && this.wkhtmltopdf != null){
           downloadSakaiDoc(id, remoteServer.getTrustedAuthnCookie(), result, docsDir);
           extension = "pdf";
         }
         else {
+          // Normal content fetch. Everything but sakaidocs
           download(remoteServerUrl + "/p/" + id, contentFilePath);
         }
         log.info("With filename {}", id + "." + extension);
@@ -316,7 +320,9 @@ public class PreviewProcessorImpl implements Job {
         if (IMAGE_EXTENSIONS.contains(extension)){
           processImage(contentFilePath, item);
         }
-        else {
+        // Regular docs and sakaidocs iff wkhtmltopdf was found on the path.
+        else if (!WKHTMLTOPDF_MIME_TYPES.contains(mimetype) ||
+            (WKHTMLTOPDF_MIME_TYPES.contains(mimetype) && this.wkhtmltopdf != null)){
           int pageCount = processDocument(contentFilePath, item, extension);
           remoteServer.post("/p/" + id + ".json", new NameValuePair("sakai:pagecount", Integer.toString(pageCount)));
         }
@@ -432,15 +438,21 @@ public class PreviewProcessorImpl implements Job {
     }
   }
 
+  /**
+   * Find the executable for command on the system environment PATH
+   * @param command the command file to look for
+   * @return the path to the command or null if not found
+   */
   protected String findOnPath(String command){
     String[] paths = StringUtils.split(System.getenv("PATH"), ":");
     String test = null;
     for (String path: paths){
       test = StringUtils.join(new String[] { path, command }, File.separator);
-      log.info("Looking for {}", test);
       if (new File(test).exists()){
+        log.debug("Found {}", test);
         return test;
       }
+      log.debug("{} not found", test);
     }
     return null;
   }

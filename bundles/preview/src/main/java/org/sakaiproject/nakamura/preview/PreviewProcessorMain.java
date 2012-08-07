@@ -100,6 +100,10 @@ public class PreviewProcessorMain {
     pp.termExtractor = new TermExtractorImpl();
     pp.wkhtmltopdf = pp.findOnPath("wkhtmltopdf");
 
+    if (pp.wkhtmltopdf == null) {
+      log.error("Unable to find wkhtmltopdf on the PATH. SakaiDocs will not be previewed.");
+    }
+
     if (cmd.hasOption("tagging")){
       log.info("Tagging all content regardless of user preferences!");
     }
