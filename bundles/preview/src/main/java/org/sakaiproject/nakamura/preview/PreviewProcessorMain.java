@@ -96,7 +96,6 @@ public class PreviewProcessorMain {
     pp.thumbnailGenerator = new ThumbnailGenerator();
     pp.pdfConverter = new PDFConverter();
     pp.pdfConverter.setPort(8100);
-    pp.pdfConverter.initOfficeManager();
     pp.pdfSplitter = new PDFBoxProcessor();
     pp.textExtractor = new TikaTextExtractor();
     pp.termExtractor = new TermExtractorImpl();

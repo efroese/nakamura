@@ -54,8 +54,8 @@ public class PDFConverter {
   public static final int DEFAULT_JOD_TIMEOUT = 300; // seconds
   protected int timeout;
 
-  protected ExternalOfficeManagerConfiguration configuration;
-  protected OfficeManager officeManager;
+  protected ExternalOfficeManagerConfiguration configuration = null;
+  protected OfficeManager officeManager = null;
 
   public PDFConverter(){ }
 
@@ -77,7 +77,9 @@ public class PDFConverter {
     configuration = new ExternalOfficeManagerConfiguration();
     configuration.setPortNumber(port);
     officeManager = configuration.buildOfficeManager();
+    log.info("Connecting to OOo on port {}", port);
     officeManager.start();
+    log.info("Success, connected to OOo on port {}", port);
   }
 
   @Deactivate
@@ -100,6 +102,9 @@ public class PDFConverter {
    */
   public void process(String inputPath, String outputPath) throws ProcessingException {
     try {
+      if (configuration == null){
+        initOfficeManager();
+      }
       OfficeDocumentConverter converter = new OfficeDocumentConverter(officeManager, new DefaultDocumentFormatRegistry());
       log.info("Converting {} to {}", inputPath, outputPath);
       converter.convert(new File(inputPath), new File(outputPath));
