@@ -75,8 +75,8 @@ public class PreviewProcessorMain {
 
     PreviewProcessorImpl pp = new PreviewProcessorImpl();
 
-    pp.remoteServerUrl = new URL(cmd.getOptionValue("server"));
-    pp.remoteContentServerUrl = new URL(cmd.getOptionValue("content"));
+    pp.setRemoteServerUrl(new URL(cmd.getOptionValue("server")));
+    pp.setRemoteContentServerUrl(new URL(cmd.getOptionValue("content")));
     pp.forceTagging = Boolean.valueOf(cmd.getOptionValue("tagging"));
     pp.remoteServerUser = cmd.getOptionValue("user");
     pp.remoteServerPassword = cmd.getOptionValue("password");

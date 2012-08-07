@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -209,8 +210,8 @@ public class PreviewProcessorImpl implements Job {
     this.ignoreTypes = loadResourceSet("ignore.types");
     this.mimeTypes = loadResourceSet("mime.types");
 
-    this.remoteServerUrl = new URL(PropertiesUtil.toString(props.get(PROP_REMOTE_SERVER_URL), DEFAULT_REMOTE_SERVER_URL));
-    this.remoteContentServerUrl = new URL(PropertiesUtil.toString(props.get(PROP_REMOTE_CONTENT_SERVER_URL), DEFAULT_REMOTE_CONTENT_SERVER_URL));
+    setRemoteServerUrl(new URL(PropertiesUtil.toString(props.get(PROP_REMOTE_SERVER_URL), DEFAULT_REMOTE_SERVER_URL)));
+    setRemoteContentServerUrl(new URL(PropertiesUtil.toString(props.get(PROP_REMOTE_CONTENT_SERVER_URL), DEFAULT_REMOTE_CONTENT_SERVER_URL)));
     this.remoteServerUser = PropertiesUtil.toString(props.get(PROP_REMOTE_SERVER_USER), DEFAULT_REMOTE_SERVER_USER);
     this.remoteServerPassword = PropertiesUtil.toString(props.get(PROP_REMOTE_SERVER_PASSWORD), DEFAULT_REMOTE_SERVER_PASSWORD);
     this.maxTags = PropertiesUtil.toInteger(props.get(PROP_MAX_TAGS), DEFAULT_MAX_TAGS);
@@ -376,18 +377,18 @@ public class PreviewProcessorImpl implements Job {
         hc.setHost(new HttpHost(remoteContentServerUrl.getHost(), remoteContentServerUrl.getPort()));
       }
 
+      log.info("Downloading content body {} to {}", address, filePath);
       int responseCode = client.executeMethod(hc, get);
       if (responseCode == HttpStatus.SC_OK){
         output = FileUtils.openOutputStream(new File(filePath));
         IOUtils.copy(get.getResponseBodyAsStream(), output);
-        log.info("Downloaded content body {} to {}", address, filePath);
       }
       else {
         throw new Exception("Error downloading content. Response code was " + responseCode);
       }
     }
     catch (Exception e) {
-      log.error("Error downloading content: {}", e);
+      log.error("Error downloading content: {}", e.toString());
       throw e;
     }
     finally {
@@ -721,5 +722,13 @@ public class PreviewProcessorImpl implements Job {
     }
     log.trace("Loaded resource {}: {} lines.", filename, resource.size());
     return resource;
+  }
+
+  public void setRemoteServerUrl(URL remoteServerUrl) throws MalformedURLException {
+    this.remoteServerUrl = new URL(StringUtils.removeEnd(remoteServerUrl.toString(), "/"));
+  }
+
+  public void setRemoteContentServerUrl(URL remoteContentServerUrl) throws MalformedURLException {
+    this.remoteContentServerUrl = new URL(StringUtils.removeEnd(remoteContentServerUrl.toString(), "/"));
   }
 }
