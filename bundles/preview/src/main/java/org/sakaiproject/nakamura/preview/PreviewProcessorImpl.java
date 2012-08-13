@@ -329,7 +329,6 @@ public class PreviewProcessorImpl implements Job {
 
         remoteServer.post("/p/" + id + ".json", new NameValuePair(HAS_PREVIEW, "true"), PROP_TIMEOUT);
         log.info("POST /p/{}.json {}={}", new String[] { id, HAS_PREVIEW, "true"});
-        log.info("SUCCESS processed {}",id);
       }
       catch (Exception e){
         log.info("FAILURE processing {}",id);
@@ -421,7 +420,12 @@ public class PreviewProcessorImpl implements Job {
     command.add(cookieToken);
 
     Map<String,Object> structure = (Map<String, Object>)meta.get("structure0");
+    if (structure == null){
+      throw new ProcessingException(id + " metadata has no field structure0");
+    }
+
     StringBuilder urlsb;
+    int pages = 0;
     for (String pageName : structure.keySet()){
       urlsb = new StringBuilder();
       urlsb.append(remoteServerUrl);
@@ -430,18 +434,23 @@ public class PreviewProcessorImpl implements Job {
       urlsb.append("&p=");
       urlsb.append(id);
       command.add(urlsb.toString());
+      pages++;
     }
 
-    
-    String outFilePath = StringUtils.join(new String[] { outputDirectory, id + ".pdf" }, File.separator);
+    String outFilePath = null;
+    if (pages == 0){
+      throw new ProcessingException("No pages found in the content metadata for " + id);
+    }
+    StringUtils.join(new String[] { outputDirectory, id + ".pdf" }, File.separator);
     command.add(outFilePath);
     ProcessBuilder pb = new ProcessBuilder(command);
-    log.info("Running command {}", StringUtils.join(pb.command(), " "));
+    log.debug("Running command {}", StringUtils.join(pb.command(), " "));
     Process process = pb.start();
     process.waitFor();
     if (process.exitValue() != 0){
       throw new ProcessingException("There was an error turning the sakai doc into a PDF");
     }
+    log.info("Downloaded the sakai document to {}", outFilePath);
     return outFilePath;
   }
 
