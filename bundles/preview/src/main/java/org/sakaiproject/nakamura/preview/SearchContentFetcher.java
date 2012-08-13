@@ -51,17 +51,19 @@ public class SearchContentFetcher implements ContentFetcher {
     try {
       log.info("Fetching new content from {}", needsprocessingUrl);
       JSONObject response = HttpUtils.http(HttpUtils.getHttpClient(new URL(serverUrl), username, password), get);
-      JSONArray results = response.getJSONArray("results");
-      log.debug("Fetched {} new content item(s) for processing: {}", results.size());
-      log.trace(results.toString());
-      for (int i = 0; i < results.size(); i++){
-        content.add(results.getJSONObject(i));
+      if (response != null){
+        JSONArray results = response.getJSONArray("results");
+        log.trace(results.toString());
+        for (int i = 0; i < results.size(); i++){
+          content.add(results.getJSONObject(i));
+        }
       }
     } catch (JSONException e){
       log.error("Error parsing needsprocessing JSON response: ", e);
     } catch (IOException e) {
       log.error("Network error while fetching the needsprocessing search results: ", e);
     }
+    log.debug("Fetched {} new content item(s) for processing: {}", content.size());
     return content;
   }
 }
