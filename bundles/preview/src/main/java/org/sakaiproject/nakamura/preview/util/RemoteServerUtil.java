@@ -69,9 +69,16 @@ public class RemoteServerUtil {
     return http(getHttpClient(server, "admin", password), post, timeout);
   }
 
+  /**
+   * Fetch the sakai-authn-trusted cookie value after a login reauest
+   * @return the value of the sakai-authn-trusted cookie or null
+   */
   public String getTrustedAuthnCookie(){
     HttpClient client = getHttpClient(server, "admin", password);
-    PostMethod post = new PostMethod("/");
+    PostMethod post = new PostMethod("/system/sling/formlogin");
+    post.addParameter("sakaiauth:login", "1");
+    post.addParameter("sakaiauth:un", "admin");
+    post.addParameter("sakaiauth:pw", password);
     http(client, post);
     for (Cookie cookie : client.getState().getCookies()){
       if ("sakai-trusted-authn".equals(cookie.getName())){
@@ -102,5 +109,21 @@ public class RemoteServerUtil {
 		post.addParameter("sakai:excludeSearch", "true");
 		http(getHttpClient(server, "admin", password), post);
 		log.info("Uploaded {}{}", server.toString(), altUrl);
+	}
+
+	/**
+	 * Upload a PDF preview of a content page
+	 * @param contentId the content id
+	 * @param preview the PDF file to upload
+	 * @throws FileNotFoundException if the PDF file is not found
+	 */
+	public void uploadPDFPreview(String contentId, File preview) throws FileNotFoundException {
+	  PostMethod post = new PostMethod("/system/pool/createfile." + contentId + "." + contentId + "-processed");
+	  FilePart part = new FilePart("thumbnail", preview);
+	  part.setContentType("application/pdf");
+	  MultipartRequestEntity entity = new MultipartRequestEntity(new Part[]{ part }, post.getParams());
+	  post.setRequestEntity(entity);
+	  http(getHttpClient(server, "admin", password), post);
+	  log.info("Uploaded /p/{}/{}/processed.pdf", contentId, contentId);
 	}
 }
