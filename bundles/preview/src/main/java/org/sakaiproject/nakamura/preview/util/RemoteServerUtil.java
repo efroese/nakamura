@@ -118,12 +118,13 @@ public class RemoteServerUtil {
 	 * @throws FileNotFoundException if the PDF file is not found
 	 */
 	public void uploadPDFPreview(String contentId, File preview) throws FileNotFoundException {
-	  PostMethod post = new PostMethod("/system/pool/createfile." + contentId + "." + contentId + "-processed");
+	  String pdfPostUrl = "/system/pool/createfile." + contentId + "." + contentId + "-processed";
+	  PostMethod post = new PostMethod(pdfPostUrl);
+	  log.info("POST " + pdfPostUrl);
 	  FilePart part = new FilePart("thumbnail", preview);
 	  part.setContentType("application/pdf");
 	  MultipartRequestEntity entity = new MultipartRequestEntity(new Part[]{ part }, post.getParams());
 	  post.setRequestEntity(entity);
 	  http(getHttpClient(server, "admin", password), post);
-	  log.info("Uploaded /p/{}/{}/processed.pdf", contentId, contentId);
 	}
 }

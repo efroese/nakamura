@@ -87,12 +87,12 @@ public class PreviewProcessorImpl implements Job {
   private static final Logger log = LoggerFactory.getLogger(PreviewProcessorImpl.class);
 
   public static final String MIME_TYPE                = "_mimeType";
-  public static final String PROCESSED_BY             = "sakai:processed_by";
+  public static final String PROCESSED_BY             = "sakai:processedBy";
   public static final String FILE_EXTENSION           = "sakai:fileextension";
   public static final String HAS_PREVIEW              = "sakai:hasPreview";
   public static final String NEEDS_PROCESSING         = "sakai:needsprocessing";
   public static final String PROCESSING_FAILED        = "sakai:processing_failed";
-  public static final String PROCESSED_AT             = "sakai:processed_at";
+  public static final String PROCESSED_AT             = "sakai:processedAt";
   public static final String POOL_CONTENT_CREATED_FOR = "sakai:pool-content-created-for";
 
   public static final Set<String> IMAGE_EXTENSIONS =
@@ -308,22 +308,21 @@ public class PreviewProcessorImpl implements Job {
         // Most likely a sakaidoc. wkhtmltopdf was found on the PATH.
         // Download it as a PDF and continue processing as it were a PDF.
         if (WKHTMLTOPDF_MIME_TYPES.contains(mimetype) && this.wkhtmltopdf != null){
-          downloadSakaiDoc(id, remoteServer.getTrustedAuthnCookie(), result, docsDir);
-          extension = "pdf";
+          String pdfPath = downloadSakaiDoc(id, remoteServer.getTrustedAuthnCookie(), result, docsDir);
+          remoteServer.uploadPDFPreview(id, new File(pdfPath));
         }
         else {
           // Normal content fetch. Everything but sakaidocs
           download(remoteServerUrl + "/p/" + id, contentFilePath);
+          log.info("With filename {}", id + "." + extension);
         }
-        log.info("With filename {}", id + "." + extension);
 
         // Images are easy just download and resize
         if (IMAGE_EXTENSIONS.contains(extension)){
           processImage(contentFilePath, item);
         }
         // Regular docs and sakaidocs iff wkhtmltopdf was found on the path.
-        else if (!WKHTMLTOPDF_MIME_TYPES.contains(mimetype) ||
-            (WKHTMLTOPDF_MIME_TYPES.contains(mimetype) && this.wkhtmltopdf != null)){
+        else if (!WKHTMLTOPDF_MIME_TYPES.contains(mimetype)){
           int pageCount = processDocument(contentFilePath, item, extension);
           remoteServer.post("/p/" + id + ".json", new NameValuePair("sakai:pagecount", Integer.toString(pageCount)));
         }
@@ -404,39 +403,46 @@ public class PreviewProcessorImpl implements Job {
    * Download a sakaidoc as a pdf.
    * @param remote The URL to the OAE server
    * @param cookieToken cookie token for the amdin session
-   * @param outputDirectory where to store the pdf
+   * @param outputDirectory where to store the PDF
+   * @return The path to the downloaded PDF
    * @throws ProcessingException
    * @throws IOException
+   * @throws InterruptedException
    */
   @SuppressWarnings("unchecked")
-  private void downloadSakaiDoc(String id, String cookieToken, Map<String,Object> meta, String outputDirectory)
-      throws ProcessingException, IOException {
+  protected String downloadSakaiDoc(String id, String cookieToken, Map<String,Object> meta, String outputDirectory)
+      throws ProcessingException, IOException, InterruptedException {
     log.info("Downloading the sakai doc {} to {}", id, outputDirectory);
 
-    StringBuilder command = new StringBuilder();
-    command.append(this.wkhtmltopdf);
-    command.append(" --cookie");
-    command.append(" sakai-trusted-authn ");
-    command.append(cookieToken);
-    command.append(" ");
+    List<String> command = new ArrayList<String>();
+    command.add(this.wkhtmltopdf);
+    command.add("--cookie");
+    command.add("sakai-trusted-authn");
+    command.add(cookieToken);
 
     Map<String,Object> structure = (Map<String, Object>)meta.get("structure0");
-    for (Object pageName : structure.keySet()){
-      command.append(" '");
-      command.append(remoteServerUrl);
-      command.append("/content#l=");
-      command.append((String)pageName);
-      command.append("&p=");
-      command.append(id);
-      command.append("' ");
+    StringBuilder urlsb;
+    for (String pageName : structure.keySet()){
+      urlsb = new StringBuilder();
+      urlsb.append(remoteServerUrl);
+      urlsb.append("/content#l=");
+      urlsb.append(pageName);
+      urlsb.append("&p=");
+      urlsb.append(id);
+      command.add(urlsb.toString());
     }
-    command.append(StringUtils.join(new String[] { outputDirectory, id + ".pdf" }, File.separator));
-    ProcessBuilder pb = new ProcessBuilder(command.toString());
+
+    
+    String outFilePath = StringUtils.join(new String[] { outputDirectory, id + ".pdf" }, File.separator);
+    command.add(outFilePath);
+    ProcessBuilder pb = new ProcessBuilder(command);
     log.info("Running command {}", StringUtils.join(pb.command(), " "));
     Process process = pb.start();
+    process.waitFor();
     if (process.exitValue() != 0){
       throw new ProcessingException("There was an error turning the sakai doc into a PDF");
     }
+    return outFilePath;
   }
 
   /**
@@ -490,9 +496,9 @@ public class PreviewProcessorImpl implements Job {
     if (item.containsKey(POOL_CONTENT_CREATED_FOR)){
       String userId = (String)item.get(POOL_CONTENT_CREATED_FOR);
       JSONObject userMeta = getUserMeta(userId);
-      List<String> tags = new ArrayList<String>();
 
       if (doAutoTaggingForUser(userMeta)){
+        List<String> tags = new ArrayList<String>();
         List<ExtractedTerm> terms = termExtractor.process(textExtractor.getText(contentFilePath));
         // sort by occurrences + strength * 2
         Collections.sort(terms, new Comparator<ExtractedTerm>() {
@@ -648,12 +654,15 @@ public class PreviewProcessorImpl implements Job {
    */
   protected List<Map<String,Object>> filterAlreadyProcessed(List<Map<String,Object>> content){
     List<Map<String,Object>> unprocessed = new LinkedList<Map<String,Object>>();
+    String processedBy;
+
     for (Map<String,Object> item : content){
-      // No one else has claimed this
-      if (!item.containsKey(PROCESSED_BY) ||
-          (item.containsKey(PROCESSED_BY) &&
-              !name.equals(item.get(PROCESSED_BY)))){
+      processedBy = item.containsKey(PROCESSED_BY)? (String)item.get(PROCESSED_BY) : null;
+      if (processedBy == null || processedBy.equals(name)){
         unprocessed.add(item);
+      }
+      else {
+        log.info("Ignoring {} {}={}", new String[] { (String)item.get("_path"), PROCESSED_BY, processedBy });
       }
     }
     return unprocessed;
@@ -673,7 +682,7 @@ public class PreviewProcessorImpl implements Job {
       req.put("_charset_", "UTF-8");
       req.put("url", "/p/" + id + ".json");
       req.put("method", "POST");
-      params.put("sakai:processor", name);
+      params.put(PROCESSED_BY, name);
       req.put("parameters", params);
       batch.add(req);
     }
