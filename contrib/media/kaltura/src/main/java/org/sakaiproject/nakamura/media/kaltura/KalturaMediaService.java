@@ -123,11 +123,11 @@ public class KalturaMediaService implements MediaService {
   @Modified
   protected void activate(Map<?, ?> props) throws Exception {
 
-    kalturaPartnerId = PropertiesUtil.toInteger(KALTURA_PARTNER_ID, -1);
-    kalturaSecret = PropertiesUtil.toString(KALTURA_SECRET, null);
-    kalturaAdminSecret = PropertiesUtil.toString(KALTURA_ADMIN_SECRET, null);
-    kalturaEndpoint = PropertiesUtil.toString(KALTURA_ENDPOINT, null);
-    kalturaCDN = PropertiesUtil.toString(KALTURA_CDN, null);
+    kalturaPartnerId = PropertiesUtil.toInteger(props.get(KALTURA_PARTNER_ID), -1);
+    kalturaSecret = PropertiesUtil.toString(props.get(KALTURA_SECRET), null);
+    kalturaAdminSecret = PropertiesUtil.toString(props.get(KALTURA_ADMIN_SECRET), null);
+    kalturaEndpoint = PropertiesUtil.toString(props.get(KALTURA_ENDPOINT), null);
+    kalturaCDN = PropertiesUtil.toString(props.get(KALTURA_CDN), null);
 
     for (String prop : new String[] { kalturaSecret, kalturaAdminSecret,
         kalturaEndpoint, kalturaCDN }) {
@@ -152,6 +152,8 @@ public class KalturaMediaService implements MediaService {
     kc.setEndpoint(kalturaEndpoint);
     kalturaConfig = kc;
 
+    dumpServiceConfigToLog(props);
+
     // test out that the kc can initialize a session
     KalturaClient kalturaClient = makeKalturaClient("admin",
         KalturaSessionType.ADMIN, 10);
@@ -167,6 +169,31 @@ public class KalturaMediaService implements MediaService {
     LOG.info(
         "Kaltura: Init complete: API version: {}, Connected to endpoint: {}",
         kalturaClient.getApiVersion(), kc.getEndpoint());
+  }
+
+  private void dumpServiceConfigToLog(Map<?, ?> properties) {
+    String propsDump="";
+    if (properties != null && LOG.isDebugEnabled()) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n Properties:\n");
+        for (Map.Entry<?, ?> entry : properties.entrySet()) {
+            sb.append("  * ");
+            sb.append(entry.getKey());
+            sb.append(" -> ");
+            sb.append(entry.getValue());
+            sb.append("\n");
+        }
+        propsDump = sb.toString();
+    }
+    LOG.info("\nKalturaService Configuration: START ---------\n"
+            +" partnerId="+this.kalturaConfig.getPartnerId()+"\n"
+            +" endPoint="+this.kalturaConfig.getEndpoint()+"\n"
+            +" timeout="+this.kalturaConfig.getTimeout()+"\n"
+            +" kalturaCDN="+this.kalturaCDN+"\n"
+            +" kalturaPlayerIdView="+this.kalturaPlayerIdView+"\n"
+            +" kalturaPlayerIdAudio="+this.kalturaPlayerIdAudio+"\n"
+            +propsDump
+            +"KalturaService Configuration: END ---------\n");
   }
 
   // ------ MediaService Interface Methods ------
