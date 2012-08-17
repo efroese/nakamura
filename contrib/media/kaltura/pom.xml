@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.sakaiproject.nakamura</groupId>
+    <artifactId>base</artifactId>
+    <version>1.5.0-SNAPSHOT</version>
+    <relativePath>../../../pom.xml</relativePath>
+  </parent>
+  <artifactId>org.sakaiproject.nakamura.media.kaltura</artifactId>
+  <packaging>bundle</packaging>
+  <name>Sakai Nakamura :: Media Transcoding and Streaming Kaltura Impl Bundle</name>
+  <description>Media transcoding and streaming integration implemented using Kaltura</description>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-scr-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Bundle-Category>sakai-nakamura</Bundle-Category>
+            <Private-Package>org.sakaiproject.nakamura.media.kaltura.*</Private-Package>
+            <Sling-Initial-Content>SLING-INF/content;overwriteProperties:=true;uninstall:=false</Sling-Initial-Content>
+          </instructions>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.felix</groupId>
+      <artifactId>org.apache.felix.scr.annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.felix</groupId>
+      <artifactId>org.osgi.compendium</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.commons.osgi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.commons.json</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.nakamura</groupId>
+      <artifactId>org.sakaiproject.nakamura.media</artifactId>
+      <version>1.5.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+    	<groupId>org.sakaiproject.nakamura</groupId>
+    	<artifactId>org.sakaiproject.nakamura.core</artifactId>
+    	<type>bundle</type>
+    	<version>1.3.7-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+</project>
+
