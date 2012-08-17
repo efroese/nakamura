@@ -58,6 +58,7 @@ import org.sakaiproject.nakamura.api.media.MediaService;
 import org.sakaiproject.nakamura.api.media.MediaStatus;
 import org.sakaiproject.nakamura.api.media.MediaServiceException;
 import org.sakaiproject.nakamura.api.media.ErrorHandler;
+import org.sakaiproject.nakamura.lite.content.InternalContent;
 import org.sakaiproject.nakamura.util.telemetry.TelemetryCounter;
 
 
@@ -339,7 +340,8 @@ public class MediaCoordinator implements Runnable {
                   version.getTags(),
                   version.getExtension(),
                   version.getVersionId(),
-                  String.valueOf(obj.getProperty(Content.CREATED_BY_FIELD)));
+                  String.valueOf(obj.getProperty(Content.CREATED_BY_FIELD)),
+                  String.valueOf(obj.getProperty(Content.PATH_FIELD)));
               String mediaId = mediaService.createMedia(mediaFile, metadata);
               TelemetryCounter.incrementValue("media", "Coordinator", "uploads-finished");
 
@@ -362,7 +364,9 @@ public class MediaCoordinator implements Runnable {
                   version.getTitle(),
                   version.getDescription(),
                   version.getTags(),
-                  String.valueOf(obj.getProperty(Content.CREATED_BY_FIELD)));
+                  String.valueOf(obj.getProperty(Content.CREATED_BY_FIELD)),
+                  String.valueOf(obj.getProperty(Content.PATH_FIELD))
+                  );
               mediaService.updateMedia(metadata);
               TelemetryCounter.incrementValue("media", "Coordinator", "updates-finished");
 
