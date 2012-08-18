@@ -61,7 +61,7 @@ import com.kaltura.client.types.KalturaBaseEntry;
 import com.kaltura.client.types.KalturaMediaEntry;
 
 /**
- *
+ * Store media items in a Kaltura service.
  */
 @Component(enabled = true, metatype = true, policy = ConfigurationPolicy.REQUIRE)
 @Service
@@ -73,16 +73,6 @@ public class KalturaMediaService implements MediaService {
   public static final String KALTURA_MIMETYPE_VIDEO = "kaltura/video";
   public static final String KALTURA_MIMETYPE_AUDIO = "kaltura/audio";
   public static final String KALTURA_MIMETYPE_IMAGE = "kaltura/image";
-
-  static final String WIDTH_DEFAULT = "500";
-  @Property(value = WIDTH_DEFAULT)
-  public static final String WIDTH = "width";
-  String width;
-
-  static final String HEIGHT_DEFAULT = "470";
-  @Property(value = HEIGHT_DEFAULT)
-  public static final String HEIGHT = "height";
-  String height;
 
   @Property(intValue = 111, label = "Partner Id")
   private static final String KALTURA_PARTNER_ID = "kaltura.partnerid";
@@ -142,9 +132,6 @@ public class KalturaMediaService implements MediaService {
     kalturaPlayerIdView = PropertiesUtil.toString(KALTURA_PLAYER_VIEW,
         DEFAULT_KALTURA_PLATER_VIDEO);
 
-    height = PropertiesUtil.toString(props.get(HEIGHT), HEIGHT_DEFAULT);
-    width = PropertiesUtil.toString(props.get(WIDTH), WIDTH_DEFAULT);
-
     KalturaConfiguration kc = new KalturaConfiguration();
     kc.setPartnerId(kalturaPartnerId);
     kc.setSecret(kalturaSecret);
@@ -171,6 +158,10 @@ public class KalturaMediaService implements MediaService {
         kalturaClient.getApiVersion(), kc.getEndpoint());
   }
 
+  /**
+   * Print the KalturaConfig.
+   * @param properties OSGi properties printed to DEBUG
+   */
   private void dumpServiceConfigToLog(Map<?, ?> properties) {
     String propsDump="";
     if (properties != null && LOG.isDebugEnabled()) {
@@ -186,14 +177,14 @@ public class KalturaMediaService implements MediaService {
         propsDump = sb.toString();
     }
     LOG.info("\nKalturaService Configuration: START ---------\n"
-            +" partnerId="+this.kalturaConfig.getPartnerId()+"\n"
-            +" endPoint="+this.kalturaConfig.getEndpoint()+"\n"
-            +" timeout="+this.kalturaConfig.getTimeout()+"\n"
-            +" kalturaCDN="+this.kalturaCDN+"\n"
-            +" kalturaPlayerIdView="+this.kalturaPlayerIdView+"\n"
-            +" kalturaPlayerIdAudio="+this.kalturaPlayerIdAudio+"\n"
-            +propsDump
-            +"KalturaService Configuration: END ---------\n");
+            + " partnerId="+this.kalturaConfig.getPartnerId()+"\n"
+            + " endPoint="+this.kalturaConfig.getEndpoint()+"\n"
+            + " timeout="+this.kalturaConfig.getTimeout()+"\n"
+            + " kalturaCDN="+this.kalturaCDN+"\n"
+            + " kalturaPlayerIdView="+this.kalturaPlayerIdView+"\n"
+            + " kalturaPlayerIdAudio="+this.kalturaPlayerIdAudio+"\n"
+            + propsDump
+            + "KalturaService Configuration: END ---------\n");
   }
 
   // ------ MediaService Interface Methods ------
@@ -244,15 +235,11 @@ public class KalturaMediaService implements MediaService {
                 mediaItem.getKalturaId() });
 
         updateContent(metadata.getContentId(), props); // exception if update fails
-        // Map<String, Object> newProps = ...
-        // dumpMapToLog(newProps, "newContentProperties");
-
       } else {
         // should we fail here if kaltura does not return a valid KBE? -AZ
         LOG.error("Response from kaltura was null.");
       }
       LOG.info("Kaltura file upload handler complete: {}", media.getName());
-
     } catch (FileNotFoundException e) {
       LOG.error("{} not found.", media.getAbsolutePath());
     }
@@ -359,35 +346,35 @@ public class KalturaMediaService implements MediaService {
   }
 
   /**
+   * The UX handles this by default.
    * {@inheritDoc}
    * 
    * @see org.sakaiproject.nakamura.api.media.MediaService#getPlayerFragment(java.lang.String)
    */
   @Override
   public String getPlayerFragment(String id) {
-    // TODO Auto-generated method stub
     return null;
   }
 
   /**
+   * The UX handles this by default.
    * {@inheritDoc}
    * 
    * @see org.sakaiproject.nakamura.api.media.MediaService#getPlayerJSUrls(java.lang.String)
    */
   @Override
   public String[] getPlayerJSUrls(String id) {
-    // TODO Auto-generated method stub
     return null;
   }
 
   /**
+   * The UX handles this by default.
    * {@inheritDoc}
    * 
    * @see org.sakaiproject.nakamura.api.media.MediaService#getPlayerInitJS(java.lang.String)
    */
   @Override
   public String getPlayerInitJS(String id) {
-    // TODO Auto-generated method stub
     return null;
   }
 
@@ -401,12 +388,10 @@ public class KalturaMediaService implements MediaService {
     return "application/x-media-kaltura";
   }
 
-  /*
-   * (non-Javadoc)
+  /**
+   * {@inheritDoc}
    * 
-   * @see
-   * org.sakaiproject.nakamura.api.media.MediaService#acceptsFileType(java.lang
-   * .String, java.lang.String)
+   * @see org.sakaiproject.nakamura.api.media.MediaService#acceptsFileType(java.lang.String, java.lang.String)
    */
   @Override
   public boolean acceptsFileType(String mimeType, String extension) {
