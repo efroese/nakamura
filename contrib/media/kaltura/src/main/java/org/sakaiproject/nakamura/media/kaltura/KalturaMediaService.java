@@ -217,7 +217,7 @@ public class KalturaMediaService implements MediaService {
 
       if (kbe != null) {
         // item upload successful
-        MediaItem mediaItem = new MediaItem(kbe, metadata.getUser());
+        KalturaMediaItem mediaItem = new KalturaMediaItem(kbe, metadata.getUser());
         Map<String, Object> props = new HashMap<String, Object>(10);
         mediaId = mediaItem.getKalturaId();
 
@@ -231,9 +231,9 @@ public class KalturaMediaService implements MediaService {
         props.put("kaltura-width", mediaItem.getWidth());
         props.put("kaltura-type", mediaItem.getType());
         String kalturaMimeType = KALTURA_MIMETYPE_VIDEO;
-        if (MediaItem.TYPE_AUDIO.equals(mediaItem.getMediaType())) {
+        if (KalturaMediaItem.TYPE_AUDIO.equals(mediaItem.getMediaType())) {
           kalturaMimeType = KALTURA_MIMETYPE_AUDIO;
-        } else if (MediaItem.TYPE_IMAGE.equals(mediaItem.getMediaType())) {
+        } else if (KalturaMediaItem.TYPE_IMAGE.equals(mediaItem.getMediaType())) {
           kalturaMimeType = KALTURA_MIMETYPE_IMAGE;
         }
         props.put(InternalContent.MIMETYPE_FIELD, kalturaMimeType);

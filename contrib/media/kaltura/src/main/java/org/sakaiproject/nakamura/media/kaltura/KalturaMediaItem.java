@@ -32,11 +32,11 @@ import com.kaltura.client.types.KalturaMixEntry;
  * 
  * @author Aaron Zeckoski (azeckoski @ gmail.com)
  */
-public class MediaItem implements Serializable {
+public class KalturaMediaItem implements Serializable {
 
     private static final long serialVersionUID = 2L;
 
-    private static Log log = LogFactory.getLog(MediaItem.class);
+    private static Log log = LogFactory.getLog(KalturaMediaItem.class);
 
     public static final String TYPE_IMAGE = "image";
     public static final String TYPE_AUDIO = "audio";
@@ -45,24 +45,24 @@ public class MediaItem implements Serializable {
     private static final int defaultWidgetWidth = 480;
     private static final int defaultWidgetHeight = 360;
 
-    private static int kalturaPlayerImageWidth = MediaItem.defaultWidgetWidth;
-    private static int kalturaPlayerImageHeight = MediaItem.defaultWidgetHeight;
-    private static int kalturaPlayerAudioWidth = MediaItem.defaultWidgetWidth;
+    private static int kalturaPlayerImageWidth = KalturaMediaItem.defaultWidgetWidth;
+    private static int kalturaPlayerImageHeight = KalturaMediaItem.defaultWidgetHeight;
+    private static int kalturaPlayerAudioWidth = KalturaMediaItem.defaultWidgetWidth;
     private static int kalturaPlayerAudioHeight = 30;
-    private static int kalturaPlayerVideoWidth = MediaItem.defaultWidgetWidth;
-    private static int kalturaPlayerVideoHeight = MediaItem.defaultWidgetHeight;
+    private static int kalturaPlayerVideoWidth = KalturaMediaItem.defaultWidgetWidth;
+    private static int kalturaPlayerVideoHeight = KalturaMediaItem.defaultWidgetHeight;
 
     public static void setDefaultSizes(
             int kalturaPlayerImageWidth, int kalturaPlayerImageHeight,
             int kalturaPlayerAudioWidth, int kalturaPlayerAudioHeight,
             int kalturaPlayerVideoWidth, int kalturaPlayerVideoHeight
             ) {
-        MediaItem.kalturaPlayerImageWidth = kalturaPlayerImageWidth;
-        MediaItem.kalturaPlayerImageHeight = kalturaPlayerImageHeight;
-        MediaItem.kalturaPlayerAudioWidth = kalturaPlayerAudioWidth;
-        MediaItem.kalturaPlayerAudioHeight = kalturaPlayerAudioHeight;
-        MediaItem.kalturaPlayerVideoWidth = kalturaPlayerVideoWidth;
-        MediaItem.kalturaPlayerVideoHeight = kalturaPlayerVideoHeight;
+        KalturaMediaItem.kalturaPlayerImageWidth = kalturaPlayerImageWidth;
+        KalturaMediaItem.kalturaPlayerImageHeight = kalturaPlayerImageHeight;
+        KalturaMediaItem.kalturaPlayerAudioWidth = kalturaPlayerAudioWidth;
+        KalturaMediaItem.kalturaPlayerAudioHeight = kalturaPlayerAudioHeight;
+        KalturaMediaItem.kalturaPlayerVideoWidth = kalturaPlayerVideoWidth;
+        KalturaMediaItem.kalturaPlayerVideoHeight = kalturaPlayerVideoHeight;
     }
     
     private Long id; // internal id
@@ -165,7 +165,7 @@ public class MediaItem implements Serializable {
     }
 
     public String getShortName() {
-        return MediaItem.truncateText(getName(), shortMaxName, shortSpace);
+        return KalturaMediaItem.truncateText(getName(), shortMaxName, shortSpace);
     }
 
     public String getDesc() {
@@ -177,7 +177,7 @@ public class MediaItem implements Serializable {
     }
 
     public String getShortDesc() {
-        return MediaItem.truncateText(getDesc(), shortMaxDesc, shortSpace);
+        return KalturaMediaItem.truncateText(getDesc(), shortMaxDesc, shortSpace);
     }
 
     public int getDuration() {
@@ -205,7 +205,7 @@ public class MediaItem implements Serializable {
     }
 
     public int getWidth() {
-        int width = MediaItem.defaultWidgetWidth;
+        int width = KalturaMediaItem.defaultWidgetWidth;
         if (kalturaItem != null) {
             if (kalturaItem instanceof KalturaMediaEntry) {
                 width = ((KalturaMediaEntry) kalturaItem).width;
@@ -215,11 +215,11 @@ public class MediaItem implements Serializable {
             if (width <= 0) {
                 String type = findType();
                 if (TYPE_AUDIO.equals(type)) {
-                    width = MediaItem.kalturaPlayerAudioWidth;
+                    width = KalturaMediaItem.kalturaPlayerAudioWidth;
                 } else if (TYPE_IMAGE.equals(type)) {
-                    width = MediaItem.kalturaPlayerImageWidth;
+                    width = KalturaMediaItem.kalturaPlayerImageWidth;
                 } else {
-                    width = MediaItem.kalturaPlayerVideoWidth;
+                    width = KalturaMediaItem.kalturaPlayerVideoWidth;
                 }
             }
         }
@@ -227,7 +227,7 @@ public class MediaItem implements Serializable {
     }
 
     public int getHeight() {
-        int height = MediaItem.defaultWidgetHeight;
+        int height = KalturaMediaItem.defaultWidgetHeight;
         if (kalturaItem != null) {
             if (kalturaItem instanceof KalturaMediaEntry) {
                 height = ((KalturaMediaEntry) kalturaItem).height;
@@ -237,11 +237,11 @@ public class MediaItem implements Serializable {
             if (height <= 0) {
                 String type = findType();
                 if (TYPE_AUDIO.equals(type)) {
-                    height = MediaItem.kalturaPlayerAudioHeight;
+                    height = KalturaMediaItem.kalturaPlayerAudioHeight;
                 } else if (TYPE_IMAGE.equals(type)) {
-                    height = MediaItem.kalturaPlayerImageHeight;
+                    height = KalturaMediaItem.kalturaPlayerImageHeight;
                 } else {
-                    height = MediaItem.kalturaPlayerVideoHeight;
+                    height = KalturaMediaItem.kalturaPlayerVideoHeight;
                 }
             }
         }
@@ -327,19 +327,19 @@ public class MediaItem implements Serializable {
     /**
      * Default constructor
      */
-    public MediaItem() {
+    public KalturaMediaItem() {
         this.dateCreated = new Date();
         this.dateModified = this.dateCreated;
     }
 
-    public MediaItem(KalturaBaseEntry kbe, String ownerId) {
+    public KalturaMediaItem(KalturaBaseEntry kbe, String ownerId) {
         this();
         this.ownerId = ownerId;
         this.creatorId = ownerId;
         this.setKalturaItem(kbe);
     }
 
-    public MediaItem(String locationId, String kalturaId, String ownerId) {
+    public KalturaMediaItem(String locationId, String kalturaId, String ownerId) {
         this();
         this.locationId = locationId;
         this.kalturaId = kalturaId;
@@ -347,11 +347,11 @@ public class MediaItem implements Serializable {
         this.creatorId = ownerId;
     }
 
-    public static class MediaItemNameComparator implements Comparator<MediaItem>, Serializable {
+    public static class KalturaMediaItemNameComparator implements Comparator<KalturaMediaItem>, Serializable {
 
         static private final long serialVersionUID = 31L;
 
-        public int compare(MediaItem o1, MediaItem o2) {
+        public int compare(KalturaMediaItem o1, KalturaMediaItem o2) {
             int comparison = 0;
             if (o1.getName() != null && o2.getName() != null) {
                 comparison = o1.getName().compareTo(o2.getName());
@@ -412,7 +412,7 @@ public class MediaItem implements Serializable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        MediaItem other = (MediaItem) obj;
+        KalturaMediaItem other = (KalturaMediaItem) obj;
         if (id == null) {
             if (other.id != null)
                 return false;
