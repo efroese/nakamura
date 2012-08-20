@@ -61,7 +61,12 @@ import com.kaltura.client.types.KalturaBaseEntry;
 import com.kaltura.client.types.KalturaMediaEntry;
 
 /**
- * Store media items in a Kaltura service.
+ * Store media items in a Kaltura service using the OAE media framework.
+ *
+ * This class re-uses code from the OAE-Kaltura bundle by Aaron Zeckowsky.
+ * That bundle uploads stored content to Kaltura. This module takes
+ * advantage of the media service to only store the content in the remote
+ * Kaltura service.
  */
 @Component(enabled = true, metatype = true, policy = ConfigurationPolicy.REQUIRE)
 @Service
@@ -104,10 +109,20 @@ public class KalturaMediaService implements MediaService {
   private static final String KALTURA_PLAYER_VIEW = "kaltura.player.view";
   String kalturaPlayerIdView;
 
-  KalturaConfiguration kalturaConfig;
-
   @Reference
   protected Repository repository;
+
+  KalturaConfiguration kalturaConfig;
+
+  /*
+   * NOTE: the KalturaClient is not even close to being threadsafe -AZ
+   */
+  ThreadLocal<KalturaClient> kctl = new ThreadLocal<KalturaClient>() {
+    @Override
+    protected KalturaClient initialValue() {
+      return makeKalturaClient();
+    };
+  };
 
   @Activate
   @Modified
@@ -256,22 +271,49 @@ public class KalturaMediaService implements MediaService {
     return null;
   }
 
+ /**
+  * {@inheritDoc}
+  */
   @Override
   public void deleteMedia(String id) throws MediaServiceException {
     if (id == null) {
       throw new IllegalArgumentException("id must not be null");
     }
+    try {
+      deleteKalturaMedia(id);
+    }
+    catch (KalturaApiException ke){
+      // http://www.kaltura.com/api_v3/testmeDoc/index.php?page=inout
+      if ("INVALID_KS".equals(ke.code) || "MISSING_KS".equals(ke.code)){
+        // The session expired. Clear it and retry
+        kctl.remove();
+        try {
+          deleteKalturaMedia(id);
+        }
+        catch (KalturaApiException ke2){
+          throw new MediaServiceException("Unable to remove " + id + " after re-establishing the kaltura session.", ke2);
+        }
+      }
+    }
+  }
+
+  /**
+   * Delete a media item from kaltura.
+   * @param kalturaId the id of the media to remove
+   * @throws KalturaApiException
+   */
+  private void deleteKalturaMedia(String kalturaId) throws KalturaApiException{
     KalturaClient kc = getKalturaClient();
     if (kc != null) {
       try {
         KalturaBaseEntryService entryService = kc.getBaseEntryService();
-        KalturaBaseEntry entry = getKalturaEntry(null, id, entryService);
+        KalturaBaseEntry entry = getKalturaEntry(null, kalturaId, entryService);
         entryService.delete(entry.id);
       } catch (KalturaApiException e) {
-        LOG.error("Unable to remove kaltura item ({} using session(oid={}, tid={}, ks={}):: {}",
-            new String[]{ id, kc.toString(), Long.toString(Thread.currentThread().getId()),
-            kc.getSessionId(), e.getMessage() });
-        throw new MediaServiceException(e);
+        LOG.error("Unable to remove kaltura item ({} using session(oid={}, tid={}, ks={}) code={}:: {}",
+            new String[]{ kalturaId, kc.toString(), Long.toString(Thread.currentThread().getId()),
+            kc.getSessionId(), e.code, e.getMessage() });
+        throw e;
       }
     }
   }
@@ -288,6 +330,31 @@ public class KalturaMediaService implements MediaService {
       throw new IllegalArgumentException("id must not be null");
     }
 
+    MediaStatus status = new KalturaMediaStatus();
+    try {
+      status = getKalturaStatus(id);
+    }
+    catch (KalturaApiException ke){
+      if (isRetriableException(ke)){
+        try {
+          // The session expired. Clear it and retry
+          kctl.remove();
+          status = getKalturaStatus(id);
+        }
+        catch (KalturaApiException ke2){
+          throw new MediaServiceException("Unable to remove " + id + " after re-establishing the kaltura session.", ke2);
+        }
+      }
+    }
+    return status;
+  }
+
+  /**
+   * @param id the kaltura id for the media object
+   * @return the status of the media object in the remote store
+   * @throws KalturaApiException
+   */
+  private MediaStatus getKalturaStatus(String id) throws KalturaApiException {
     KalturaClient kc = getKalturaClient();
 
     if (kc != null) {
@@ -295,54 +362,17 @@ public class KalturaMediaService implements MediaService {
         KalturaBaseEntryService entryService = kc.getBaseEntryService();
         KalturaBaseEntry entry = getKalturaEntry(null, id, entryService);
         final KalturaEntryStatus kalturaStatus = entry.status;
-
-        return new MediaStatus() {
-          @Override
-          public boolean isReady() {
-            return kalturaStatus == KalturaEntryStatus.READY;
-          }
-
-          @Override
-          public boolean isProcessing() {
-            return kalturaStatus == KalturaEntryStatus.PENDING
-                || kalturaStatus == KalturaEntryStatus.PRECONVERT;
-          }
-
-          @Override
-          public boolean isError() {
-            return kalturaStatus == KalturaEntryStatus.BLOCKED
-                || kalturaStatus == KalturaEntryStatus.ERROR_CONVERTING
-                || kalturaStatus == KalturaEntryStatus.ERROR_IMPORTING
-                || kalturaStatus == KalturaEntryStatus.INFECTED;
-          }
-        };
+        return new KalturaMediaStatus(kalturaStatus);
       } catch (KalturaApiException e) {
         LOG.error(
             "Unable to query the status of kaltura item {} using session (oid={}, tid={}, ks={})::{}",
             new String[] { id, kc.toString(),
                 Long.toString(Thread.currentThread().getId()),
                 kc.getSessionId(), e.getMessage() });
-        throw new MediaServiceException(e);
+        throw e;
       }
     }
-    // We're in an error state!
-    return new MediaStatus() {
-
-      @Override
-      public boolean isReady() {
-        return false;
-      }
-
-      @Override
-      public boolean isProcessing() {
-        return false;
-      }
-
-      @Override
-      public boolean isError() {
-        return true;
-      }
-    };
+    return new KalturaMediaStatus();
   }
 
   /**
@@ -399,6 +429,18 @@ public class KalturaMediaService implements MediaService {
   }
 
   // ------- Kaltura Methods -----
+  /**
+   * If the session has expired we won't know until the next call fails.
+   * Test the code field of the exception for known kaltura session errors.
+   * 
+   * http://www.kaltura.com/api_v3/testmeDoc/index.php?page=inout
+   * 
+   * @param ke
+   * @return whether or not we should retry the call based on the exception code
+   */
+  private boolean isRetriableException(KalturaApiException ke) {
+    return  ke != null && ("INVALID_KS".equals(ke.code) || "MISSING_KS".equals(ke.code));
+  }
 
   /**
    * NOTE: this method will generate a new kaltura client, make sure you store
@@ -435,16 +477,6 @@ public class KalturaMediaService implements MediaService {
     return kalturaClient;
   }
 
-  /*
-   * NOTE: the KalturaClient is not even close to being threadsafe -AZ
-   */
-  ThreadLocal<KalturaClient> kctl = new ThreadLocal<KalturaClient>() {
-    @Override
-    protected KalturaClient initialValue() {
-      return makeKalturaClient();
-    };
-  };
-
   /**
    * destroys the current kaltura client
    */
@@ -478,8 +510,7 @@ public class KalturaMediaService implements MediaService {
   /**
    * threadsafe method to get a kaltura client
    * 
-   * @param userKey
-   *          the user key (normally should be the username)
+   * @param userKey the user key (normally should be the username)
    * @return the current kaltura client for this thread
    */
   public KalturaClient getKalturaClient(String userKey) {
@@ -493,13 +524,10 @@ public class KalturaMediaService implements MediaService {
   /**
    * Get the KME with a permissions check to make sure the user key matches
    * 
-   * @param keid
-   *          the kaltura entry id
-   * @param entryService
-   *          the katura entry service
+   * @param keid the kaltura entry id
+   * @param entryService the katura entry service
    * @return the entry
-   * @throws KalturaApiException
-   *           if kaltura cannot be accessed
+   * @throws KalturaApiException if kaltura cannot be accessed
    * @throws IllegalArgumentException
    *           if the keid cannot be found for this user
    */
@@ -537,15 +565,15 @@ public class KalturaMediaService implements MediaService {
 
   /**
    * 
-   * @param userId
-   * @param fileName
-   * @param fileSize
-   * @param inputStream
-   * @param mediaType
-   * @param title
-   * @param description
-   * @param tags
-   * @return
+   * @param userId the user that owns the content
+   * @param fileName the name of the uploaded file
+   * @param fileSize the size of file to upload (File.length())
+   * @param inputStream an InputStream connected to the media upload 
+   * @param mediaType the type of media
+   * @param title the title of the media object
+   * @param description a short description
+   * @param tags 
+   * @return a reference to the entry in kaltura
    */
   public KalturaBaseEntry uploadItem(String userId, String fileName,
       long fileSize, InputStream inputStream, KalturaMediaType mediaType,
@@ -574,13 +602,9 @@ public class KalturaMediaService implements MediaService {
         if (tags != null) {
           mediaEntry.tags = tags;
         }
-        mediaEntry.adminTags = "OAE"; // Should we handle with custom meta
-                                      // fields instead (for 9 July 2011, we
-                                      // will not)?
-        kme = kc.getMediaService().addFromUploadedFile(mediaEntry,
-            uploadTokenId);
-        // kme = kc.getBaseEntryService().update(entryId, mediaEntry); // NOTE:
-        // updateKalturaItem()
+        // Should we handle with custom meta fields instead
+        mediaEntry.adminTags = "OAE"; 
+        kme = kc.getMediaService().addFromUploadedFile(mediaEntry, uploadTokenId);
       } catch (Exception e) {
         LOG.error("Failure uploading item (" + fileName + "): " + e, e);
         throw new RuntimeException(e);
@@ -594,21 +618,26 @@ public class KalturaMediaService implements MediaService {
   /**
    * Retrieve an OAE content item
    * 
-   * @param poolId
-   *          the unique path/poolId of a content object
+   * @param poolId the unique path/poolId of a content object
+   * @param versionId the version of the content object.
+   *           The current version will be fetched if versionId is null.
    * @return the Content object
-   * @throws RuntimeException
-   *           if the content object cannot be retrieved
+   * @throws RuntimeException if the content object cannot be retrieved
    */
-  private Content getContent(String poolId) {
+  private Content getContent(String poolId, String versionId) {
     Content content = null;
     try {
       Session adminSession = repository.loginAdministrative();
       ContentManager cm = adminSession.getContentManager();
-      content = cm.get(poolId);
+      if (versionId == null){
+        content = cm.get(poolId);
+      }
+      else { 
+        content = cm.getVersion(poolId, versionId);
+      }
       adminSession.logout();
     } catch (Exception e) {
-      LOG.error("Unable to get content by path=" + poolId + ": " + e, e);
+      LOG.error("Unable to get content by path={}", poolId, e.getMessage());
       throw new RuntimeException("Unable to get content by path=" + poolId
           + ": " + e, e);
     }
@@ -633,8 +662,11 @@ public class KalturaMediaService implements MediaService {
    */
   private Map<String, Object> updateContent(String poolId, Map<?, ?> properties) {
     Map<String, Object> props = null;
-    Content contentItem = getContent(poolId);
-    // dumpMapToLog(properties, "NEW-properties");
+    String versionId = null;
+    if (properties.containsKey(InternalContent.VERSION_HISTORY_ID_FIELD)){
+      versionId = (String)properties.get(InternalContent.VERSION_HISTORY_ID_FIELD);
+    }
+    Content contentItem = getContent(poolId, versionId);
     for (Entry<?, ?> entry : properties.entrySet()) {
       String key = (String) entry.getKey();
       Object val = entry.getValue();
@@ -651,10 +683,9 @@ public class KalturaMediaService implements MediaService {
       Content content = contentManager.get(poolId);
       props = content.getProperties();
       adminSession.logout();
-      LOG.debug("Completed update of content item props (" + poolId
-          + ") for Kaltura upload");
+      LOG.debug("Completed update of content item props ({}) for Kaltura upload", poolId);
     } catch (Exception e) {
-      LOG.error("Unable to update content at path=" + poolId + ": " + e, e);
+      LOG.error("Unable to update content at path={}", poolId, e.getMessage());
       throw new RuntimeException("Unable to update content at path=" + poolId
           + ": " + e, e);
     }
