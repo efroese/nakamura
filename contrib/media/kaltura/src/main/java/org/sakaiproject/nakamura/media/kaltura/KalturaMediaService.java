@@ -268,7 +268,56 @@ public class KalturaMediaService implements MediaService {
    */
   @Override
   public String updateMedia(MediaMetadata metadata) throws MediaServiceException {
-    return null;
+    KalturaApiException lastError = null;
+    String mediaId = null;
+    try {
+      mediaId = updateKalturaMedia(metadata);
+    }
+    catch (KalturaApiException ke){
+      lastError = ke;
+      LOG.error("Failed to update the metadata for {}. Error code {} : {}",
+          new String[]{ metadata.getId(), ke.code, ke.getMessage())};
+    }
+
+    if (mediaId == null && isRetriableException(lastError)){
+      try {
+        mediaId = updateKalturaMedia(metadata);
+      }
+      catch (KalturaApiException ke){
+       LOG.error("Failed to update the metadata for {}", metadata.getId());
+       throw new MediaServiceException(ke);
+      }
+    }
+    return mediaId;
+  }
+
+  /**
+   * Send the upated metadata to Kaltura
+   * @param metadata information about the media to update
+   * @return the id of the media in kaltura
+   * @throws KalturaApiException
+   */
+  private String updateKalturaMedia(MediaMetadata metadata) throws KalturaApiException {
+    String mediaId = null;
+
+    KalturaMediaEntry mediaEntry = new KalturaMediaEntry();
+    mediaEntry.mediaType = KalturaMediaType.VIDEO;
+    mediaEntry.userId = metadata.getUser();
+    mediaEntry.name = metadata.getTitle();
+    if (metadata.getDescription() != null) {
+      mediaEntry.description = metadata.getDescription();
+    }
+    if (metadata.getTags() != null) {
+      mediaEntry.tags = StringUtils.join(metadata.getTags(), ",");
+    }
+    // Should we handle with custom meta fields instead
+    mediaEntry.adminTags = "OAE";
+
+    KalturaMediaEntry kme = getKalturaClient(metadata.getUser()).getMediaService().update(metadata.getId(), mediaEntry);
+    if (kme != null){
+      mediaId = kme.id;
+    }
+    return mediaId;
   }
 
  /**
@@ -432,9 +481,9 @@ public class KalturaMediaService implements MediaService {
   /**
    * If the session has expired we won't know until the next call fails.
    * Test the code field of the exception for known kaltura session errors.
-   * 
+   *
    * http://www.kaltura.com/api_v3/testmeDoc/index.php?page=inout
-   * 
+   *
    * @param ke
    * @return whether or not we should retry the call based on the exception code
    */
