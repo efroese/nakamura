@@ -276,11 +276,12 @@ public class KalturaMediaService implements MediaService {
     catch (KalturaApiException ke){
       lastError = ke;
       LOG.error("Failed to update the metadata for {}. Error code {} : {}",
-          new String[]{ metadata.getId(), ke.code, ke.getMessage())};
+          new String[]{ metadata.getId(), ke.code, ke.getMessage() });
     }
 
-    if (mediaId == null && isRetriableException(lastError)){
+    if (mediaId == null && shouldRetry(lastError)){
       try {
+        clearKalturaClient();
         mediaId = updateKalturaMedia(metadata);
       }
       catch (KalturaApiException ke){
@@ -334,9 +335,9 @@ public class KalturaMediaService implements MediaService {
     catch (KalturaApiException ke){
       // http://www.kaltura.com/api_v3/testmeDoc/index.php?page=inout
       if ("INVALID_KS".equals(ke.code) || "MISSING_KS".equals(ke.code)){
-        // The session expired. Clear it and retry
-        kctl.remove();
         try {
+          // The session expired. Clear it and retry
+          clearKalturaClient();
           deleteKalturaMedia(id);
         }
         catch (KalturaApiException ke2){
@@ -384,10 +385,10 @@ public class KalturaMediaService implements MediaService {
       status = getKalturaStatus(id);
     }
     catch (KalturaApiException ke){
-      if (isRetriableException(ke)){
+      if (shouldRetry(ke)){
         try {
           // The session expired. Clear it and retry
-          kctl.remove();
+          clearKalturaClient();
           status = getKalturaStatus(id);
         }
         catch (KalturaApiException ke2){
@@ -487,7 +488,7 @@ public class KalturaMediaService implements MediaService {
    * @param ke
    * @return whether or not we should retry the call based on the exception code
    */
-  private boolean isRetriableException(KalturaApiException ke) {
+  private boolean shouldRetry(KalturaApiException ke) {
     return  ke != null && ("INVALID_KS".equals(ke.code) || "MISSING_KS".equals(ke.code));
   }
 
@@ -634,13 +635,30 @@ public class KalturaMediaService implements MediaService {
       mediaType = KalturaMediaType.VIDEO;
     }
     KalturaMediaEntry kme = null;
-    KalturaClient kc = getKalturaClient(userId); // force this to be an admin
-                                                 // key
+    KalturaClient kc = getKalturaClient(userId);
+    KalturaApiException lastError = null;
+    String uploadTokenId = null;
     if (kc != null) {
       try {
-        String uploadTokenId = kc.getMediaService().upload(inputStream,
-            fileName, fileSize);
-        // LOG.info("upload token result: "+uploadTokenId);
+        uploadTokenId = kc.getMediaService().upload(inputStream, fileName, fileSize);
+      }
+      catch (KalturaApiException ke){
+        lastError = ke;
+        LOG.error("An error occurred while uploading {} to kaltura:: Error code: {} : {}",
+            new String[]{ fileName, ke.code, ke.getMessage() });
+      }
+      if (shouldRetry(lastError)){
+        try {
+          uploadTokenId = kc.getMediaService().upload(inputStream, fileName, fileSize);
+        }
+        catch (KalturaApiException ke){
+          lastError = ke;
+          LOG.error("RETRY An error occurred while uploading {} to kaltura:: Error code: {} : {}",
+              new String[]{ fileName, ke.code, ke.getMessage() });
+        }
+      }
+    }
+    if (uploadTokenId != null){
         KalturaMediaEntry mediaEntry = new KalturaMediaEntry();
         mediaEntry.mediaType = KalturaMediaType.VIDEO;
         mediaEntry.userId = userId;
@@ -653,10 +671,21 @@ public class KalturaMediaService implements MediaService {
         }
         // Should we handle with custom meta fields instead
         mediaEntry.adminTags = "OAE"; 
+      try{
         kme = kc.getMediaService().addFromUploadedFile(mediaEntry, uploadTokenId);
-      } catch (Exception e) {
-        LOG.error("Failure uploading item (" + fileName + "): " + e, e);
-        throw new RuntimeException(e);
+      } catch (KalturaApiException e) {
+        lastError = e;
+        LOG.error("Failure uploading item ({}):: Error code: {} : {} ",
+            new String[] { fileName, e.code, e.getMessage() });
+      }
+      if (kme == null && shouldRetry(lastError)){
+        try{
+          kme = kc.getMediaService().addFromUploadedFile(mediaEntry, uploadTokenId);
+        } catch (KalturaApiException e) {
+          lastError = e;
+          LOG.error("Failure uploading item ({}):: Error code: {} : {} ",
+              new String[] { fileName, e.code, e.getMessage() });
+        }
       }
     }
     return kme;
