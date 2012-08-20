@@ -72,6 +72,10 @@ import com.kaltura.client.types.KalturaMediaEntry;
 @Service
 public class KalturaMediaService implements MediaService {
 
+  private static final String ERROR_MISSING_KS = "MISSING_KS";
+
+  private static final String ERROR_INVALID_KS = "INVALID_KS";
+
   private static final Logger LOG = LoggerFactory
       .getLogger(KalturaMediaService.class);
 
@@ -341,7 +345,7 @@ public class KalturaMediaService implements MediaService {
     }
     catch (KalturaApiException ke){
       // http://www.kaltura.com/api_v3/testmeDoc/index.php?page=inout
-      if ("INVALID_KS".equals(ke.code) || "MISSING_KS".equals(ke.code)){
+      if (ERROR_INVALID_KS.equals(ke.code) || ERROR_MISSING_KS.equals(ke.code)){
         try {
           // The session expired. Clear it and retry
           clearKalturaClient();
@@ -496,7 +500,20 @@ public class KalturaMediaService implements MediaService {
    * @return whether or not we should retry the call based on the exception code
    */
   private boolean shouldRetry(KalturaApiException ke) {
-    return  ke != null && ("INVALID_KS".equals(ke.code) || "MISSING_KS".equals(ke.code));
+
+    if (ke == null){
+      return false;
+    }
+    // ks is not null, check the code
+    if (ke.code != null){
+      return ERROR_INVALID_KS.equals(ke.code) || ERROR_MISSING_KS.equals(ke.code);
+    }
+    // ks.code is null, check the message
+    if (ke.getMessage() != null){
+      return ke.getMessage().startsWith(ERROR_INVALID_KS)
+          || ke.getMessage().startsWith(ERROR_MISSING_KS);
+    }
+    return false;
   }
 
   /**
