@@ -19,8 +19,8 @@ import java.util.Comparator;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.kaltura.client.enums.KalturaMediaType;
 import com.kaltura.client.types.KalturaBaseEntry;
@@ -36,7 +36,7 @@ public class KalturaMediaItem implements Serializable {
 
     private static final long serialVersionUID = 2L;
 
-    private static Log log = LogFactory.getLog(KalturaMediaItem.class);
+    private static Logger log = LoggerFactory.getLogger(KalturaMediaItem.class);
 
     public static final String TYPE_IMAGE = "image";
     public static final String TYPE_AUDIO = "audio";
