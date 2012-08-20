@@ -259,7 +259,6 @@ public class KalturaMediaService implements MediaService {
             "Completed upload ({}) to Kaltura of file ({}) of type ({}) and created kalturaEntry ({})",
             new String[] { metadata.getTitle(), media.getName(), kalturaMimeType,
                 mediaItem.getKalturaId() });
-
         updateContent(metadata.getContentId(), props); // exception if update fails
       } else {
         // should we fail here if kaltura does not return a valid KBE? -AZ
@@ -673,6 +672,7 @@ public class KalturaMediaService implements MediaService {
       if (shouldRetry(lastError)){
         try {
           clearKalturaClient();
+          kc = getKalturaClient(userId);
           uploadTokenId = kc.getMediaService().upload(inputStream, fileName, fileSize);
         }
         catch (KalturaApiException ke){
@@ -705,6 +705,7 @@ public class KalturaMediaService implements MediaService {
       if (kme == null && shouldRetry(lastError)){
         try{
           clearKalturaClient();
+          kc = getKalturaClient(userId);
           kme = kc.getMediaService().addFromUploadedFile(mediaEntry, uploadTokenId);
         } catch (KalturaApiException e) {
           lastError = e;
