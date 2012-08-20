@@ -121,8 +121,8 @@ public class KalturaMediaItem implements Serializable {
                 // assume KalturaBaseEntry
                 media = true;
                 mix = false;
-                log.warn("kaltura item (" + kalturaItem.id + "," + kalturaItem.name
-                        + ") is not mix or media: " + kalturaItem.getClass().getName());
+                log.warn("kaltura item ({}, {}) is not mix or media:",
+                    new String[] { kalturaItem.id , kalturaItem.name, kalturaItem.getClass().getName() });
             }
         }
     }
