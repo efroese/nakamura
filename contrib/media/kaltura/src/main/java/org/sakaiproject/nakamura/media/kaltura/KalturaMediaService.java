@@ -672,6 +672,7 @@ public class KalturaMediaService implements MediaService {
       }
       if (shouldRetry(lastError)){
         try {
+          clearKalturaClient();
           uploadTokenId = kc.getMediaService().upload(inputStream, fileName, fileSize);
         }
         catch (KalturaApiException ke){
@@ -703,6 +704,7 @@ public class KalturaMediaService implements MediaService {
       }
       if (kme == null && shouldRetry(lastError)){
         try{
+          clearKalturaClient();
           kme = kc.getMediaService().addFromUploadedFile(mediaEntry, uploadTokenId);
         } catch (KalturaApiException e) {
           lastError = e;
