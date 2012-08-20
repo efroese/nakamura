@@ -99,6 +99,12 @@ public class KalturaMediaService implements MediaService {
   private static final String KALTURA_CDN = "kaltura.cdn";
   String kalturaCDN;
 
+  // NOTE set to 24 hours by request of kaltura 60 default to 60 seconds - AZ
+  @Property(intValue = KalturaMediaService.DEFAULT_KALTURA_SESSION_LENGTH, label = "Session length (in seconds)")
+  private static final String KALTURA_SESSION_LENGTH = "kaltura.session.length";
+  private static final int DEFAULT_KALTURA_SESSION_LENGTH = 86400;
+  int kalturaSessionLength;
+
   public static final String DEFAULT_KALTURA_PLATER_AUDIO = "2158531";
   @Property(value = KalturaMediaService.DEFAULT_KALTURA_PLATER_AUDIO, label = "Player - Audio")
   private static final String KALTURA_PLAYER_AUDIO = "kaltura.player.audio";
@@ -133,6 +139,7 @@ public class KalturaMediaService implements MediaService {
     kalturaAdminSecret = PropertiesUtil.toString(props.get(KALTURA_ADMIN_SECRET), null);
     kalturaEndpoint = PropertiesUtil.toString(props.get(KALTURA_ENDPOINT), null);
     kalturaCDN = PropertiesUtil.toString(props.get(KALTURA_CDN), null);
+    kalturaSessionLength = PropertiesUtil.toInteger(props.get(KALTURA_SESSION_LENGTH), DEFAULT_KALTURA_SESSION_LENGTH);
 
     for (String prop : new String[] { kalturaSecret, kalturaAdminSecret,
         kalturaEndpoint, kalturaCDN }) {
@@ -501,8 +508,7 @@ public class KalturaMediaService implements MediaService {
       KalturaSessionType sessionType, int timeoutSecs) {
     // client is not threadsafe
     if (timeoutSecs <= 0) {
-      timeoutSecs = 86400; // NOTE set to 24 hours by request of kaltura 60; //
-                           // default to 60 seconds
+      timeoutSecs = kalturaSessionLength;
     }
     KalturaClient kalturaClient = new KalturaClient(this.kalturaConfig);
     String secret = this.kalturaConfig.getSecret();
