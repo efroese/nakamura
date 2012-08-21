@@ -72,6 +72,8 @@ import com.kaltura.client.types.KalturaMediaEntry;
 @Service
 public class KalturaMediaService implements MediaService {
 
+  private static final String APPLICATION_X_MEDIA_KALTURA = "application/x-media-kaltura";
+
   private static final String ERROR_MISSING_KS = "MISSING_KS";
 
   private static final String ERROR_INVALID_KS = "INVALID_KS";
@@ -475,7 +477,7 @@ public class KalturaMediaService implements MediaService {
    */
   @Override
   public String getMimeType() {
-    return "application/x-media-kaltura";
+    return APPLICATION_X_MEDIA_KALTURA;
   }
 
   /**
@@ -485,7 +487,8 @@ public class KalturaMediaService implements MediaService {
    */
   @Override
   public boolean acceptsFileType(String mimeType, String extension) {
-    return mimeType.startsWith("video/");
+    return mimeType != null
+        && (mimeType.startsWith("kaltura/") || mimeType.startsWith(APPLICATION_X_MEDIA_KALTURA));
   }
 
   // ------- Kaltura Methods -----
