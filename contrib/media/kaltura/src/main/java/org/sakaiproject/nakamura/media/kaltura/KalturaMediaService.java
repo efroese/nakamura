@@ -344,7 +344,7 @@ public class KalturaMediaService implements MediaService {
     }
     catch (KalturaApiException ke){
       // http://www.kaltura.com/api_v3/testmeDoc/index.php?page=inout
-      if (ERROR_INVALID_KS.equals(ke.code) || ERROR_MISSING_KS.equals(ke.code)){
+      if (shouldRetry(ke)){
         try {
           // The session expired. Clear it and retry
           clearKalturaClient();
