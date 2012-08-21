@@ -276,7 +276,7 @@ public class MediaCoordinator implements Runnable {
 
 
   private boolean isMedia(String mimeType) {
-    return mimeType.equals(mediaService.getMimeType());
+    return mediaService.acceptsFileType(mimeType, null);
   }
 
 
