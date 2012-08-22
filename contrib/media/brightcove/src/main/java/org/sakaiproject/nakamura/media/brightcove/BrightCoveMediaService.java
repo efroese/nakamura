@@ -411,17 +411,6 @@ public class BrightCoveMediaService implements MediaService {
   /**
    * {@inheritDoc}
    *
-   * @see org.sakaiproject.nakamura.api.media.MediaService#getMimeType()
-   */
-  @Override
-  public String getMimeType() {
-    return "application/x-media-brightcove";
-  }
-
-
-  /**
-   * {@inheritDoc}
-   *
    * @see org.sakaiproject.nakamura.api.media.MediaService#acceptsMimeType(String)
    */
   @Override

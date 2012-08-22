@@ -152,16 +152,12 @@ public class MediaCoordinator implements Runnable {
       adminSession = sparseRepository.loginAdministrative();
       ContentManager cm = adminSession.getContentManager();
       Content obj = cm.get(poolId);
-
       String mimeType = (String)obj.getProperty(FilesConstants.POOLED_CONTENT_MIMETYPE);
 
       if (isAcceptedMediaType(mimeType)) {
         String extension = MediaUtils.mimeTypeToExtension(mimeType);
-
         obj = cm.get(poolId);
-        obj.setProperty(FilesConstants.POOLED_CONTENT_MIMETYPE, mediaService.getMimeType());
         obj.setProperty("media:extension", extension);
-
         cm.update(obj);
       }
     } catch (ClientPoolException e) {
@@ -545,7 +541,7 @@ public class MediaCoordinator implements Runnable {
                         pid);
 
                   } catch (Exception e) {
-                    LOGGER.warn("Failed while processing PID '{}'", pid);
+                    LOGGER.warn("Failed while processing PID '{}' : {}", pid, e.getMessage());
 
                     LOGGER.warn("This job will be queued for retry in {} ms",
                         retryMs);

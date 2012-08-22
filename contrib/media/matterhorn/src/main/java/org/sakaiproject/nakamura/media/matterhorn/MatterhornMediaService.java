@@ -518,16 +518,6 @@ public class MatterhornMediaService implements MediaService {
     }
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see org.sakaiproject.nakamura.api.media.MediaService#getMimeType()
-   */
-  @Override
-  public String getMimeType() {
-    return "application/x-media-matterhorn";
-  }
-
 
   /**
    * {@inheritDoc}

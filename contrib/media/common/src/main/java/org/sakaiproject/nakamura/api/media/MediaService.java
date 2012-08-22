@@ -88,13 +88,6 @@ public interface MediaService {
 
 
   /**
-   * The mime type that will be set for content objects handled by this service.
-   * @return A string like "application/x-media-[servicename]"
-   */
-  String getMimeType();
-
-
-  /**
    * Check whether the media service can handle a certain mime type and
    * extension.
    * @param mimeType A mime type like "video/mpeg"
