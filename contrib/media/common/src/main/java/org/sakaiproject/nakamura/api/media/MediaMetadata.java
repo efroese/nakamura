@@ -29,6 +29,7 @@ public class MediaMetadata {
   private String user;
   private String extension;
   private String versionId;
+  private String mimeType;
 
   public MediaMetadata() {
   }
@@ -98,6 +99,14 @@ public class MediaMetadata {
 
   public void setExtension(String extension) {
     this.extension = extension;
+  }
+
+  public String getMimeType() {
+    return mimeType;
+  }
+
+  public void setMimeType(String mimeType) {
+    this.mimeType = mimeType;
   }
 
   public String getVersionId() {

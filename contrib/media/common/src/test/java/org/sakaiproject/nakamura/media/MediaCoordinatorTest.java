@@ -85,7 +85,7 @@ public class MediaCoordinatorTest {
 
     volatile public int failCount = 0;
 
-    public String createMedia(File media, MediaMetadata metadata)
+    public Map<String, Object> createMedia(File media, MediaMetadata metadata)
         throws MediaServiceException {
 
       if (failOnNextCreate) {
@@ -105,7 +105,9 @@ public class MediaCoordinatorTest {
                                   "extension", metadata.getExtension(),
                                   "tags", Arrays.asList(metadata.getTags()).toString()));
 
-      return String.valueOf(System.currentTimeMillis());
+      Map<String, Object> meta = new HashMap<String, Object>(1);
+      meta.put("bodyMediaId", String.valueOf(System.currentTimeMillis()));
+      return meta;
     }
 
 
@@ -154,7 +156,7 @@ public class MediaCoordinatorTest {
 
     public boolean acceptsFileType(String mimeType, String extension) {
       // Sure!
-      return true;
+      return "application/x-media-testsuite".equals(mimeType);
     }
 
 

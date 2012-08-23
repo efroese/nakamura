@@ -20,6 +20,7 @@ package org.sakaiproject.nakamura.api.media;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 public interface MediaService {
   /**
@@ -30,10 +31,10 @@ public interface MediaService {
    * @param description
    * @param extension
    * @param tags
-   * @return
+   * @return properties to be added to the OAE content item
    * @throws MediaServiceException
    */
-  String createMedia(File media, MediaMetadata metadata) throws MediaServiceException;
+  Map<String,Object> createMedia(File media, MediaMetadata metadata) throws MediaServiceException;
 
   /**
    * Update the metadata for a media.

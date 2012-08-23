@@ -21,7 +21,10 @@ package org.sakaiproject.nakamura.media;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import org.sakaiproject.nakamura.api.files.FilesConstants;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.content.Content;
@@ -120,6 +123,17 @@ class MediaNode {
 
     contentManager.update(replicationStatus);
   }
+  
+  public void storeMimeType(Version version, String mimeType) throws AccessDeniedException, StorageClientException {
+    Content replicationStatus = getReplicationStatus(version);
+
+    replicationStatus.setProperty(FilesConstants.POOLED_CONTENT_MIMETYPE, mimeType);
+    replicationStatus.setProperty("bodyUploaded", "Y");
+
+    replicationStatus.setProperty("metadataVersion", version.metadataVersion());
+
+    contentManager.update(replicationStatus);
+  }
 
 
   private Content getReplicationStatus(Version version) throws StorageClientException, AccessDeniedException {
@@ -147,5 +161,14 @@ class MediaNode {
     Content replicationStatus = getReplicationStatus(version);
 
     return (version.metadataVersion().equals(replicationStatus.getProperty("metadataVersion")));
+  }
+
+
+  public void storeProperties(Version version, Map<String, Object> props) throws StorageClientException, AccessDeniedException {
+    Content replicationStatus = getReplicationStatus(version);
+    for (Entry<String, Object> entry: props.entrySet()){
+      replicationStatus.setProperty(entry.getKey(), entry.getValue());
+    }
+    contentManager.update(replicationStatus);
   }
 }

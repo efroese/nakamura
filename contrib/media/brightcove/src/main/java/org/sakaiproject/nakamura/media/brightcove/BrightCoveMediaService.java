@@ -20,24 +20,23 @@ package org.sakaiproject.nakamura.media.brightcove;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Map;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.PartSource;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.httpclient.methods.multipart.PartSource;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.lang.StringUtils;
 import org.apache.felix.scr.annotations.Activate;
@@ -50,12 +49,15 @@ import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.osgi.service.component.ComponentException;
+import org.sakaiproject.nakamura.api.files.FilesConstants;
 import org.sakaiproject.nakamura.api.media.MediaMetadata;
 import org.sakaiproject.nakamura.api.media.MediaService;
-import org.sakaiproject.nakamura.api.media.MediaStatus;
 import org.sakaiproject.nakamura.api.media.MediaServiceException;
+import org.sakaiproject.nakamura.api.media.MediaStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableMap;
 
 
 @Component(metatype = true, policy = ConfigurationPolicy.REQUIRE)
@@ -250,10 +252,13 @@ public class BrightCoveMediaService implements MediaService {
    *      java.lang.String, java.lang.String, java.lang.String[])
    */
   @Override
-  public String createMedia(File mediaFile, MediaMetadata metadata) throws MediaServiceException {
+  public Map<String, Object> createMedia(File mediaFile, MediaMetadata metadata) throws MediaServiceException {
     String response = sendMedia(mediaFile, metadata);
     LOG.debug(response);
-    return response;
+    Map<String, Object> props = new HashMap<String, Object>(2);
+    props.put(FilesConstants.POOLED_CONTENT_MIMETYPE, X_MEDIA_BRIGHTCOVE);
+    props.put("mediaId", response);
+    return props;
   }
 
   /**

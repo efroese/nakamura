@@ -71,6 +71,7 @@ import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.osgi.service.component.ComponentException;
+import org.sakaiproject.nakamura.api.files.FilesConstants;
 import org.sakaiproject.nakamura.api.media.MediaMetadata;
 import org.sakaiproject.nakamura.api.media.MediaService;
 import org.sakaiproject.nakamura.api.media.MediaServiceException;
@@ -287,7 +288,7 @@ public class MatterhornMediaService implements MediaService {
   }
 
   @Override
-  public String createMedia(final File mediaFile, final MediaMetadata metadata)
+  public Map<String, Object> createMedia(final File mediaFile, final MediaMetadata metadata)
       throws MediaServiceException {
 
     LOG.info("Processing media for {}", metadata.getTitle());
@@ -339,8 +340,10 @@ public class MatterhornMediaService implements MediaService {
       if (returnCode != 200) {
         throw new MediaServiceException("Failure when processing media:" + response);
       }
-
-      return extractMediaId(response);
+      Map<String, Object> props = new HashMap<String, Object>(2);
+      props.put(FilesConstants.POOLED_CONTENT_MIMETYPE, X_MEDIA_MATTERHORN);
+      props.put("mediaId", extractMediaId(response));
+      return props;
 
     } catch (IOException e) {
       LOG.error("IOException while processing media: {}", e);

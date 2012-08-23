@@ -336,11 +336,11 @@ public class MediaCoordinator implements Runnable {
                   version.getExtension(),
                   version.getVersionId(),
                   String.valueOf(obj.getProperty(Content.CREATED_BY_FIELD)));
-              String mediaId = mediaService.createMedia(mediaFile, metadata);
+              Map<String, Object> props = mediaService.createMedia(mediaFile, metadata); 
               TelemetryCounter.incrementValue("media", "Coordinator", "uploads-finished");
-
-              mediaNode.storeMediaId(version, mediaId);
-
+              
+              mediaNode.storeMediaId(version, (String)props.get("bodyMediaId"));
+              mediaNode.storeProperties(version, props);
               mediaTempStore.completed(path, version.getTempStoreLocation());
 
             } catch (MediaServiceException e) {
