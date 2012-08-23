@@ -62,6 +62,8 @@ import org.slf4j.LoggerFactory;
 @Service
 public class BrightCoveMediaService implements MediaService {
 
+  public static final String X_MEDIA_BRIGHTCOVE = "application/x-media-brightcove";
+
   static final String OBJECT_CLASS_DEFAULT = "BrightcoveExperience";
   @Property(value = OBJECT_CLASS_DEFAULT)
   public static final String OBJECT_CLASS = "myExperience.class";
@@ -415,7 +417,8 @@ public class BrightCoveMediaService implements MediaService {
    */
   @Override
   public boolean acceptsFileType(String mimeType, String extension) {
-    return mimeType.startsWith("video/") && supportedVideoExtensions.contains(extension);
+    return mimeType.startsWith("video/") && supportedVideoExtensions.contains(extension)
+        || X_MEDIA_BRIGHTCOVE.equals(mimeType);
   }
 
 

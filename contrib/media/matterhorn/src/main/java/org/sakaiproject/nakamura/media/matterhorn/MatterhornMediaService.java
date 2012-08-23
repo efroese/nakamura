@@ -93,6 +93,8 @@ public class MatterhornMediaService implements MediaService {
 
   private static final Logger LOG = LoggerFactory.getLogger(MatterhornMediaService.class);
 
+  public static final String X_MEDIA_MATTERHORN = "application/x-media-matterhorn";
+
   static final String BASE_URL_DEFAULT = "http://localhost:7080";
   @Property(value = BASE_URL_DEFAULT)
   public static final String BASE_URL = "baseUrl";
@@ -120,6 +122,7 @@ public class MatterhornMediaService implements MediaService {
     "style=\"border:0px #FFFFFF none;\" name=\"Opencast Matterhorn - Media Player\" " +
     "scrolling=\"no\" frameborder=\"0\" marginheight=\"0px\" marginwidth=\"0px\" " +
     "width=\"%s\" height=\"%s\"></iframe>";
+
 
 
   String height;
@@ -526,7 +529,7 @@ public class MatterhornMediaService implements MediaService {
    */
   @Override
   public boolean acceptsFileType(String mimeType, String extension) {
-    return mimeType.startsWith("video/");
+    return mimeType.startsWith("video/") || X_MEDIA_MATTERHORN.equals(mimeType);
   }
 
 
