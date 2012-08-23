@@ -417,8 +417,8 @@ public class BrightCoveMediaService implements MediaService {
    */
   @Override
   public boolean acceptsFileType(String mimeType, String extension) {
-    return mimeType.startsWith("video/") && supportedVideoExtensions.contains(extension)
-        || X_MEDIA_BRIGHTCOVE.equals(mimeType);
+    return X_MEDIA_BRIGHTCOVE.equals(mimeType) ||
+        (mimeType.startsWith("video/") && supportedVideoExtensions.contains(extension));
   }
 
 
