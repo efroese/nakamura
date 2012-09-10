@@ -46,6 +46,7 @@
             <Embed-Dependency>jodconverter-core,fontbox,pdfbox,sanselan,json-lib,ezmorph,commons-beanutils,unoil,ridl,juh,jurt</Embed-Dependency>
             <Import-Package>
             !com.sun.star*,
+            !org.hyperic.sigar*,
             com.thoughtworks.xstream*;resolution:=optional,
             org.apache.commons.cli;resolution:=optional,
             org.apache.jempbox.xmp;resolution:=optional,
